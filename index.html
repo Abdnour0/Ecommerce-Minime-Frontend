@@ -1952,83 +1952,7 @@
         </section>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-main">
-                <div class="footer-column footer-brand">
-                    <h3 class="footer-logo">minime</h3>
-                    <p data-translate="footerTagline">Making better things in a better way</p>
-                    <div class="footer-social">
-                        <a href="#" aria-label="Instagram"
-                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <rect x="2" y="2" width="20" height="20" rx="5" />
-                                <circle cx="12" cy="12" r="4" fill="white" />
-                                <circle cx="18" cy="6" r="1.5" fill="white" />
-                            </svg>
-                        </a>
-                        <a href="#" aria-label="Twitter"
-                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <path
-                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
-                            </svg>
-                        </a>
-                        <a href="#" aria-label="Facebook"
-                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
 
-                <nav class="footer-column" aria-label="Shop links">
-                    <h4 data-translate="shop">Shop</h4>
-                    <ul>
-                        <li><a href="#" onclick="showMenPage(event)" data-translate="mensShoes">Men's Shoes</a></li>
-                        <li><a href="#" onclick="showWomenPage(event)" data-translate="womensShoes">Women's Shoes</a>
-                        </li>
-                        <li><a href="#" onclick="showMenPage(event)" data-translate="mensApparel">Men's Apparel</a></li>
-                        <li><a href="#" onclick="showWomenPage(event)" data-translate="womensApparel">Women's
-                                Apparel</a></li>
-                    </ul>
-                </nav>
-
-                <nav class="footer-column" aria-label="Company links">
-                    <h4 data-translate="company">Company</h4>
-                    <ul>
-                        <li><a href="#" onclick="showOurStoryPage(event)" data-translate="ourStory">Our Story</a></li>
-                        <li><a href="#" onclick="showSustainabilityPage(event)"
-                                data-translate="sustainability">Sustainability</a></li>
-                        <li><a href="#" onclick="showStoresPage(event)" data-translate="stores">Stores</a></li>
-                        <li><a href="#" onclick="showCareersPage(event)" data-translate="careers">Careers</a></li>
-                    </ul>
-                </nav>
-
-                <nav class="footer-column" aria-label="Help links">
-                    <h4 data-translate="help">Help</h4>
-                    <ul>
-                        <li><a href="#" onclick="showHelpCenterPage(event)" data-translate="helpCenter">Help Center</a>
-                        </li>
-                        <li><a href="#" onclick="showReturnsPage(event)" data-translate="returns">Returns</a></li>
-                        <li><a href="#" onclick="showShippingPage(event)" data-translate="shipping">Shipping</a></li>
-                        <li><a href="#" onclick="showContactPage(event)" data-translate="contactUs">Contact Us</a></li>
-                    </ul>
-                </nav>
-            </div>
-
-            <div class="footer-bottom">
-                <nav class="footer-legal" aria-label="Legal links">
-                    <a href="#" onclick="showPrivacyPage(event)" data-translate="privacyPolicy">Privacy Policy</a>
-                    <a href="#" onclick="showTermsPage(event)" data-translate="termsOfService">Terms of Service</a>
-                    <a href="#" onclick="showAccessibilityPage(event)" data-translate="accessibility">Accessibility</a>
-                </nav>
-                <p>&copy; 2024 MINIME, Inc. <span data-translate="allRightsReserved">All Rights Reserved.</span></p>
-            </div>
-        </div>
-    </footer>
 
 
     <!-- Product Modal -->
@@ -2239,6 +2163,10 @@
                     <label for="addressLabel" data-translate="addressLabel">Address Label (e.g. Home, Office)</label>
                     <input type="text" id="addressLabel" required placeholder="Home">
                 </div>
+                <div class="form-group">
+                    <label for="addressPhone" data-translate="phone">Phone Number</label>
+                    <input type="tel" id="addressPhone" placeholder="+1 (555) 123-4567">
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="addressFirstName" data-translate="firstName">First Name</label>
@@ -2292,7 +2220,17 @@
                 <div class="checkout-main">
                     <!-- Contact & Shipping Section -->
                     <section class="checkout-section">
-                        <h2 data-translate="contactAndShipping">Contact & Shipping</h2>
+                        <div class="section-header-row">
+                            <h2 data-translate="contactAndShipping">Contact & Shipping</h2>
+                            <button type="button" class="btn-link" id="useSavedAddressBtn"
+                                onclick="openAddressSelectionModal()" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Use Saved Address
+                            </button>
+                        </div>
 
                         <form id="checkoutForm">
                             <div class="form-row">
@@ -2331,17 +2269,10 @@
                                 <span class="error-message" id="addressError"></span>
                             </div>
 
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="city" data-translate="city">City</label>
-                                    <input type="text" id="city" name="city" required autocomplete="address-level2">
-                                    <span class="error-message" id="cityError"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="state" data-translate="state">State / Province</label>
-                                    <input type="text" id="state" name="state" required autocomplete="address-level1">
-                                    <span class="error-message" id="stateError"></span>
-                                </div>
+                            <div class="form-group">
+                                <label for="city" data-translate="city">City</label>
+                                <input type="text" id="city" name="city" required autocomplete="address-level2">
+                                <span class="error-message" id="cityError"></span>
                             </div>
 
                             <div class="form-row">
@@ -2500,6 +2431,83 @@
     </div>
 
     <script type="module" src="main.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-column footer-brand">
+                    <h3 class="footer-logo">minime</h3>
+                    <p data-translate="footerTagline">Making better things in a better way</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Instagram"
+                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <rect x="2" y="2" width="20" height="20" rx="5" />
+                                <circle cx="12" cy="12" r="4" fill="white" />
+                                <circle cx="18" cy="6" r="1.5" fill="white" />
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter"
+                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Facebook"
+                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <nav class="footer-column" aria-label="Shop links">
+                    <h4 data-translate="shop">Shop</h4>
+                    <ul>
+                        <li><a href="#" onclick="showMenPage(event)" data-translate="mensShoes">Men's Shoes</a></li>
+                        <li><a href="#" onclick="showWomenPage(event)" data-translate="womensShoes">Women's Shoes</a>
+                        </li>
+                        <li><a href="#" onclick="showMenPage(event)" data-translate="mensApparel">Men's Apparel</a></li>
+                        <li><a href="#" onclick="showWomenPage(event)" data-translate="womensApparel">Women's
+                                Apparel</a></li>
+                    </ul>
+                </nav>
+
+                <nav class="footer-column" aria-label="Company links">
+                    <h4 data-translate="company">Company</h4>
+                    <ul>
+                        <li><a href="#" onclick="showOurStoryPage(event)" data-translate="ourStory">Our Story</a></li>
+                        <li><a href="#" onclick="showSustainabilityPage(event)"
+                                data-translate="sustainability">Sustainability</a></li>
+                        <li><a href="#" onclick="showStoresPage(event)" data-translate="stores">Stores</a></li>
+                        <li><a href="#" onclick="showCareersPage(event)" data-translate="careers">Careers</a></li>
+                    </ul>
+                </nav>
+
+                <nav class="footer-column" aria-label="Help links">
+                    <h4 data-translate="help">Help</h4>
+                    <ul>
+                        <li><a href="#" onclick="showHelpCenterPage(event)" data-translate="helpCenter">Help Center</a>
+                        </li>
+                        <li><a href="#" onclick="showReturnsPage(event)" data-translate="returns">Returns</a></li>
+                        <li><a href="#" onclick="showShippingPage(event)" data-translate="shipping">Shipping</a></li>
+                        <li><a href="#" onclick="showContactPage(event)" data-translate="contactUs">Contact Us</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="footer-bottom">
+                <nav class="footer-legal" aria-label="Legal links">
+                    <a href="#" onclick="showPrivacyPage(event)" data-translate="privacyPolicy">Privacy Policy</a>
+                    <a href="#" onclick="showTermsPage(event)" data-translate="termsOfService">Terms of Service</a>
+                    <a href="#" onclick="showAccessibilityPage(event)" data-translate="accessibility">Accessibility</a>
+                </nav>
+                <p>&copy; 2024 MINIME, Inc. <span data-translate="allRightsReserved">All Rights Reserved.</span></p>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

@@ -14,6 +14,7 @@ export const DashboardManager = {
         }
         this.initCharts();
         this.updateDashboard();
+        this.renderRecentOrders(); // Initial render
         this.isInitialized = true;
     },
 
@@ -147,6 +148,9 @@ export const DashboardManager = {
         const category = categoryEl.value;
         const data = this.generateData(period, category);
 
+        // Refresh recent orders too
+        this.renderRecentOrders();
+
         // Translations
         const getT = (k) => translations[state.currentLanguage]?.[k] || translations.en[k] || k;
 
@@ -184,6 +188,71 @@ export const DashboardManager = {
         const el = document.getElementById(id);
         if (!el) return;
         el.innerText = prefix + value.toLocaleString();
+    },
+
+    renderRecentOrders() {
+        const recentOrdersContainer = document.getElementById('dashRecentOrders');
+        if (!recentOrdersContainer) return;
+
+        // Ensure OrderManager is available
+        const orders = (window.OrderManager && window.OrderManager.getOrders()) || state.orders || [];
+
+        if (orders.length === 0) {
+            recentOrdersContainer.innerHTML = `
+                <div class="empty-state-small">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                        <path d="M4 4h10l5 25a4 4 0 004 3h18a4 4 0 004-3L48 12H12" stroke="currentColor"
+                            stroke-width="3" stroke-linecap="round" />
+                        <circle cx="21" cy="42" r="3" stroke="currentColor" stroke-width="3" />
+                        <circle cx="37" cy="42" r="3" stroke="currentColor" stroke-width="3" />
+                    </svg>
+                    <p>${translations[state.currentLanguage]?.noRecentOrders || 'No recent orders'}</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Take top 3 most recent orders
+        const recentOrders = orders.slice(0, 3);
+
+        recentOrdersContainer.innerHTML = recentOrders.map(order => {
+            const firstItem = order.items && order.items[0];
+            const itemImage = firstItem?.image || 'https://via.placeholder.com/80';
+            const itemCount = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+            const statusColor = this.getStatusColor(order.status);
+            const orderDate = new Date(order.createdAt || order.date).toLocaleDateString();
+
+            return `
+                <div class="recent-order-item" onclick="window.showOrdersPage()">
+                    <div class="ro-image">
+                        <img src="${itemImage}" alt="Order Item">
+                    </div>
+                    <div class="ro-info">
+                        <h4>Order #${String(order._id || order.id).slice(-8).toUpperCase()}</h4>
+                        <p>${orderDate} • ${itemCount} items</p>
+                    </div>
+                    <div class="ro-status">
+                        <span class="status-badge-small" style="background-color: ${statusColor}15; color: ${statusColor};">
+                            ${order.status}
+                        </span>
+                    </div>
+                    <div class="ro-total">
+                        <strong>$${(order.total || 0).toFixed(2)}</strong>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    getStatusColor(status) {
+        const colors = {
+            'Processing': '#3B82F6',
+            'Shipped': '#F37021',
+            'Delivered': '#16A34A',
+            'Cancelled': '#DC2626',
+            'Pending': '#EAB308'
+        };
+        return colors[status] || '#626567';
     },
 
     generateData(period, category) {

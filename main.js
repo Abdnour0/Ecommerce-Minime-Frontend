@@ -202,6 +202,9 @@ class AppInitializer {
             // Load products
             await this.loadProducts();
 
+            // Validate wishlist items against loaded products
+            WishlistManager.cleanup();
+
             // Setup event listeners
             this.setupEventListeners();
 

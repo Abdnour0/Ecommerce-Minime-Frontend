@@ -178,5 +178,9 @@ export const AddressManager = {
             console.error('Error deleting address locally:', e);
             return { success: false };
         }
+    },
+
+    getAddresses() {
+        return this.addresses || [];
     }
 };

@@ -331,13 +331,44 @@ export function renderAddresses() {
     const g = document.getElementById('addressesGrid');
     if (!g) return;
     g.innerHTML = AddressManager.addresses.length ? AddressManager.addresses.map(a => `
-        < div class="address-card" >
-            <h3>${escapeHtml(a.label)}</h3>
-            <p>${escapeHtml(a.street)}, ${escapeHtml(a.city)}</p>
-            <button onclick="window.editAddress('${a._id}')">Edit</button>
-            <button onclick="window.deleteAddress('${a._id}')">Delete</button>
-        </div >
-        `).join('') : '<div>No addresses</div>';
+        <div class="address-card">
+            <div class="address-card-header">
+                <div class="address-type-badge">
+                    ${a.isDefault ? '<span class="badge badge-primary">Default</span>' : ''}
+                    <span class="address-label">${escapeHtml(a.label)}</span>
+                </div>
+                <div class="address-actions">
+                    <button class="btn-icon" onclick="window.editAddress('${a._id}')" aria-label="Edit address">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-icon delete-btn" onclick="window.deleteAddress('${a._id}')" aria-label="Delete address">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="address-card-body">
+                <strong class="address-name">${escapeHtml(a.firstName)} ${escapeHtml(a.lastName)}</strong>
+                <p class="address-line">${escapeHtml(a.street)}</p>
+                <p class="address-line">${escapeHtml(a.city)}, ${escapeHtml(a.zip)}</p>
+                <p class="address-line">${escapeHtml(a.country)}</p>
+            </div>
+        </div>
+    `).join('') : `
+        <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="margin-bottom: 24px; color: var(--text-secondary);">
+                <path d="M32 58s20-10 20-25V12L32 4 12 12v21c0 15 20 25 20 25z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="32" cy="28" r="8" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <h3>No addresses saved</h3>
+            <p>Add an address for faster checkout</p>
+        </div>
+    `;
 }
 
 export function openAddressModal(id = null) {
@@ -363,6 +394,7 @@ export function openAddressModal(id = null) {
         if (a) {
             const fieldMap = {
                 'label': 'addressLabel',
+                'phone': 'addressPhone',
                 'firstName': 'addressFirstName',
                 'lastName': 'addressLastName',
                 'street': 'addressStreet',
@@ -404,6 +436,7 @@ export async function handleAddressSubmit(e) {
     const id = document.getElementById('addressId')?.value;
     const d = {
         label: document.getElementById('addressLabel')?.value,
+        phone: document.getElementById('addressPhone')?.value,
         firstName: document.getElementById('addressFirstName')?.value,
         lastName: document.getElementById('addressLastName')?.value,
         street: document.getElementById('addressStreet')?.value,
@@ -467,7 +500,7 @@ export async function confirmDeleteAccount() {
         return;
     }
     try {
-        const response = await fetch(`${API_URL} /auth/delete - account`, {
+        const response = await fetch(`${API_URL}/auth/delete-account`, {
             method: 'DELETE',
             headers: AuthManager.getAuthHeader()
         });
@@ -547,6 +580,7 @@ export function goToCheckout() {
             window.showCheckoutPage();
             console.log('goToCheckout: Checkout page shown, initializing payment');
             initializePayment();
+            checkSavedAddresses();
         } catch (error) {
             console.error('goToCheckout: Error showing checkout page:', error);
             showNotification('Failed to open checkout', 'error');
@@ -609,7 +643,7 @@ export async function initializePayment() {
             currency: 'usd'
         };
 
-        const res = await fetch(`${API_URL} /payments/create - intent`, {
+        const res = await fetch(`${API_URL}/payments/create-intent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...AuthManager.getAuthHeader() },
             body: JSON.stringify(formData)
@@ -749,7 +783,7 @@ export async function applyCoupon() {
 
     const subtotal = CartManager.getTotal();
     try {
-        const response = await fetch(`${API_URL} /coupons/validate`, {
+        const response = await fetch(`${API_URL}/coupons/validate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...AuthManager.getAuthHeader() },
             body: JSON.stringify({ code, cartTotal: subtotal })
@@ -803,7 +837,7 @@ export async function handlePaymentSubmission() {
 
     try {
         // Validate form fields directly
-        const requiredFields = ['email', 'phone', 'firstName', 'lastName', 'address', 'city', 'state', 'zip', 'country'];
+        const requiredFields = ['email', 'phone', 'firstName', 'lastName', 'address', 'city', 'zip', 'country'];
         const missingFields = requiredFields.filter(id => !document.getElementById(id)?.value?.trim());
 
         if (missingFields.length > 0) {
@@ -824,19 +858,25 @@ export async function handlePaymentSubmission() {
             await new Promise(resolve => setTimeout(resolve, 1500));
             // Fall through to success handling (same as cash/stripe success)
 
+            const finalTotal = CartManager.getTotal();
             CartManager.clear();
             window.location.href = '#orderSuccessPage';
             showPage('orderSuccessPage');
 
             // Populate success page
-            document.getElementById('successEmail').textContent = document.getElementById('email')?.value || 'customer@example.com';
-            document.getElementById('successOrderNumber').textContent = '#' + Math.floor(Math.random() * 1000000);
-            document.getElementById('successDate').textContent = new Date().toLocaleDateString();
             const email = document.getElementById('email')?.value || 'customer@example.com';
-            if (document.getElementById('successEmail')) document.getElementById('successEmail').textContent = email;
-            if (document.getElementById('successOrderNumber')) document.getElementById('successOrderNumber').textContent = '#' + Math.floor(Math.random() * 1000000);
-            if (document.getElementById('successDate')) document.getElementById('successDate').textContent = new Date().toLocaleDateString();
-            if (document.getElementById('successTotal')) document.getElementById('successTotal').textContent = '$' + CartManager.getTotal().toFixed(2);
+
+            const emailEl = document.getElementById('successEmail');
+            if (emailEl) emailEl.textContent = email;
+
+            const orderNumEl = document.getElementById('successOrderNumber');
+            if (orderNumEl) orderNumEl.textContent = '#' + Math.floor(Math.random() * 1000000);
+
+            const dateEl = document.getElementById('successDate');
+            if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
+
+            const totalEl = document.getElementById('successTotal');
+            if (totalEl) totalEl.textContent = '$' + finalTotal.toFixed(2);
 
             return; // Exit after mock success
         }
@@ -920,3 +960,154 @@ export async function handlePaymentSubmission() {
 }
 
 
+
+// ============================================================================
+// ADDRESS SELECTION FOR CHECKOUT
+// ============================================================================
+
+export function checkSavedAddresses() {
+    const addresses = AddressManager.getAddresses();
+    const btn = document.getElementById('useSavedAddressBtn');
+
+    if (btn) {
+        if (addresses && addresses.length > 0) {
+            btn.style.display = 'block';
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+}
+
+export function openAddressSelectionModal() {
+    const addresses = AddressManager.getAddresses();
+
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('addressSelectionModal');
+    let overlay = document.getElementById('addressSelectionModalOverlay');
+
+    if (!modal) {
+        overlay = document.createElement('div');
+        overlay.id = 'addressSelectionModalOverlay';
+        overlay.className = 'account-modal-overlay'; // Corrected class name
+        overlay.style.zIndex = '2001'; // Explicit Z-index
+
+        modal = document.createElement('div');
+        modal.id = 'addressSelectionModal';
+        modal.className = 'account-modal'; // Reusing existing class
+        modal.style.zIndex = '2002'; // Ensure on top of overlay
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(modal);
+
+        // Close handlers
+        overlay.addEventListener('click', closeAddressSelectionModal);
+    }
+
+    // Populate modal content
+    if (addresses.length === 0) {
+        showNotification('No saved addresses found', 'info');
+        return;
+    }
+
+    const addressesHtml = addresses.map((addr, index) => `
+        <div class="address-card" onclick="fillCheckoutForm(${index})" style="cursor: pointer; margin-bottom: 12px; height: auto;">
+            <div class="address-card-header" style="margin-bottom: 8px;">
+                <div class="address-type-badge">
+                    <span class="badge ${addr.type === 'Home' ? 'badge-primary' : 'badge-secondary'}" style="background-color: var(--accent-color); color: white;">
+                        ${addr.type}
+                    </span>
+                    ${addr.isDefault ? '<span class="badge" style="background: #eab308; color: black; margin-left: 8px;">Default</span>' : ''}
+                </div>
+            </div>
+            <div class="address-card-body">
+                <span class="address-name">${escapeHtml(addr.firstName)} ${escapeHtml(addr.lastName)}</span>
+                <div class="address-line">${escapeHtml(addr.address)}</div>
+                <div class="address-line">${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} ${escapeHtml(addr.zip)}</div>
+                <div class="address-line">${escapeHtml(addr.country)}</div>
+                ${addr.phone ? `<div class="address-line" style="margin-top: 4px; font-size: 13px;">${escapeHtml(addr.phone)}</div>` : ''}
+            </div>
+        </div>
+    `).join('');
+
+    modal.innerHTML = `
+        <div class="account-modal-content">
+            <button class="modal-close" style="position: absolute; top: 16px; right: 16px;" onclick="closeAddressSelectionModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+            <h2 style="margin-bottom: 24px;">Select Shipping Address</h2>
+            <div class="addresses-list">
+                ${addressesHtml}
+            </div>
+        </div>
+    `;
+
+    modal.classList.add('active');
+    overlay.classList.add('active');
+}
+
+export function closeAddressSelectionModal() {
+    const modal = document.getElementById('addressSelectionModal');
+    const overlay = document.getElementById('addressSelectionModalOverlay');
+    if (modal) modal.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+}
+
+export function fillCheckoutForm(index) {
+    const addresses = AddressManager.getAddresses();
+    const addr = addresses[index];
+
+    if (!addr) return;
+
+    // Normalizing country codes (Saved as 3-letter, Checkout wants 2-letter)
+    const countryMap = {
+        'USA': 'US',
+        'FRA': 'FR',
+        'MAR': 'MA',
+        'UK': 'UK',
+        'GBR': 'UK',
+        'DE': 'DE', 'DEU': 'DE',
+        'ES': 'ES', 'ESP': 'ES',
+        'IT': 'IT', 'ITA': 'IT',
+        'AU': 'AU', 'AUS': 'AU',
+        'CA': 'CA', 'CAN': 'CA'
+    };
+
+    let countryCode = addr.country;
+    if (countryMap[countryCode]) {
+        countryCode = countryMap[countryCode];
+    }
+
+    // Fill form fields
+    const fields = {
+        'firstName': addr.firstName,
+        'lastName': addr.lastName,
+        'phone': addr.phone,
+        'address': addr.street || addr.address,
+        'city': addr.city,
+        'zip': addr.zip || addr.zipCode,
+        'country': countryCode,
+        'email': state.currentUser?.email || '' // Auto-fill email
+    };
+
+    for (const [id, value] of Object.entries(fields)) {
+        const el = document.getElementById(id);
+        if (el && value) {
+            el.value = value;
+            el.dispatchEvent(new Event('change'));
+        }
+    }
+
+    // Scroll to form
+    const form = document.querySelector('.checkout-section');
+    if (form) form.scrollIntoView({ behavior: 'smooth' });
+
+    showNotification('Address applied successfully', 'success');
+    closeAddressSelectionModal();
+}
+
+// Expose functions globally
+window.openAddressSelectionModal = openAddressSelectionModal;
+window.closeAddressSelectionModal = closeAddressSelectionModal;
+window.fillCheckoutForm = fillCheckoutForm;

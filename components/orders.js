@@ -190,6 +190,8 @@ export function renderOrders() {
         const statusKey = order.status.toLowerCase();
         const translatedStatus = SettingsManager.getTranslation(statusKey) || order.status;
         const statusColor = OrderManager.getStatusColor(order.status);
+        const canCancel = order.status === 'Processing' || order.status === 'processing' || order.status === 'Pending';
+        const isCancelled = order.status === 'Cancelled' || order.status === 'cancelled';
 
         return `
             <div class="order-card">
@@ -202,19 +204,28 @@ export function renderOrders() {
             day: 'numeric'
         })}</p>
                     </div>
-                    <div class="order-status-badge" style="background-color: ${statusColor}15; color: ${statusColor}; border: 1px solid ${statusColor}30;">
-                        ${translatedStatus}
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        ${canCancel ? `
+                            <button class="btn-cancel-link-styled" onclick="window.OrderManager.cancelOrder('${orderId}').then(() => renderOrders())">
+                                CANCEL ORDER
+                            </button>
+                        ` : ''}
+                        <div class="order-status-badge ${isCancelled ? 'status-cancelled' : ''}" style="${!isCancelled ? `background-color: ${statusColor}15; color: ${statusColor}; border: 1px solid ${statusColor}30;` : ''}">
+                            ${translatedStatus.toUpperCase()}
+                        </div>
                     </div>
                 </div>
                 
                 ${order.trackingNumber ? `
-                <div class="order-tracking-box">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M4 6h16M4 10h16M4 14h7M4 18h7" stroke-linecap="round"/>
-                        <circle cx="18" cy="16" r="3"/>
-                        <path d="M18 16l2 2"/>
-                    </svg>
-                    <div>
+                <div class="order-tracking-row">
+                    <div class="tracking-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 6h16M4 10h16M4 14h7M4 18h7" stroke-linecap="round"/>
+                            <circle cx="18" cy="16" r="3"/>
+                            <path d="M18 16l2 2"/>
+                        </svg>
+                    </div>
+                    <div class="tracking-info">
                         <span class="tracking-label">YOUR TRACKING NUMBER IS</span>
                         <p class="tracking-number">${order.trackingNumber}</p>
                     </div>
@@ -223,33 +234,21 @@ export function renderOrders() {
                 
                 <div class="order-items-list">
                     ${order.items && order.items.length > 0 ? order.items.map(item => `
-                        <div class="order-item-large">
-                            <div class="product-image-large">
+                        <div class="order-item-detail">
+                            <div class="item-thumbnail">
                                 <img src="${item.image || 'https://via.placeholder.com/400x300'}" alt="${item.name || 'Product'}">
                             </div>
-                            <div class="product-details-large">
-                                <div>
-                                    <h4>${item.name || 'Product'}</h4>
-                                    <p class="item-qty">Quantity: ${item.quantity || 1}</p>
-                                </div>
-                                <div class="product-price-large">$${(item.price || 0).toFixed(0)}</div>
+                            <div class="item-info">
+                                <h4>${item.name || 'Product'}</h4>
+                                <p class="item-meta">Quantity: ${item.quantity || 1}</p>
+                                <p class="item-price">$${(item.price || 0).toFixed(0)}</p>
                             </div>
                         </div>
                     `).join('') : ''}
                 </div>
                 
-                <div class="order-footer">
-                    <div>
-                         ${order.status === 'Processing' || order.status === 'processing' ? `
-                            <button class="btn-cancel-link" onclick="window.OrderManager.cancelOrder('${orderId}').then(() => renderOrders())">
-                                Cancel Order
-                            </button>
-                        ` : ''}
-                    </div>
-                    <div class="order-total-large">
-                        <span>TOTAL</span>
-                        <strong>$${(order.total || 0).toFixed(2)}</strong>
-                    </div>
+                <div class="order-footer-simple">
+                     <p>Total: <strong>$${(order.total || 0).toFixed(2)}</strong></p>
                 </div>
             </div>
         `;

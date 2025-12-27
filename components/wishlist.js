@@ -15,10 +15,34 @@ export const WishlistManager = {
         try {
             const storedWishlist = localStorage.getItem('wishlist');
             state.wishlist = storedWishlist ? JSON.parse(storedWishlist) : [];
+            // Ensure all IDs are strings and unique to prevent "double counting" bugs
+            state.wishlist = [...new Set(state.wishlist.map(id => String(id)))];
             this.updateCounter();
         } catch (e) {
             console.error('Error loading wishlist:', e);
             state.wishlist = [];
+        }
+    },
+
+    cleanup() {
+        // Remove items that are not in the current product list
+        if (!state.products || state.products.length === 0) return;
+
+        const validIds = new Set(state.products.map(p => String(p.id || p._id)));
+        const originalLength = state.wishlist.length;
+
+        state.wishlist = state.wishlist.filter(id => validIds.has(String(id)));
+
+        if (state.wishlist.length !== originalLength) {
+            console.log(`Cleaned up wishlist: removed ${originalLength - state.wishlist.length} invalid items`);
+            this.save();
+            this.updateCounter();
+
+            // If on wishlist page, re-render
+            const wishlistPage = document.getElementById('wishlistPage');
+            if (wishlistPage && wishlistPage.classList.contains('active')) {
+                renderWishlist();
+            }
         }
     },
 
@@ -37,7 +61,7 @@ export const WishlistManager = {
 
         // Dispatch event for UI updates
         window.dispatchEvent(new CustomEvent('wishlistUpdated', { detail: { wishlist: state.wishlist } }));
-        
+
         // Re-render wishlist if page is active
         const wishlistPage = document.getElementById('wishlistPage');
         if (wishlistPage && wishlistPage.classList.contains('active')) {
@@ -77,7 +101,7 @@ export function renderWishlist() {
         const emptyText = SettingsManager.getTranslation('wishlistEmpty') || 'Your wishlist is empty';
         const emptyDesc = SettingsManager.getTranslation('wishlistEmptyDesc') || 'Save items you love to find them easily later.';
         const browseText = SettingsManager.getTranslation('browseProducts') || 'Browse Products';
-        
+
         container.innerHTML = `
             <div class="empty-state">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
