@@ -1,0 +1,2505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="MINIME - Sustainable, comfortable footwear and apparel made with natural materials">
+    <meta name="keywords" content="sustainable shoes, eco-friendly footwear, natural materials, comfortable shoes">
+    <title>MINIME - Naturally Comfortable Footwear</title>
+    <link rel="stylesheet" href="style.css?v=2">
+    <style>
+        /* Fix for Address Modal appearing after footer */
+        #addressModal:not(.active) {
+            display: none !important;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Conditionally load Vercel Speed Insights (only on Vercel)
+        if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('vercel.com')) {
+            const script = document.createElement('script');
+            script.src = '/_vercel/speed-insights/script.js';
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <button class="mobile-menu" id="mobileMenuBtn" aria-label="Menu" aria-expanded="false"
+                    aria-controls="navLinks">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+
+            <div class="nav-center">
+                <a href="#" class="logo" onclick="showHomePage(); return false;" aria-label="MINIME Home">
+                    <span class="logo-text">minime</span>
+                </a>
+            </div>
+
+            <div class="nav-links" id="navLinks" role="navigation">
+                <a href="#" onclick="showMenPage(event)" data-translate="men">MEN</a>
+                <a href="#" onclick="showWomenPage(event)" data-translate="women">WOMEN</a>
+                <a href="#" onclick="showSalePage(event)" class="sale-link" data-translate="sale">SALE</a>
+                <a href="#" onclick="showSustainabilityPage(event)" data-translate="sustainability">SUSTAINABILITY</a>
+                <a href="#" onclick="showStoresPage(event)" data-translate="stores">STORES</a>
+            </div>
+
+            <div class="nav-right">
+                <button class="icon-btn" id="navDashboardLink" onclick="showDashboardPage(event)"
+                    aria-label="Dashboard">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M3 3h7v7H3V3zM14 3h7v7h-7V3zM3 14h7v7H3v-7zM14 14h7v7h-7v-7z" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <!-- Settings Dropdown -->
+                <div class="settings-dropdown" id="settingsDropdown">
+                    <button class="icon-btn settings-toggle" id="settingsToggle" aria-label="Settings"
+                        aria-expanded="false">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                            <path
+                                d="M10 1v2M10 17v2M19 10h-2M3 10H1M16.36 16.36l-1.41-1.41M5.05 5.05L3.64 3.64M16.36 3.64l-1.41 1.41M5.05 14.95l-1.41 1.41"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                    <div class="settings-dropdown-menu" id="settingsDropdownMenu" role="menu">
+                        <div class="settings-dropdown-section">
+                            <h4 data-translate="language">Language</h4>
+                            <div class="language-options" role="radiogroup" aria-label="Select language">
+                                <button class="language-btn active" data-lang="en" role="radio" aria-checked="true">
+                                    <span class="lang-flag">🇺🇸</span>
+                                    <span>English</span>
+                                </button>
+                                <button class="language-btn" data-lang="fr" role="radio" aria-checked="false">
+                                    <span class="lang-flag">🇫🇷</span>
+                                    <span>Français</span>
+                                </button>
+                                <button class="language-btn" data-lang="ar" role="radio" aria-checked="false">
+                                    <span class="lang-flag">🇸🇦</span>
+                                    <span>العربية</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-dropdown-divider"></div>
+                        <div class="settings-dropdown-section">
+                            <h4 data-translate="theme">Theme</h4>
+                            <div class="theme-toggle-container">
+                                <button class="theme-btn active" data-theme="light" aria-label="Light mode">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2" />
+                                        <path
+                                            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                    <span data-translate="light">Light</span>
+                                </button>
+                                <button class="theme-btn" data-theme="dark" aria-label="Dark mode">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <span data-translate="dark">Dark</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="icon-btn" id="searchBtn" aria-label="Search">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+                <button class="icon-btn" id="wishlistNavBtn" onclick="showWishlistPage()" aria-label="Wishlist">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                        </path>
+                    </svg>
+                    <span class="wishlist-badge" id="wishlistCount" style="display: none;">0</span>
+                </button>
+                <button class="icon-btn" id="accountBtn" aria-label="Account">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M17 19v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+                <button class="icon-btn cart-btn" id="cartBtn" aria-label="Shopping cart">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L19 6H6" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span class="cart-badge" id="cartCount" aria-label="Items in cart">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Side Menu -->
+    <div class="side-menu-overlay" id="sideMenuOverlay"></div>
+    <aside class="side-menu" id="sideMenu" role="navigation" aria-label="Side navigation">
+        <div class="side-menu-header">
+            <h2>Menu</h2>
+            <button class="side-menu-close" id="sideMenuClose" aria-label="Close menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <nav class="side-menu-nav">
+            <a href="#" class="side-menu-item" onclick="showDashboardPage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <rect x="3" y="3" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                    <rect x="11" y="3" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                    <rect x="3" y="11" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                    <rect x="11" y="11" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="dashboard">Dashboard</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showHomePage(); return false;">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M3 10l7-7 7 7v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7z" stroke="currentColor" stroke-width="2" />
+                    <path d="M9 17V13h4v4" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="home">Home</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showMenPage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M17 19v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M10 11a4 4 0 100-8 4 4 0 000 8z"
+                        stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="mens">Men's</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showWomenPage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M17 19v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M10 11a4 4 0 100-8 4 4 0 000 8z"
+                        stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="womens">Women's</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showSalePage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M17 9l-5-5-5 5M12 4v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M3 16l5 5 5-5M8 21V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <span data-translate="sale">Sale</span>
+            </a>
+            <div class="side-menu-divider"></div>
+            <a href="#" class="side-menu-item" onclick="showProfilePage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M17 19v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M10 11a4 4 0 100-8 4 4 0 000 8z"
+                        stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="myProfile">My Profile</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showOrdersPage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L19 6H6" stroke="currentColor"
+                        stroke-width="2" />
+                </svg>
+                <span data-translate="myOrders">My Orders</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showWishlistPage(event)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                    </path>
+                </svg>
+                <span data-translate="wishlist">Wishlist</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showStoresPage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M3 9l9-7 9 7v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="stores">Stores</span>
+            </a>
+            <a href="#" class="side-menu-item" onclick="showSustainabilityPage(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" />
+                    <path d="M10 2v8l4 4" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="sustainability">Sustainability</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Account Modal -->
+    <div class="account-modal-overlay" id="accountModalOverlay"></div>
+    <div class="account-modal" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+        <button class="modal-close" id="accountModalClose" aria-label="Close account modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Account Choice View -->
+        <div class="account-view" id="accountChoiceView">
+            <div class="account-modal-content">
+                <h2 id="accountModalTitle" data-translate="welcomeToMinime">Welcome to MINIME</h2>
+                <p class="account-subtitle" data-translate="signInAccess">Sign in to access your account or create a new
+                    one</p>
+
+                <div class="account-options">
+                    <button class="account-option-btn" onclick="showLoginView()">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                            <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2" />
+                            <path d="M24 14v10M19 19l5-5 5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M32 28v6a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2v-6" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg>
+                        <h3 data-translate="signIn">Sign In</h3>
+                        <p data-translate="accessExisting">Access your existing account</p>
+                    </button>
+
+                    <button class="account-option-btn" onclick="showSignupView()">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                            <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2" />
+                            <path d="M24 16v16M16 24h16" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg>
+                        <h3 data-translate="createAccount">Create Account</h3>
+                        <p data-translate="joinMinime">Join MINIME and start shopping</p>
+                    </button>
+                </div>
+
+                <button class="guest-btn" onclick="continueAsGuest()" data-translate="continueAsGuest">Continue as
+                    Guest</button>
+            </div>
+        </div>
+
+        <!-- Login View -->
+        <div class="account-view" id="loginView" style="display: none;">
+            <div class="account-modal-content">
+                <button class="back-btn" onclick="showAccountChoice()" aria-label="Back to account options">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M15 10H5M5 10l5 5M5 10l5-5" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span data-translate="back">Back</span>
+                </button>
+
+                <h2 data-translate="signIn">Sign In</h2>
+                <p class="account-subtitle" data-translate="welcomeBack">Welcome back! Please enter your details</p>
+
+                <form id="loginForm" class="account-form">
+                    <div class="form-group">
+                        <label for="loginEmail" data-translate="email">Email</label>
+                        <input type="email" id="loginEmail" name="email" placeholder="you@example.com" required
+                            autocomplete="email">
+                        <span class="error-message" id="loginEmailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword" data-translate="password">Password</label>
+                        <input type="password" id="loginPassword" name="password" placeholder="Enter your password"
+                            required autocomplete="current-password">
+                        <span class="error-message" id="loginPasswordError"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe">
+                            <span data-translate="rememberMe">Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-link" onclick="showResetPasswordModal(); return false;"
+                            data-translate="forgotPassword">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="submit-btn" data-translate="signIn">Sign In</button>
+                </form>
+
+                <div class="account-divider">
+                    <span data-translate="or">or</span>
+                </div>
+
+                <div class="social-login">
+                    <button class="social-btn" id="google-signin-btn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                                d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
+                            <path
+                                d="M10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45c-.86.58-1.97.92-3.46.92-2.65 0-4.89-1.77-5.69-4.15H.96v2.52C2.61 17.05 6.03 20 10 20z" />
+                            <path
+                                d="M4.31 11.9c-.25-.76-.25-1.58 0-2.34V7.04H.96c-.96 1.89-.96 4.1 0 5.99l3.35-2.13z" />
+                            <path
+                                d="M10 3.98c1.51 0 2.87.52 3.94 1.54l2.91-2.91C15.01.73 12.73 0 10 0 6.03 0 2.61 2.95.96 7.04l3.35 2.12C5.11 5.75 7.35 3.98 10 3.98z" />
+                        </svg>
+                        <span data-translate="continueWithGoogle">Continue with Google</span>
+                    </button>
+                    <button class="social-btn" onclick="showNotification('Facebook sign-in coming soon!', 'info')">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                                d="M20 10.06c0-5.52-4.48-10-10-10S0 4.54 0 10.06c0 4.99 3.66 9.13 8.44 9.88v-6.99H5.9v-2.89h2.54V7.84c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.89h-2.34v6.99C16.34 19.19 20 15.05 20 10.06z" />
+                        </svg>
+                        <span data-translate="continueWithFacebook">Continue with Facebook</span>
+                    </button>
+                </div>
+
+                <p class="account-footer">
+                    <span data-translate="dontHaveAccount">Don't have an account?</span> <a href="#"
+                        onclick="showSignupView(); return false;" data-translate="signUp">Sign up</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Signup View -->
+        <div class="account-view" id="signupView" style="display: none;">
+            <div class="account-modal-content">
+                <button class="back-btn" onclick="showAccountChoice()" aria-label="Back to account options">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M15 10H5M5 10l5 5M5 10l5-5" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span data-translate="back">Back</span>
+                </button>
+
+                <h2 data-translate="createAccount">Create Account</h2>
+                <p class="account-subtitle" data-translate="joinUsJourney">Join us and start your journey</p>
+
+                <form id="signupForm" class="account-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="signupFirstName" data-translate="firstName">First Name</label>
+                            <input type="text" id="signupFirstName" name="firstName" placeholder="John" required
+                                autocomplete="given-name">
+                            <span class="error-message" id="signupFirstNameError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupLastName" data-translate="lastName">Last Name</label>
+                            <input type="text" id="signupLastName" name="lastName" placeholder="Doe" required
+                                autocomplete="family-name">
+                            <span class="error-message" id="signupLastNameError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupEmail" data-translate="email">Email</label>
+                        <input type="email" id="signupEmail" name="email" placeholder="you@example.com" required
+                            autocomplete="email">
+                        <span class="error-message" id="signupEmailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupPassword" data-translate="password">Password</label>
+                        <input type="password" id="signupPassword" name="password" placeholder="Create a password"
+                            required minlength="6" autocomplete="new-password">
+                        <span class="error-message" id="signupPasswordError"></span>
+                        <span class="field-hint" data-translate="passwordHint">Must be at least 6 characters</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupConfirmPassword" data-translate="confirmPassword">Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" name="confirmPassword"
+                            placeholder="Confirm your password" required autocomplete="new-password">
+                        <span class="error-message" id="signupConfirmPasswordError"></span>
+                    </div>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <span><span data-translate="agreeToTerms">I agree to the</span> <a href="#"
+                                onclick="showTermsPage(event)" data-translate="termsOfService">Terms of Service</a>
+                            <span data-translate="and">and</span> <a href="#" onclick="showPrivacyPage(event)"
+                                data-translate="privacyPolicy">Privacy Policy</a></span>
+                    </label>
+
+                    <button type="submit" class="submit-btn" data-translate="createAccount">Create Account</button>
+                </form>
+
+                <div class="account-divider">
+                    <span data-translate="or">or</span>
+                </div>
+
+                <div class="social-login">
+                    <button class="social-btn" id="google-signup-btn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                                d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
+                            <path
+                                d="M10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45c-.86.58-1.97.92-3.46.92-2.65 0-4.89-1.77-5.69-4.15H.96v2.52C2.61 17.05 6.03 20 10 20z" />
+                            <path
+                                d="M4.31 11.9c-.25-.76-.25-1.58 0-2.34V7.04H.96c-.96 1.89-.96 4.1 0 5.99l3.35-2.13z" />
+                            <path
+                                d="M10 3.98c1.51 0 2.87.52 3.94 1.54l2.91-2.91C15.01.73 12.73 0 10 0 6.03 0 2.61 2.95.96 7.04l3.35 2.12C5.11 5.75 7.35 3.98 10 3.98z" />
+                        </svg>
+                        <span data-translate="continueWithGoogle">Continue with Google</span>
+                    </button>
+                    <button class="social-btn" onclick="showNotification('Facebook sign-up coming soon!', 'info')">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                                d="M20 10.06c0-5.52-4.48-10-10-10S0 4.54 0 10.06c0 4.99 3.66 9.13 8.44 9.88v-6.99H5.9v-2.89h2.54V7.84c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.89h-2.34v6.99C16.34 19.19 20 15.05 20 10.06z" />
+                        </svg>
+                        <span data-translate="continueWithFacebook">Continue with Facebook</span>
+                    </button>
+                </div>
+
+                <p class="account-footer">
+                    <span data-translate="alreadyHaveAccount">Already have an account?</span> <a href="#"
+                        onclick="showLoginView(); return false;" data-translate="signIn">Sign in</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Logged In View -->
+        <div class="account-view" id="loggedInView" style="display: none;">
+            <div class="account-modal-content">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                            <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2" />
+                            <path d="M32 38v-3a6 6 0 0 0-6-6h-4a6 6 0 0 0-6 6v3M24 22a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </div>
+                    <h2 id="userName">Welcome back!</h2>
+                    <p id="userEmail">user@example.com</p>
+                </div>
+
+                <nav class="account-menu" aria-label="Account navigation">
+                    <a href="#" class="account-menu-item" onclick="showDashboardPage(event)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <rect x="3" y="3" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                            <rect x="11" y="3" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                            <rect x="3" y="11" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                            <rect x="11" y="11" width="6" height="6" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span data-translate="dashboard">Dashboard</span>
+                    </a>
+                    <a href="#" class="account-menu-item" onclick="showProfilePage(event)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M17 19v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span data-translate="myProfile">My Profile</span>
+                    </a>
+                    <a href="#" class="account-menu-item" onclick="showOrdersPage(event)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L19 6H6"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span data-translate="myOrders">My Orders</span>
+                    </a>
+                    <a href="#" class="account-menu-item" onclick="showAddressesPage(event)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M10 18s8-4 8-10V3l-8-3-8 3v5c0 6 8 10 8 10z" stroke="currentColor"
+                                stroke-width="2" />
+                        </svg>
+                        <span data-translate="addresses">Addresses</span>
+                    </a>
+                    <a href="#" class="account-menu-item" onclick="showSettingsPage(event)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                            <path
+                                d="M10 1v2M10 17v2M19 10h-2M3 10H1M16.36 16.36l-1.41-1.41M5.05 5.05L3.64 3.64M16.36 3.64l-1.41 1.41M5.05 14.95l-1.41 1.41"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <span data-translate="settings">Settings</span>
+                    </a>
+                </nav>
+
+                <button class="logout-btn" onclick="handleLogout()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M13 13l4-4-4-4M17 9H7M11 19H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h8" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span data-translate="signOut">Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="account-modal-overlay" id="resetPasswordModalOverlay"></div>
+    <div class="account-modal" id="resetPasswordModal" role="dialog" aria-modal="true"
+        aria-labelledby="resetPasswordModalTitle">
+        <button class="modal-close" id="resetPasswordModalClose" onclick="closeResetPasswordModal()"
+            aria-label="Close reset password modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Forgot Password View -->
+        <div class="account-view" id="forgotPasswordView">
+            <div class="account-modal-content">
+                <h2 id="resetPasswordModalTitle" data-translate="forgotPassword">Forgot Password</h2>
+                <p class="account-subtitle" data-translate="enterEmailReset">Enter your email and we'll help you reset
+                    your password</p>
+
+                <form id="forgotPasswordForm" class="account-form">
+                    <div class="form-group">
+                        <label for="forgotEmail" data-translate="email">Email</label>
+                        <input type="email" id="forgotEmail" name="email" placeholder="you@example.com" required>
+                        <span class="error-message" id="forgotEmailError"></span>
+                    </div>
+                    <button type="submit" class="submit-btn" data-translate="sendResetLink">Send Reset Code</button>
+                    <button type="button" class="btn-text" onclick="closeResetPasswordModal(); showLoginView();"
+                        data-translate="backToSignIn">Back to Sign In</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reset Password Form View -->
+        <div class="account-view" id="resetPasswordFormView" style="display: none;">
+            <div class="account-modal-content">
+                <h2 data-translate="setNewPassword">Set New Password</h2>
+                <p class="account-subtitle" data-translate="enterNewPasswordCode">Enter the reset code and your new
+                    password</p>
+
+                <form id="resetPasswordForm" class="account-form">
+                    <input type="hidden" id="resetToken">
+                    <div class="form-group">
+                        <label for="newPasswordInput" data-translate="newPassword">New Password</label>
+                        <input type="password" id="newPasswordInput" name="password" placeholder="Min 6 characters"
+                            required minlength="6">
+                        <span class="error-message" id="newPasswordError"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPasswordInput" data-translate="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmNewPasswordInput" required>
+                        <span class="error-message" id="confirmNewPasswordError"></span>
+                    </div>
+                    <button type="submit" class="submit-btn" data-translate="resetPassword">Reset Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal-overlay" id="searchModalOverlay"></div>
+    <div class="search-modal" id="searchModal" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
+        <button class="modal-close" id="searchModalClose" aria-label="Close search modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+        <div class="search-modal-content">
+            <h2 id="searchModalTitle" data-translate="whatLookingFor">What are you looking for?</h2>
+            <div class="search-input-container">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search products..." aria-label="Search products"
+                    data-translate-placeholder="searchProducts" />
+            </div>
+            <div class="search-results" id="searchResults" role="region" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <!-- HOME PAGE -->
+    <div id="homePage" class="page active">
+        <!-- Hero Section -->
+        <section class="hero hero-main">
+            <div class="hero-content">
+                <span class="hero-eyebrow" data-translate="newArrival">New Arrival</span>
+                <h1 data-translate="heroTitle">Meet Your New<br>Favorite Shoes</h1>
+                <p data-translate="heroSubtitle">Designed with natural materials for unmatched comfort</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary" onclick="showMenPage(event)" data-translate="shopMen">Shop
+                        Men</a>
+                    <a href="#" class="btn btn-secondary" onclick="showWomenPage(event)" data-translate="shopWomen">Shop
+                        Women</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&h=800&fit=crop"
+                    alt="Featured footwear collection" loading="eager">
+            </div>
+        </section>
+
+        <!-- Info Banner -->
+        <div class="info-banner">
+            <div class="info-banner-item">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span data-translate="freeShipping">Free Shipping & Returns</span>
+            </div>
+            <div class="info-banner-item">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span data-translate="thirtyDayTrial">30-Day Trial</span>
+            </div>
+            <div class="info-banner-item">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span data-translate="carbonNeutral">Carbon Neutral Shipping</span>
+            </div>
+        </div>
+
+        <!-- Featured Categories -->
+        <section class="featured-section">
+            <div class="section-header-minimal">
+                <h2 data-translate="shopByCategory">Shop By Category</h2>
+            </div>
+
+            <div class="featured-grid">
+                <div class="featured-card" onclick="showMenPage(event)" role="button" tabindex="0"
+                    onkeypress="if(event.key==='Enter')showMenPage(event)">
+                    <div class="featured-image">
+                        <img src="https://images.unsplash.com/photo-1552346154-21d32810aba3?w=800&h=1000&fit=crop"
+                            alt="Men's Collection" loading="lazy">
+                    </div>
+                    <div class="featured-content">
+                        <h3 data-translate="mens">Men's</h3>
+                        <a href="#" onclick="showMenPage(event)" data-translate="shopNow">Shop Now →</a>
+                    </div>
+                </div>
+
+                <div class="featured-card" onclick="showWomenPage(event)" role="button" tabindex="0"
+                    onkeypress="if(event.key==='Enter')showWomenPage(event)">
+                    <div class="featured-image">
+                        <img src="https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=800&h=1000&fit=crop"
+                            alt="Women's Collection" loading="lazy">
+                    </div>
+                    <div class="featured-content">
+                        <h3 data-translate="womens">Women's</h3>
+                        <a href="#" onclick="showWomenPage(event)" data-translate="shopNow">Shop Now →</a>
+                    </div>
+                </div>
+
+                <div class="featured-card" onclick="showSalePage(event)" role="button" tabindex="0"
+                    onkeypress="if(event.key==='Enter')showSalePage(event)">
+                    <div class="featured-image">
+                        <img src="https://images.unsplash.com/photo-1584735175315-9d5df23860e6?w=800&h=1000&fit=crop"
+                            alt="Sale items" loading="lazy">
+                    </div>
+                    <div class="featured-content">
+                        <h3 data-translate="sale">Sale</h3>
+                        <a href="#" onclick="showSalePage(event)" data-translate="shopNow">Shop Now →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bestsellers Section -->
+        <section class="products-section products-section-home">
+            <div class="section-header-minimal">
+                <h2 data-translate="bestsellers">Bestsellers</h2>
+                <p data-translate="mostLovedStyles">Our most-loved styles</p>
+            </div>
+
+            <div class="products-grid-scroll">
+                <div class="products-grid" id="homeProductGrid" role="list">
+                    <!-- Products will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sustainability Section -->
+        <section class="sustainability-section">
+            <div class="sustainability-content">
+                <div class="sustainability-text">
+                    <span class="sustainability-eyebrow" data-translate="ourMission">Our Mission</span>
+                    <h2 data-translate="betterThings">Better Things<br>In A Better Way</h2>
+                    <p data-translate="missionText">We're on a mission to prove that comfort, good design, and
+                        sustainability don't have to be mutually exclusive. Every product we make is crafted with
+                        natural materials and designed to tread lighter.</p>
+                    <a href="#" class="link-arrow" onclick="showSustainabilityPage(event)"
+                        data-translate="learnMoreMaterials">Learn More About Our Materials →</a>
+                </div>
+                <div class="sustainability-image">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=800&fit=crop"
+                        alt="Sustainable materials and production" loading="lazy">
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section class="features-section-minimal">
+            <div class="features-grid-minimal">
+                <div class="feature-minimal">
+                    <div class="feature-icon-minimal">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                            <path d="M24 44c11.046 0 20-8.954 20-20S35.046 4 24 4 4 12.954 4 24s8.954 20 20 20z"
+                                stroke="currentColor" stroke-width="2" />
+                            <path d="M24 14v10l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h3 data-translate="freeReturns">Free Returns</h3>
+                    <p data-translate="freeReturnsDesc">Not the right fit? No problem. We've got free 30-day returns.
+                    </p>
+                </div>
+
+                <div class="feature-minimal">
+                    <div class="feature-icon-minimal">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                            <path d="M38 18L24 4 10 18v20a4 4 0 0 0 4 4h20a4 4 0 0 0 4-4V18z" stroke="currentColor"
+                                stroke-width="2" />
+                            <path d="M18 44V24h12v20" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </div>
+                    <h3 data-translate="carbonNeutralTitle">Carbon Neutral</h3>
+                    <p data-translate="carbonNeutralDesc">We measure our carbon footprint and offset it to zero.</p>
+                </div>
+
+                <div class="feature-minimal">
+                    <div class="feature-icon-minimal">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2" />
+                            <path d="M24 12v12l8 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h3 data-translate="naturalMaterials">Natural Materials</h3>
+                    <p data-translate="naturalMaterialsDesc">Made from renewable resources with minimal environmental
+                        impact.</p>
+                </div>
+
+                <div class="feature-minimal">
+                    <div class="feature-icon-minimal">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                            <path d="M24 44s16-8 16-20V9L24 4 8 9v15c0 12 16 20 16 20z" stroke="currentColor"
+                                stroke-width="2" />
+                        </svg>
+                    </div>
+                    <h3 data-translate="qualityGuaranteed">Quality Guaranteed</h3>
+                    <p data-translate="qualityGuaranteedDesc">Built to last with a 1-year warranty on all products.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MEN'S PAGE -->
+    <div id="menPage" class="page">
+        <section class="collection-hero">
+            <div class="collection-hero-content">
+                <h1 data-translate="mens">Men's</h1>
+                <p data-translate="comfortableSustainable">Comfortable, sustainable footwear and apparel for every day
+                </p>
+            </div>
+        </section>
+
+        <section class="filter-section">
+            <div class="filter-container" role="group" aria-label="Product filters">
+                <button class="filter-btn active" data-filter="all" data-translate="all">All</button>
+                <button class="filter-btn" data-filter="shoes" data-translate="shoes">Shoes</button>
+                <button class="filter-btn" data-filter="clothes" data-translate="apparel">Apparel</button>
+            </div>
+        </section>
+
+        <section class="products-section">
+            <div class="products-grid" id="menProductGrid" role="list"></div>
+        </section>
+    </div>
+
+    <!-- WOMEN'S PAGE -->
+    <div id="womenPage" class="page">
+        <section class="collection-hero">
+            <div class="collection-hero-content">
+                <h1 data-translate="womens">Women's</h1>
+                <p data-translate="comfortableSustainable">Comfortable, sustainable footwear and apparel for every day
+                </p>
+            </div>
+        </section>
+
+        <section class="filter-section">
+            <div class="filter-container" role="group" aria-label="Product filters">
+                <button class="filter-btn active" data-filter="all" data-translate="all">All</button>
+                <button class="filter-btn" data-filter="shoes" data-translate="shoes">Shoes</button>
+                <button class="filter-btn" data-filter="clothes" data-translate="apparel">Apparel</button>
+            </div>
+        </section>
+
+        <section class="products-section">
+            <div class="products-grid" id="womenProductGrid" role="list"></div>
+        </section>
+    </div>
+
+    <!-- SALE PAGE -->
+    <div id="salePage" class="page">
+        <section class="collection-hero sale-hero">
+            <div class="collection-hero-content">
+                <span class="sale-badge-hero" data-translate="sale">SALE</span>
+                <h1 data-translate="upTo30Off">Up To 30% Off</h1>
+                <p data-translate="limitedTime">Limited time — Shop select styles while supplies last</p>
+            </div>
+        </section>
+
+        <section class="products-section">
+            <div class="products-grid" id="saleProductGrid" role="list"></div>
+        </section>
+    </div>
+
+    <!-- SUSTAINABILITY PAGE -->
+    <div id="sustainabilityPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="ourMaterials">Our Materials</h1>
+                <p data-translate="treadingLighter">Treading lighter, together</p>
+            </div>
+        </section>
+
+        <section class="info-page-content">
+            <div class="content-section">
+                <div class="content-text">
+                    <h2 data-translate="naturalMaterials">Natural Materials</h2>
+                    <p data-translate="naturalMaterialsText">At MINIME, we believe in using materials that are better
+                        for your feet and the planet. Every product is made with renewable, sustainable materials that
+                        require less energy and water to produce.</p>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=800&fit=crop"
+                        alt="Natural sustainable materials" loading="lazy">
+                </div>
+            </div>
+
+            <div class="materials-grid">
+                <div class="material-card">
+                    <div class="material-icon" role="img" aria-label="Leaf icon">🌿</div>
+                    <h3 data-translate="merinoWool">Merino Wool</h3>
+                    <p data-translate="merinoWoolDesc">Soft, breathable, and naturally odor-resistant. Our ZQ-certified
+                        merino wool comes from ethical farms in New Zealand.</p>
+                </div>
+                <div class="material-card">
+                    <div class="material-icon" role="img" aria-label="Tree icon">🌳</div>
+                    <h3 data-translate="eucalyptus">Eucalyptus Tree Fiber</h3>
+                    <p data-translate="eucalyptusDesc">Silky smooth and cooling. Made from sustainably harvested
+                        eucalyptus trees using a closed-loop production process.</p>
+                </div>
+                <div class="material-card">
+                    <div class="material-icon" role="img" aria-label="Wheat icon">🌾</div>
+                    <h3 data-translate="sugarcane">Sugarcane</h3>
+                    <p data-translate="sugarcaneDesc">Our SweetFoam™ soles are made from Brazilian sugarcane, the
+                        world's first carbon-negative green EVA.</p>
+                </div>
+                <div class="material-card">
+                    <div class="material-icon" role="img" aria-label="Recycle icon">♻️</div>
+                    <h3 data-translate="recycledMaterials">Recycled Materials</h3>
+                    <p data-translate="recycledMaterialsDesc">We use recycled polyester, recycled nylon, and other
+                        post-consumer waste to reduce our environmental impact.</p>
+                </div>
+            </div>
+
+            <div class="content-section reverse">
+                <div class="content-text">
+                    <h2 data-translate="carbonNeutralTitle">Carbon Neutral</h2>
+                    <p data-translate="carbonNeutralText">We measure our entire carbon footprint—from materials to
+                        manufacturing to shipping—and offset it to zero by investing in renewable energy and carbon
+                        capture projects.</p>
+                    <ul class="info-list">
+                        <li data-translate="renewableEnergy">100% renewable energy in our facilities</li>
+                        <li data-translate="carbonNeutralShippingList">Carbon-neutral shipping on every order</li>
+                        <li data-translate="verifiedOffset">Investment in verified offset projects</li>
+                        <li data-translate="transparentReporting">Transparent reporting on our progress</li>
+                    </ul>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=1200&h=800&fit=crop"
+                        alt="Carbon neutral initiatives" loading="lazy">
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="content-text">
+                    <h2 data-translate="circularDesign">Circular Design</h2>
+                    <p data-translate="circularDesignText">We design our products to last longer and live multiple
+                        lives. When your shoes reach the end of their life, send them back to us and we'll recycle them
+                        into new products.</p>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">60%</div>
+                            <div class="stat-label" data-translate="lessCarbon">Less Carbon</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">95%</div>
+                            <div class="stat-label" data-translate="renewableMaterials">Renewable Materials</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label" data-translate="recyclablePackaging">Recyclable Packaging</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&h=800&fit=crop"
+                        alt="Circular design process" loading="lazy">
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- STORES PAGE -->
+    <div id="storesPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="ourStores">Our Stores</h1>
+                <p data-translate="visitUs">Visit us in person</p>
+            </div>
+        </section>
+
+        <section class="info-page-content">
+            <div class="stores-grid">
+                <article class="store-card">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop"
+                        alt="New York SoHo store exterior" loading="lazy">
+                    <div class="store-info">
+                        <h3>New York, SoHo</h3>
+                        <p>127 Prince Street<br>New York, NY 10012</p>
+                        <p class="store-hours"><strong data-translate="hours">Hours:</strong> Mon-Sat 10am-8pm, Sun
+                            11am-7pm</p>
+                        <a href="#" class="store-link"
+                            onclick="openDirections('127 Prince Street, New York, NY 10012'); return false;"
+                            data-translate="getDirections">Get Directions →</a>
+                    </div>
+                </article>
+
+                <article class="store-card">
+                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=600&fit=crop"
+                        alt="San Francisco Union Square store exterior" loading="lazy">
+                    <div class="store-info">
+                        <h3>San Francisco, Union Square</h3>
+                        <p>865 Market Street<br>San Francisco, CA 94103</p>
+                        <p class="store-hours"><strong data-translate="hours">Hours:</strong> Mon-Sat 10am-9pm, Sun
+                            11am-7pm</p>
+                        <a href="#" class="store-link"
+                            onclick="openDirections('865 Market Street, San Francisco, CA'); return false;"
+                            data-translate="getDirections">Get Directions →</a>
+                    </div>
+                </article>
+
+                <article class="store-card">
+                    <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&h=600&fit=crop"
+                        alt="Los Angeles Venice store exterior" loading="lazy">
+                    <div class="store-info">
+                        <h3>Los Angeles, Venice</h3>
+                        <p>1344 Abbot Kinney Blvd<br>Venice, CA 90291</p>
+                        <p class="store-hours"><strong data-translate="hours">Hours:</strong> Mon-Sat 10am-8pm, Sun
+                            11am-7pm</p>
+                        <a href="#" class="store-link"
+                            onclick="openDirections('1344 Abbot Kinney Blvd, Venice, CA 90291'); return false;"
+                            data-translate="getDirections">Get Directions →</a>
+                    </div>
+                </article>
+
+                <article class="store-card">
+                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop"
+                        alt="Chicago Lincoln Park store exterior" loading="lazy">
+                    <div class="store-info">
+                        <h3>Chicago, Lincoln Park</h3>
+                        <p>2008 N Halsted Street<br>Chicago, IL 60614</p>
+                        <p class="store-hours"><strong data-translate="hours">Hours:</strong> Mon-Sat 10am-8pm, Sun
+                            11am-6pm</p>
+                        <a href="#" class="store-link"
+                            onclick="openDirections('2008 N Halsted Street, Chicago, IL 60614'); return false;"
+                            data-translate="getDirections">Get Directions →</a>
+                    </div>
+                </article>
+
+                <article class="store-card">
+                    <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop"
+                        alt="London Covent Garden store exterior" loading="lazy">
+                    <div class="store-info">
+                        <h3>London, Covent Garden</h3>
+                        <p>39 King Street<br>London WC2E 8JS</p>
+                        <p class="store-hours"><strong data-translate="hours">Hours:</strong> Mon-Sat 10am-8pm, Sun
+                            12pm-6pm</p>
+                        <a href="#" class="store-link"
+                            onclick="openDirections('39 King Street, London WC2E 8JS'); return false;"
+                            data-translate="getDirections">Get Directions →</a>
+                    </div>
+                </article>
+
+                <article class="store-card">
+                    <img src="https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=800&h=600&fit=crop"
+                        alt="Tokyo Shibuya store exterior" loading="lazy">
+                    <div class="store-info">
+                        <h3>Tokyo, Shibuya</h3>
+                        <p>3-25-7 Jingumae, Shibuya<br>Tokyo 150-0001</p>
+                        <p class="store-hours"><strong data-translate="hours">Hours:</strong> Daily 11am-8pm</p>
+                        <a href="#" class="store-link"
+                            onclick="openDirections('3-25-7 Jingumae, Shibuya, Tokyo 150-0001'); return false;"
+                            data-translate="getDirections">Get Directions →</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+
+    <!-- OUR STORY PAGE -->
+    <div id="ourStoryPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="ourStory">Our Story</h1>
+                <p data-translate="howMinimeBegan">How MINIME began</p>
+            </div>
+        </section>
+
+        <section class="info-page-content">
+            <div class="content-section">
+                <div class="content-text">
+                    <h2 data-translate="startedWithQuestion">It Started With a Simple Question</h2>
+                    <p data-translate="startedWithQuestionText1">Why are all shoes so uncomfortable after a few hours?
+                        Our founders, frustrated with blisters and sore feet, set out to create footwear that you could
+                        wear all day without thinking about your feet.</p>
+                    <p data-translate="startedWithQuestionText2">After years of research and testing, MINIME was born in
+                        2015. We combined natural materials like merino wool and eucalyptus fibers with innovative
+                        design to create shoes that are both comfortable and sustainable.</p>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1556906781-9a412961c28c?w=1200&h=800&fit=crop"
+                        alt="Our founders" loading="lazy">
+                </div>
+            </div>
+
+            <div class="content-section reverse">
+                <div class="content-text">
+                    <h2 data-translate="ourMission">Our Mission</h2>
+                    <p data-translate="ourMissionText1">We believe that comfort and sustainability shouldn't be
+                        compromises. Every product we create is designed to be better for your feet and better for the
+                        planet.</p>
+                    <p data-translate="ourMissionText2">From our carbon-neutral shipping to our renewable materials,
+                        we're committed to making choices that reduce our environmental impact while delivering products
+                        you'll love wearing every day.</p>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&h=800&fit=crop"
+                        alt="Our team" loading="lazy">
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="content-text">
+                    <h2 data-translate="lookingForward">Looking Forward</h2>
+                    <p data-translate="lookingForwardText1">We're constantly innovating and finding new ways to make our
+                        products even better. Whether it's discovering new sustainable materials or improving our
+                        manufacturing processes, we're always working towards a better future.</p>
+                    <p data-translate="lookingForwardText2">Thank you for being part of our journey. Every purchase
+                        supports our mission to create better products in a better way.</p>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=800&fit=crop"
+                        alt="Future vision" loading="lazy">
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- HELP CENTER PAGE -->
+    <div id="helpCenterPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="helpCenter">Help Center</h1>
+                <p data-translate="hereToHelp">We're here to help</p>
+            </div>
+        </section>
+
+        <section class="info-page-content">
+            <div class="help-categories">
+                <div class="help-category">
+                    <h2 data-translate="orderingPayment">Ordering & Payment</h2>
+                    <ul class="help-list">
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="howToPlaceOrder">How do I place an order?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="paymentMethods">What payment methods do you accept?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="modifyOrder">Can I modify or cancel my order?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="giftCards">Do you offer gift cards?</a></li>
+                    </ul>
+                </div>
+
+                <div class="help-category">
+                    <h2 data-translate="shippingDelivery">Shipping & Delivery</h2>
+                    <ul class="help-list">
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="howLongShipping">How long does shipping take?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="internationalShipping">Do you ship internationally?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="trackOrder">How can I track my order?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="lostPackage">What if my package is lost or damaged?</a></li>
+                    </ul>
+                </div>
+
+                <div class="help-category">
+                    <h2 data-translate="returnsExchanges">Returns & Exchanges</h2>
+                    <ul class="help-list">
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="returnPolicy">What is your return policy?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="howToReturn">How do I return or exchange an item?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="whenRefund">When will I receive my refund?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="exchangeSize">Can I exchange for a different size?</a></li>
+                    </ul>
+                </div>
+
+                <div class="help-category">
+                    <h2 data-translate="productCare">Product Care</h2>
+                    <ul class="help-list">
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="cleanShoes">How do I clean my shoes?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="careWool">How do I care for wool products?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="machineWashable">Are your products machine washable?</a></li>
+                        <li><a href="#" onclick="showNotification('Help article coming soon!', 'info'); return false;"
+                                data-translate="lastLonger">How can I make my shoes last longer?</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="content-text">
+                    <h2 data-translate="stillNeedHelp">Still Need Help?</h2>
+                    <p data-translate="customerServiceAvailable">Our customer service team is available Monday through
+                        Friday, 9am-6pm EST.</p>
+                    <p><strong data-translate="email">Email:</strong> support@minime.com</p>
+                    <p><strong data-translate="phone">Phone:</strong> 1-800-MINIME-1 (1-800-646-4631)</p>
+                    <p data-translate="respondWithin">We typically respond within 24 hours.</p>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1200&h=800&fit=crop"
+                        alt="Customer support" loading="lazy">
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- RETURNS PAGE -->
+    <div id="returnsPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="returnsExchanges">Returns & Exchanges</h1>
+                <p data-translate="easyFreeReturns">Easy, free returns within 30 days</p>
+            </div>
+        </section>
+
+        <section class="info-page-content legal-content">
+            <h2 data-translate="ourReturnPolicy">Our Return Policy</h2>
+            <p data-translate="returnPolicyText">We want you to love your MINIME products. If you're not completely
+                satisfied, you can return or exchange your items within 30 days of delivery for a full refund.</p>
+
+            <h2 data-translate="howToReturnTitle">How to Return</h2>
+            <p data-translate="returnStep1">1. Log into your account and go to "My Orders"</p>
+            <p data-translate="returnStep2">2. Select the items you'd like to return</p>
+            <p data-translate="returnStep3">3. Print your prepaid return shipping label</p>
+            <p data-translate="returnStep4">4. Pack your items and drop off at any carrier location</p>
+
+            <h2 data-translate="returnRequirements">Return Requirements</h2>
+            <p data-translate="returnRequirementsText">Items must be unworn, unwashed, and in original condition with
+                all tags attached. We understand you need to try them on, but please ensure they haven't been worn
+                outside or show any signs of wear.</p>
+
+            <h2 data-translate="refunds">Refunds</h2>
+            <p data-translate="refundsText">Once we receive your return, we'll inspect the items and process your refund
+                within 5-7 business days. Refunds will be issued to your original payment method.</p>
+
+            <h2 data-translate="exchanges">Exchanges</h2>
+            <p data-translate="exchangesText">To exchange an item for a different size or color, simply return your
+                original item and place a new order. This ensures you get your new item as quickly as possible.</p>
+
+            <h2 data-translate="questions">Questions?</h2>
+            <p data-translate="questionsContact">Contact our customer service team at returns@minime.com or call
+                1-800-MINIME-1.</p>
+        </section>
+    </div>
+
+    <!-- SHIPPING PAGE -->
+    <div id="shippingPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="shippingInfo">Shipping Information</h1>
+                <p data-translate="fastFreeCarbon">Fast, free, carbon-neutral delivery</p>
+            </div>
+        </section>
+
+        <section class="info-page-content legal-content">
+            <h2 data-translate="freeShipping">Free Shipping</h2>
+            <p data-translate="freeShippingText">We offer free standard shipping on all orders over $75 within the
+                United States. Orders under $75 have a $10 shipping fee.</p>
+
+            <h2 data-translate="shippingTimes">Shipping Times</h2>
+            <p><strong data-translate="standardShipping">Standard Shipping:</strong> 3-5 business days</p>
+            <p><strong data-translate="expressShipping">Express Shipping:</strong> 2-3 business days ($15)</p>
+            <p><strong data-translate="nextDay">Next Day:</strong> 1 business day ($25)</p>
+
+            <h2 data-translate="internationalShipping">International Shipping</h2>
+            <p data-translate="internationalShippingText">We currently ship to Canada, United Kingdom, Australia, and
+                select European countries. International shipping times vary by location, typically 7-14 business days.
+            </p>
+
+            <h2 data-translate="orderTracking">Order Tracking</h2>
+            <p data-translate="orderTrackingText">Once your order ships, you'll receive a tracking number via email. You
+                can also track your order by logging into your account and viewing "My Orders".</p>
+
+            <h2 data-translate="carbonNeutralShippingTitle">Carbon Neutral Shipping</h2>
+            <p data-translate="carbonNeutralShippingText">All MINIME shipments are carbon neutral. We measure the carbon
+                emissions from every delivery and offset 100% through verified carbon reduction projects.</p>
+
+            <h2 data-translate="questions">Questions?</h2>
+            <p data-translate="shippingQuestionsContact">Contact us at shipping@minime.com or call 1-800-MINIME-1.</p>
+        </section>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div id="contactPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="contactUs">Contact Us</h1>
+                <p data-translate="loveToHear">We'd love to hear from you</p>
+            </div>
+        </section>
+
+        <section class="info-page-content">
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <h2 data-translate="getInTouch">Get In Touch</h2>
+                    <p data-translate="getInTouchText">Have a question, comment, or just want to say hello? We're here
+                        to help!</p>
+
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <h3 data-translate="email">Email</h3>
+                            <p>support@minime.com</p>
+                            <p class="contact-note" data-translate="respondWithin24">We respond within 24 hours</p>
+                        </div>
+
+                        <div class="contact-method">
+                            <h3 data-translate="phone">Phone</h3>
+                            <p>1-800-MINIME-1 (1-800-646-4631)</p>
+                            <p class="contact-note" data-translate="phoneHours">Mon-Fri, 9am-6pm EST</p>
+                        </div>
+
+                        <div class="contact-method">
+                            <h3 data-translate="liveChat">Live Chat</h3>
+                            <p data-translate="availableOnWebsite">Available on our website</p>
+                            <p class="contact-note" data-translate="phoneHours">Mon-Fri, 9am-6pm EST</p>
+                        </div>
+
+                        <div class="contact-method">
+                            <h3 data-translate="headquarters">Headquarters</h3>
+                            <p>123 Sustainable Street<br>San Francisco, CA 94103</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-container">
+                    <h2 data-translate="sendMessage">Send Us a Message</h2>
+                    <form class="contact-form" onsubmit="handleContactForm(event)">
+                        <div class="form-group">
+                            <label for="contactName" data-translate="name">Name</label>
+                            <input type="text" id="contactName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactEmail" data-translate="email">Email</label>
+                            <input type="email" id="contactEmail" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactSubject" data-translate="subject">Subject</label>
+                            <input type="text" id="contactSubject" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactMessage" data-translate="message">Message</label>
+                            <textarea id="contactMessage" rows="6" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" data-translate="sendMessage">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- CAREERS PAGE -->
+    <div id="careersPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="careersAtMinime">Careers at MINIME</h1>
+                <p data-translate="joinOurMission">Join our mission to create better products</p>
+            </div>
+        </section>
+
+        <section class="info-page-content">
+            <div class="content-section">
+                <div class="content-text">
+                    <h2 data-translate="workWithUs">Work With Us</h2>
+                    <p data-translate="workWithUsText1">At MINIME, we're building a team of passionate individuals who
+                        believe in creating products that are better for people and the planet.</p>
+                    <p data-translate="workWithUsText2">We offer competitive salaries, comprehensive benefits, and a
+                        collaborative work environment where your ideas matter.</p>
+                </div>
+                <div class="content-image">
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=800&fit=crop"
+                        alt="Our team at work" loading="lazy">
+                </div>
+            </div>
+
+            <div class="careers-benefits">
+                <h2 data-translate="whyJoinMinime">Why Join MINIME</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <h3>💰 <span data-translate="competitivePay">Competitive Pay</span></h3>
+                        <p data-translate="competitivePayDesc">Fair compensation and equity opportunities</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>🏥 <span data-translate="healthBenefits">Health Benefits</span></h3>
+                        <p data-translate="healthBenefitsDesc">Comprehensive medical, dental, and vision coverage</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>🌴 <span data-translate="timeOff">Time Off</span></h3>
+                        <p data-translate="timeOffDesc">Generous PTO and paid holidays</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>📚 <span data-translate="learningDev">Learning & Development</span></h3>
+                        <p data-translate="learningDevDesc">Professional development budget and opportunities</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>🏡 <span data-translate="workAnywhere">Work From Anywhere</span></h3>
+                        <p data-translate="workAnywhereDesc">Flexible remote work options</p>
+                    </div>
+                    <div class="benefit-card">
+                        <h3>👟 <span data-translate="productDiscounts">Product Discounts</span></h3>
+                        <p data-translate="productDiscountsDesc">Generous discounts on all MINIME products</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="careers-positions">
+                <h2 data-translate="openPositions">Open Positions</h2>
+                <div class="position-card">
+                    <h3 data-translate="productDesigner">Product Designer</h3>
+                    <p>San Francisco, CA • Full-time</p>
+                    <button class="btn btn-primary"
+                        onclick="showNotification('Application portal coming soon!', 'info')"
+                        data-translate="applyNow">Apply Now</button>
+                </div>
+                <div class="position-card">
+                    <h3 data-translate="sustainabilityManager">Sustainability Manager</h3>
+                    <p>Remote • Full-time</p>
+                    <button class="btn btn-primary"
+                        onclick="showNotification('Application portal coming soon!', 'info')"
+                        data-translate="applyNow">Apply Now</button>
+                </div>
+                <div class="position-card">
+                    <h3 data-translate="customerExperience">Customer Experience Specialist</h3>
+                    <p>New York, NY • Full-time</p>
+                    <button class="btn btn-primary"
+                        onclick="showNotification('Application portal coming soon!', 'info')"
+                        data-translate="applyNow">Apply Now</button>
+                </div>
+
+                <p style="text-align: center; margin-top: 32px;">
+                    <span data-translate="dontSeePosition">Don't see a position that fits?</span> <a href="#"
+                        onclick="showContactPage(event)" style="color: var(--accent-color); font-weight: 600;"
+                        data-translate="sendResume">Send us your resume</a> <span data-translate="keepInMind">and we'll
+                        keep you in mind for future opportunities.</span>
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ACCESSIBILITY PAGE -->
+    <div id="accessibilityPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="accessibility">Accessibility</h1>
+                <p data-translate="commitmentToAccessibility">Our commitment to digital accessibility</p>
+            </div>
+        </section>
+
+        <section class="info-page-content legal-content">
+            <h2 data-translate="ourCommitment">Our Commitment</h2>
+            <p data-translate="ourCommitmentText">MINIME is committed to ensuring digital accessibility for people with
+                disabilities. We are continually improving the user experience for everyone and applying the relevant
+                accessibility standards.</p>
+
+            <h2 data-translate="measuresToSupport">Measures to Support Accessibility</h2>
+            <p data-translate="measuresToSupportIntro">MINIME takes the following measures to ensure accessibility:</p>
+            <ul class="info-list">
+                <li data-translate="accessibilityMission">Include accessibility as part of our mission statement</li>
+                <li data-translate="accessibilityProcurement">Integrate accessibility into our procurement practices
+                </li>
+                <li data-translate="accessibilityTraining">Provide continual accessibility training for our staff</li>
+                <li data-translate="accessibilityGoals">Assign clear accessibility goals and responsibilities</li>
+                <li data-translate="accessibilityQA">Employ formal accessibility quality assurance methods</li>
+            </ul>
+
+            <h2 data-translate="conformanceStatus">Conformance Status</h2>
+            <p data-translate="conformanceStatusText">We aim to conform to WCAG 2.1 Level AA standards. These guidelines
+                explain how to make web content more accessible for people with disabilities.</p>
+
+            <h2 data-translate="feedback">Feedback</h2>
+            <p data-translate="feedbackText">We welcome your feedback on the accessibility of our website. Please let us
+                know if you encounter accessibility barriers:</p>
+            <p><strong data-translate="email">Email:</strong> accessibility@minime.com</p>
+            <p><strong data-translate="phone">Phone:</strong> 1-800-MINIME-1</p>
+            <p data-translate="respondWithin2Days">We try to respond to feedback within 2 business days.</p>
+
+            <h2 data-translate="technicalSpecs">Technical Specifications</h2>
+            <p data-translate="technicalSpecsText">Our website is designed to be compatible with the following assistive
+                technologies:</p>
+            <ul class="info-list">
+                <li data-translate="screenReaders">Screen readers (JAWS, NVDA, VoiceOver)</li>
+                <li data-translate="magnification">Screen magnification software</li>
+                <li data-translate="speechRecognition">Speech recognition software</li>
+                <li data-translate="keyboardNav">Keyboard navigation</li>
+            </ul>
+
+            <h2 data-translate="assessmentApproach">Assessment Approach</h2>
+            <p data-translate="assessmentApproachText">MINIME assessed the accessibility of this website by the
+                following approaches:</p>
+            <ul class="info-list">
+                <li data-translate="selfEvaluation">Self-evaluation</li>
+                <li data-translate="externalEvaluation">External evaluation</li>
+                <li data-translate="automatedTesting">Automated testing tools</li>
+                <li data-translate="manualTesting">Manual testing with assistive technologies</li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- MY PROFILE PAGE -->
+    <div id="profilePage" class="page">
+        <section class="account-page-section">
+            <div class="account-page-container">
+                <h1 data-translate="myProfile">My Profile</h1>
+
+                <div class="account-page-card">
+                    <h2 data-translate="personalInfo">Personal Information</h2>
+                    <form class="account-page-form" id="profileForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profileFirstName" data-translate="firstName">First Name</label>
+                                <input type="text" id="profileFirstName" placeholder="First Name"
+                                    autocomplete="given-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="profileLastName" data-translate="lastName">Last Name</label>
+                                <input type="text" id="profileLastName" placeholder="Last Name"
+                                    autocomplete="family-name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileEmail" data-translate="email">Email</label>
+                            <input type="email" id="profileEmail" readonly autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="profilePhone" data-translate="phone">Phone</label>
+                            <input type="tel" id="profilePhone" placeholder="+1 (555) 123-4567" autocomplete="tel">
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-translate="saveChanges">Save Changes</button>
+                    </form>
+                </div>
+
+                <div class="account-page-card">
+                    <h2 data-translate="changePassword">Change Password</h2>
+                    <form class="account-page-form" id="passwordForm">
+                        <div class="form-group">
+                            <label for="currentPassword" data-translate="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" placeholder="Enter current password"
+                                autocomplete="current-password">
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword" data-translate="newPassword">New Password</label>
+                            <input type="password" id="newPassword" placeholder="Enter new password"
+                                autocomplete="new-password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmNewPassword" data-translate="confirmNewPassword">Confirm New
+                                Password</label>
+                            <input type="password" id="confirmNewPassword" placeholder="Confirm new password"
+                                autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-translate="updatePassword">Update
+                            Password</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MY ORDERS PAGE -->
+    <div id="ordersPage" class="page">
+        <section class="account-page-section">
+            <div class="account-page-container">
+                <h1 data-translate="myOrders">My Orders</h1>
+
+                <div class="orders-list" id="ordersList">
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                            <path d="M4 4h13.5l6.7 33.5a5 5 0 005 4h24.3a5 5 0 005-4L62 16H16" stroke="currentColor"
+                                stroke-width="4" stroke-linecap="round" />
+                            <circle cx="29" cy="56" r="4" stroke="currentColor" stroke-width="4" />
+                            <circle cx="49" cy="56" r="4" stroke="currentColor" stroke-width="4" />
+                        </svg>
+                        <h3 data-translate="noOrdersYet">No orders yet</h3>
+                        <p data-translate="startShoppingOrders">Start shopping and your orders will appear here</p>
+                        <button class="btn btn-primary" onclick="showHomePage()" data-translate="startShopping">Start
+                            Shopping</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ADDRESSES PAGE -->
+    <div id="addressesPage" class="page">
+        <section class="account-page-section">
+            <div class="account-page-container">
+                <div class="page-header-with-button">
+                    <h1 data-translate="myAddresses">My Addresses</h1>
+                    <button class="btn btn-primary" onclick="openAddressModal()" data-translate="addNewAddress">Add New
+                        Address</button>
+                </div>
+
+                <div class="addresses-grid" id="addressesGrid">
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                            <path d="M32 58s20-10 20-25V12L32 4 12 12v21c0 15 20 25 20 25z" stroke="currentColor"
+                                stroke-width="4" />
+                        </svg>
+                        <h3 data-translate="noAddressesSaved">No addresses saved</h3>
+                        <p data-translate="addAddressFaster">Add an address for faster checkout</p>
+                        <button class="btn btn-primary" onclick="openAddressModal()" data-translate="addAddress">Add
+                            Address</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="settingsPage" class="page">
+        <section class="account-page-section">
+            <div class="account-page-container">
+                <h1 data-translate="settings">Settings</h1>
+
+                <div class="account-page-card">
+                    <h2 data-translate="emailPreferences">Email Preferences</h2>
+                    <div class="settings-options">
+                        <label class="settings-option">
+                            <div class="settings-option-info">
+                                <strong data-translate="newsletter">Newsletter</strong>
+                                <p data-translate="newsletterDesc">Receive updates about new products and promotions</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+
+                        <label class="settings-option">
+                            <div class="settings-option-info">
+                                <strong data-translate="orderUpdates">Order Updates</strong>
+                                <p data-translate="orderUpdatesDesc">Get notified about your order status</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+
+                        <label class="settings-option">
+                            <div class="settings-option-info">
+                                <strong data-translate="specialOffers">Special Offers</strong>
+                                <p data-translate="specialOffersDesc">Receive exclusive deals and early access</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="account-page-card">
+                    <h2 data-translate="privacyData">Privacy & Data</h2>
+                    <div class="settings-actions">
+                        <button class="settings-action-btn"
+                            onclick="showNotification('Data export feature coming soon!', 'info')">
+                            <div>
+                                <strong data-translate="downloadData">Download My Data</strong>
+                                <p data-translate="downloadDataDesc">Get a copy of your personal information</p>
+                            </div>
+                            <span>→</span>
+                        </button>
+                        <button class="settings-action-btn danger" onclick="confirmDeleteAccount()">
+                            <div>
+                                <strong data-translate="deleteAccount">Delete Account</strong>
+                                <p data-translate="deleteAccountDesc">Permanently delete your account and data</p>
+                            </div>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- TERMS PAGE -->
+    <div id="termsPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="termsOfService">Terms of Service</h1>
+                <p data-translate="lastUpdated">Last updated: December 2024</p>
+            </div>
+        </section>
+
+        <section class="info-page-content legal-content">
+            <h2 data-translate="acceptanceOfTerms">1. Acceptance of Terms</h2>
+            <p data-translate="acceptanceOfTermsText">By accessing and using MINIME's website and services, you accept
+                and agree to be bound by these Terms of Service.</p>
+
+            <h2 data-translate="useLicense">2. Use License</h2>
+            <p data-translate="useLicenseText">Permission is granted to temporarily download one copy of the materials
+                on MINIME's website for personal, non-commercial transitory viewing only.</p>
+
+            <h2 data-translate="productInfo">3. Product Information</h2>
+            <p data-translate="productInfoText">We strive to provide accurate product descriptions and pricing. However,
+                we do not warrant that product descriptions or other content is accurate, complete, reliable, or
+                error-free.</p>
+
+            <h2 data-translate="ordersAndPayment">4. Orders and Payment</h2>
+            <p data-translate="ordersAndPaymentText">All orders are subject to acceptance and availability. We reserve
+                the right to refuse or cancel any order for any reason.</p>
+
+            <h2 data-translate="returnsAndRefunds">5. Returns and Refunds</h2>
+            <p data-translate="returnsAndRefundsText">We offer a 30-day return policy on all products. Items must be
+                returned in original condition with all tags attached.</p>
+
+            <h2 data-translate="limitationOfLiability">6. Limitation of Liability</h2>
+            <p data-translate="limitationOfLiabilityText">MINIME shall not be liable for any indirect, incidental,
+                special, consequential or punitive damages resulting from your use of our services.</p>
+
+            <h2 data-translate="contactInfo">7. Contact Information</h2>
+            <p data-translate="contactInfoText">For questions about these Terms, please contact us at legal@minime.com
+            </p>
+        </section>
+    </div>
+
+    <!-- WISHLIST PAGE -->
+    <div id="wishlistPage" class="page">
+        <section class="wishlist-section">
+            <div class="wishlist-container">
+                <h1 data-translate="myWishlist">My Wishlist</h1>
+                <div class="wishlist-grid" id="wishlistGrid">
+                    <!-- Wishlist items will be injected here -->
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PRIVACY PAGE -->
+    <div id="privacyPage" class="page">
+        <section class="info-page-hero">
+            <div class="info-page-hero-content">
+                <h1 data-translate="privacyPolicy">Privacy Policy</h1>
+                <p data-translate="lastUpdated">Last updated: December 2024</p>
+            </div>
+        </section>
+
+        <section class="info-page-content legal-content">
+            <h2 data-translate="infoWeCollect">1. Information We Collect</h2>
+            <p data-translate="infoWeCollectText">We collect information you provide directly to us, such as when you
+                create an account, make a purchase, or contact customer service.</p>
+
+            <h2 data-translate="howWeUseInfo">2. How We Use Your Information</h2>
+            <p data-translate="howWeUseInfoText">We use the information we collect to provide, maintain, and improve our
+                services, process your transactions, and communicate with you.</p>
+
+            <h2 data-translate="infoSharing">3. Information Sharing</h2>
+            <p data-translate="infoSharingText">We do not sell or rent your personal information to third parties. We
+                may share your information with service providers who assist us in operating our business.</p>
+
+            <h2 data-translate="dataSecurity">4. Data Security</h2>
+            <p data-translate="dataSecurityText">We implement reasonable security measures to protect your personal
+                information from unauthorized access, disclosure, alteration, or destruction.</p>
+
+            <h2 data-translate="yourRights">5. Your Rights</h2>
+            <p data-translate="yourRightsText">You have the right to access, update, or delete your personal
+                information. You can also opt-out of marketing communications at any time.</p>
+
+            <h2 data-translate="cookies">6. Cookies</h2>
+            <p data-translate="cookiesText">We use cookies and similar tracking technologies to track activity on our
+                website and store certain information.</p>
+
+            <h2 data-translate="changesToPolicy">7. Changes to This Policy</h2>
+            <p data-translate="changesToPolicyText">We may update this privacy policy from time to time. We will notify
+                you of any changes by posting the new policy on this page.</p>
+
+            <h2 data-translate="contactUs">8. Contact Us</h2>
+            <p data-translate="privacyContactText">If you have questions about this Privacy Policy, please contact us at
+                privacy@minime.com</p>
+        </section>
+    </div>
+
+
+
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboardPage" class="page">
+        <section class="dashboard-hero">
+            <div class="dashboard-hero-content">
+                <h1 data-translate="dashboard">Dashboard</h1>
+                <p data-translate="welcomeToDashboard">Manage your account and track your orders</p>
+            </div>
+        </section>
+
+        <section class="dashboard-content">
+            <div class="dashboard-grid">
+                <!-- Dashboard Controls (Filters) -->
+                <div class="dashboard-controls">
+                    <select id="dashboardPeriod" class="dashboard-filter" onchange="DashboardManager.updateDashboard()">
+                        <option value="all" data-translate="allTime">All Time</option>
+                        <option value="30" data-translate="last30Days">Last 30 Days</option>
+                        <option value="7" data-translate="last7Days">Last 7 Days</option>
+                    </select>
+                    <select id="dashboardCategory" class="dashboard-filter"
+                        onchange="DashboardManager.updateDashboard()">
+                        <option value="all" data-translate="allCategories">All Categories</option>
+                        <option value="men" data-translate="men">Men</option>
+                        <option value="women" data-translate="women">Women</option>
+                    </select>
+                </div>
+
+                <!-- KPI Cards (6) -->
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                        </div>
+                        <div class="stat-card-content">
+                            <h3 data-translate="totalRevenue">Total Revenue</h3>
+                            <p class="stat-number" id="kpiRevenue">$0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="9" cy="21" r="1" />
+                                <circle cx="20" cy="21" r="1" />
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                            </svg>
+                        </div>
+                        <div class="stat-card-content">
+                            <h3 data-translate="totalOrders">Total Orders</h3>
+                            <p class="stat-number" id="kpiOrders">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="8.5" cy="7" r="4" />
+                                <line x1="20" y1="8" x2="20" y2="14" />
+                                <line x1="23" y1="11" x2="17" y2="11" />
+                            </svg>
+                        </div>
+                        <div class="stat-card-content">
+                            <h3 data-translate="newCustomers">New Customers</h3>
+                            <p class="stat-number" id="kpiCustomers">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                <line x1="3" y1="6" x2="21" y2="6" />
+                                <path d="M16 10a4 4 0 0 1-8 0" />
+                            </svg>
+                        </div>
+                        <div class="stat-card-content">
+                            <h3 data-translate="productsSold">Products Sold</h3>
+                            <p class="stat-number" id="kpiProducts">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                        </div>
+                        <div class="stat-card-content">
+                            <h3 data-translate="pendingOrders">Pending Orders</h3>
+                            <p class="stat-number" id="kpiPending">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="12" y1="1" x2="12" y2="23" />
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                        </div>
+                        <div class="stat-card-content">
+                            <h3 data-translate="avgOrderValue">Avg Order Value</h3>
+                            <p class="stat-number" id="kpiAvgValue">$0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="charts-grid">
+                    <!-- Line Chart: Revenue -->
+                    <div class="chart-container full-width">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <!-- Bar Chart: Categories -->
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <!-- Pie Chart: Status -->
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <!-- Donut Chart: Traffic/Payment -->
+                    <div class="chart-container">
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                    <!-- Area Chart: Volume -->
+                    <div class="chart-container">
+                        <canvas id="volumeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-card">
+                    <h2 data-translate="quickActions">Quick Actions</h2>
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-btn" onclick="showProfilePage(event)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"
+                                    stroke="currentColor" stroke-width="2" />
+                            </svg>
+                            <span data-translate="editProfile">Edit Profile</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showOrdersPage(event)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L19 6H6"
+                                    stroke="currentColor" stroke-width="2" />
+                            </svg>
+                            <span data-translate="viewOrders">View Orders</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showAddressesPage(event)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor"
+                                    stroke-width="2" />
+                            </svg>
+                            <span data-translate="manageAddresses">Manage Addresses</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showSettingsPage(event)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                                <path
+                                    d="M12 1v2M12 21v2M23 12h-2M3 12H1M20.49 20.49l-1.41-1.41M4.92 4.92L3.51 3.51M20.49 3.51l-1.41 1.41M4.92 19.08l-1.41 1.41"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            <span data-translate="accountSettings">Account Settings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="recent-orders-card">
+                    <div class="recent-orders-header">
+                        <h2 data-translate="recentOrders">Recent Orders</h2>
+                        <a href="#" onclick="showOrdersPage(event)" data-translate="viewAll">View All →</a>
+                    </div>
+                    <div id="dashRecentOrders" class="recent-orders-list">
+                        <div class="empty-state-small">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                                <path d="M4 4h10l5 25a4 4 0 004 3h18a4 4 0 004-3L48 12H12" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round" />
+                                <circle cx="21" cy="42" r="3" stroke="currentColor" stroke-width="3" />
+                                <circle cx="37" cy="42" r="3" stroke="currentColor" stroke-width="3" />
+                            </svg>
+                            <p data-translate="noRecentOrders">No recent orders</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-column footer-brand">
+                    <h3 class="footer-logo">minime</h3>
+                    <p data-translate="footerTagline">Making better things in a better way</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Instagram"
+                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <rect x="2" y="2" width="20" height="20" rx="5" />
+                                <circle cx="12" cy="12" r="4" fill="white" />
+                                <circle cx="18" cy="6" r="1.5" fill="white" />
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter"
+                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Facebook"
+                            onclick="showNotification('Social link coming soon!', 'info'); return false;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <nav class="footer-column" aria-label="Shop links">
+                    <h4 data-translate="shop">Shop</h4>
+                    <ul>
+                        <li><a href="#" onclick="showMenPage(event)" data-translate="mensShoes">Men's Shoes</a></li>
+                        <li><a href="#" onclick="showWomenPage(event)" data-translate="womensShoes">Women's Shoes</a>
+                        </li>
+                        <li><a href="#" onclick="showMenPage(event)" data-translate="mensApparel">Men's Apparel</a></li>
+                        <li><a href="#" onclick="showWomenPage(event)" data-translate="womensApparel">Women's
+                                Apparel</a></li>
+                    </ul>
+                </nav>
+
+                <nav class="footer-column" aria-label="Company links">
+                    <h4 data-translate="company">Company</h4>
+                    <ul>
+                        <li><a href="#" onclick="showOurStoryPage(event)" data-translate="ourStory">Our Story</a></li>
+                        <li><a href="#" onclick="showSustainabilityPage(event)"
+                                data-translate="sustainability">Sustainability</a></li>
+                        <li><a href="#" onclick="showStoresPage(event)" data-translate="stores">Stores</a></li>
+                        <li><a href="#" onclick="showCareersPage(event)" data-translate="careers">Careers</a></li>
+                    </ul>
+                </nav>
+
+                <nav class="footer-column" aria-label="Help links">
+                    <h4 data-translate="help">Help</h4>
+                    <ul>
+                        <li><a href="#" onclick="showHelpCenterPage(event)" data-translate="helpCenter">Help Center</a>
+                        </li>
+                        <li><a href="#" onclick="showReturnsPage(event)" data-translate="returns">Returns</a></li>
+                        <li><a href="#" onclick="showShippingPage(event)" data-translate="shipping">Shipping</a></li>
+                        <li><a href="#" onclick="showContactPage(event)" data-translate="contactUs">Contact Us</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="footer-bottom">
+                <nav class="footer-legal" aria-label="Legal links">
+                    <a href="#" onclick="showPrivacyPage(event)" data-translate="privacyPolicy">Privacy Policy</a>
+                    <a href="#" onclick="showTermsPage(event)" data-translate="termsOfService">Terms of Service</a>
+                    <a href="#" onclick="showAccessibilityPage(event)" data-translate="accessibility">Accessibility</a>
+                </nav>
+                <p>&copy; 2024 MINIME, Inc. <span data-translate="allRightsReserved">All Rights Reserved.</span></p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Product Modal -->
+    <div class="product-modal-overlay" id="productModalOverlay"></div>
+    <div class="product-modal" id="productModal" role="dialog" aria-modal="true" aria-labelledby="modalName">
+        <button class="modal-close" id="modalClose" aria-label="Close product details">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+        <div class="modal-content">
+            <div class="modal-left">
+                <div class="modal-image">
+                    <img id="modalImage" src="" alt="" loading="lazy">
+                </div>
+                <div class="modal-gallery" id="modalGallery"></div>
+            </div>
+            <div class="modal-info">
+                <div id="modalBadge" class="modal-badge"></div>
+                <h2 id="modalName"></h2>
+                <div class="modal-price" id="modalPrice"></div>
+                <div class="modal-rating">
+                    <span class="stars" aria-label="4.8 out of 5 stars">★★★★★</span>
+                    <span class="rating-text">4.8 <span data-translate="outOf5">out of 5</span></span>
+                </div>
+                <p id="modalDescription" class="modal-description"></p>
+
+                <div class="modal-color-selector">
+                    <h3 data-translate="color">Color</h3>
+                    <div class="color-options" role="group" aria-label="Color options">
+                        <button class="color-btn selected" style="background: #212A2F;" title="Black"
+                            aria-label="Black color"></button>
+                        <button class="color-btn" style="background: #F5F5F5;" title="White"
+                            aria-label="White color"></button>
+                        <button class="color-btn" style="background: #8B7355;" title="Brown"
+                            aria-label="Brown color"></button>
+                        <button class="color-btn" style="background: #4A5568;" title="Gray"
+                            aria-label="Gray color"></button>
+                    </div>
+                </div>
+
+                <div class="modal-size-selector">
+                    <h3 data-translate="size">Size</h3>
+                    <div class="size-options" role="group" aria-label="Size options">
+                        <button class="size-btn">7</button>
+                        <button class="size-btn selected">8</button>
+                        <button class="size-btn">9</button>
+                        <button class="size-btn">10</button>
+                        <button class="size-btn">11</button>
+                        <button class="size-btn">12</button>
+                    </div>
+                </div>
+
+                <div class="modal-actions-group">
+                    <button class="modal-add-to-cart" id="modalAddToCart"><span data-translate="addToCart">Add to
+                            Cart</span> — <span id="modalPriceBtn"></span></button>
+                    <button class="modal-wishlist-toggle" id="modalWishlistToggle" aria-label="Toggle Wishlist">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-features">
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M19 19l-4-4m0 0a7 7 0 10-14 0 7 7 0 0014 0z" stroke="currentColor"
+                                stroke-width="2" />
+                        </svg>
+                        <span data-translate="machineWashable">Machine washable</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M10 18s8-4 8-10V3l-8-3-8 3v5c0 6 8 10 8 10z" stroke="currentColor"
+                                stroke-width="2" />
+                        </svg>
+                        <span data-translate="freeShippingReturns">Free shipping & returns</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" />
+                            <path d="M10 6v4l3 2" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <span data-translate="carbonNeutralShipping">Carbon neutral shipping</span>
+                    </div>
+                </div>
+
+                <div class="modal-accordion">
+                    <details class="accordion-item">
+                        <summary data-translate="productDetails">Product Details</summary>
+                        <div class="accordion-content">
+                            <p><strong data-translate="material">Material:</strong> <span id="modalMaterial"></span></p>
+                            <p><strong data-translate="weight">Weight:</strong> <span id="modalWeight"></span></p>
+                            <p><strong data-translate="origin">Origin:</strong> <span id="modalOrigin"></span></p>
+                            <p><strong data-translate="care">Care:</strong> <span id="modalCare"></span></p>
+                        </div>
+                    </details>
+                    <details class="accordion-item" id="reviewsAccordion">
+                        <summary><span data-translate="reviews">Reviews</span> (<span id="modalReviewCount">0</span>)
+                        </summary>
+                        <div class="accordion-content">
+                            <div class="reviews-header">
+                                <div class="average-rating">
+                                    <span class="rating-value" id="modalAvgRating">0.0</span>
+                                    <span class="stars" id="modalAvgStars">☆☆☆☆☆</span>
+                                </div>
+                                <button class="btn btn-outline" id="writeReviewBtn" onclick="toggleReviewForm()"
+                                    data-translate="writeAReview">Write a Review</button>
+                            </div>
+
+                            <!-- Review Form (Hidden by default) -->
+                            <form id="reviewForm" class="review-form" style="display: none;">
+                                <div class="form-group">
+                                    <label data-translate="rating">Rating</label>
+                                    <div class="rating-input">
+                                        <input type="radio" name="rating" value="5" id="star5"><label
+                                            for="star5">★</label>
+                                        <input type="radio" name="rating" value="4" id="star4"><label
+                                            for="star4">★</label>
+                                        <input type="radio" name="rating" value="3" id="star3"><label
+                                            for="star3">★</label>
+                                        <input type="radio" name="rating" value="2" id="star2"><label
+                                            for="star2">★</label>
+                                        <input type="radio" name="rating" value="1" id="star1"><label
+                                            for="star1">★</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reviewComment" data-translate="comment">Comment</label>
+                                    <textarea id="reviewComment" required
+                                        placeholder="Share your experience..."></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-text" onclick="toggleReviewForm()"
+                                        data-translate="cancel">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" data-translate="submitReview">Submit
+                                        Review</button>
+                                </div>
+                            </form>
+
+                            <div id="productReviewsList" class="reviews-list">
+                                <!-- Reviews will be loaded here -->
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="overlay"></div>
+    <div class="cart-sidebar" id="cartSidebar" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+        <div class="cart-header">
+            <h3 id="cartTitle"><span data-translate="cart">Cart</span> (<span id="cartItemCount">0</span>)</h3>
+            <button class="close-btn" id="closeCart" aria-label="Close cart">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                    <path d="M4 4h13.5l6.7 33.5a5 5 0 005 4h24.3a5 5 0 005-4L62 16H16" stroke="currentColor"
+                        stroke-width="4" stroke-linecap="round" />
+                    <circle cx="29" cy="56" r="4" stroke="currentColor" stroke-width="4" />
+                    <circle cx="49" cy="56" r="4" stroke="currentColor" stroke-width="4" />
+                </svg>
+                <p data-translate="cartEmpty">Your cart is empty</p>
+            </div>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-footer-info">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M10 18s8-4 8-10V3l-8-3-8 3v5c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span data-translate="freeShippingOver75">Free shipping on orders over $75</span>
+            </div>
+            <div class="cart-total">
+                <span data-translate="subtotal">Subtotal</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <button class="checkout-btn" onclick="goToCheckout()" data-translate="checkout">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Address Modal -->
+    <div class="address-modal-overlay" id="addressModalOverlay" onclick="closeAddressModal()"></div>
+    <div class="address-modal" id="addressModal">
+        <div class="address-modal-content">
+            <div class="address-modal-header">
+                <h2 id="addressModalTitle" data-translate="addNewAddress">Add New Address</h2>
+                <button class="address-modal-close" onclick="closeAddressModal()" aria-label="Close modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+            <form id="addressForm" class="address-modal-form">
+                <input type="hidden" id="addressId">
+                <div class="form-group">
+                    <label for="addressLabel" data-translate="addressLabel">Address Label (e.g. Home, Office)</label>
+                    <input type="text" id="addressLabel" required placeholder="Home">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addressFirstName" data-translate="firstName">First Name</label>
+                        <input type="text" id="addressFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addressLastName" data-translate="lastName">Last Name</label>
+                        <input type="text" id="addressLastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="addressStreet" data-translate="streetAddress">Street Address</label>
+                    <input type="text" id="addressStreet" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addressCity" data-translate="city">City</label>
+                        <input type="text" id="addressCity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addressZip" data-translate="zipCode">Zip Code</label>
+                        <input type="text" id="addressZip" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="addressCountry" data-translate="country">Country</label>
+                    <select id="addressCountry" required>
+                        <option value="USA">United States</option>
+                        <option value="FRA">France</option>
+                        <option value="MAR">Morocco</option>
+                        <option value="DZA">Algeria</option>
+                    </select>
+                </div>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="addressIsDefault">
+                    <span data-translate="setAsDefault">Set as default address</span>
+                </label>
+                <button type="submit" class="btn btn-primary w-full" data-translate="saveAddress">Save Address</button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- CHECKOUT PAGE -->
+    <div id="checkoutPage" class="page">
+        <div class="checkout-container">
+            <h1 data-translate="checkout">Checkout</h1>
+
+            <div class="checkout-layout">
+                <!-- Left Column: Shipping & Payment -->
+                <div class="checkout-main">
+                    <!-- Contact & Shipping Section -->
+                    <section class="checkout-section">
+                        <h2 data-translate="contactAndShipping">Contact & Shipping</h2>
+
+                        <form id="checkoutForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="email" data-translate="email">Email</label>
+                                    <input type="email" id="email" name="email" placeholder="you@example.com" required
+                                        autocomplete="email">
+                                    <span class="error-message" id="emailError"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone" data-translate="phone">Phone</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" required
+                                        autocomplete="tel">
+                                    <span class="error-message" id="phoneError"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName" data-translate="firstName">First Name</label>
+                                    <input type="text" id="firstName" name="firstName" required
+                                        autocomplete="given-name">
+                                    <span class="error-message" id="firstNameError"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName" data-translate="lastName">Last Name</label>
+                                    <input type="text" id="lastName" name="lastName" required
+                                        autocomplete="family-name">
+                                    <span class="error-message" id="lastNameError"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="address" data-translate="address">Address</label>
+                                <input type="text" id="address" name="address" required autocomplete="street-address">
+                                <span class="error-message" id="addressError"></span>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="city" data-translate="city">City</label>
+                                    <input type="text" id="city" name="city" required autocomplete="address-level2">
+                                    <span class="error-message" id="cityError"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="state" data-translate="state">State / Province</label>
+                                    <input type="text" id="state" name="state" required autocomplete="address-level1">
+                                    <span class="error-message" id="stateError"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="zip" data-translate="zipCode">ZIP / Postal Code</label>
+                                    <input type="text" id="zip" name="zip" required autocomplete="postal-code">
+                                    <span class="error-message" id="zipError"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="country" data-translate="country">Country</label>
+                                    <select id="country" name="country" required autocomplete="country">
+                                        <option value="" data-translate="selectCountry">Select Country</option>
+                                        <option value="US">United States</option>
+                                        <option value="CA">Canada</option>
+                                        <option value="UK">United Kingdom</option>
+                                        <option value="MA">Morocco</option>
+                                        <option value="FR">France</option>
+                                        <option value="DE">Germany</option>
+                                        <option value="ES">Spain</option>
+                                        <option value="IT">Italy</option>
+                                        <option value="AU">Australia</option>
+                                    </select>
+                                    <span class="error-message" id="countryError"></span>
+                                </div>
+                            </div>
+                        </form>
+                    </section>
+
+                    <!-- Payment Section -->
+                    <section class="checkout-section">
+                        <h2 data-translate="payment">Payment</h2>
+
+                        <div class="payment-methods-toggle">
+                            <label class="payment-method-option">
+                                <input type="radio" name="paymentMethod" value="card"
+                                    onchange="togglePaymentMethod('card')">
+                                <span data-translate="creditCard">Credit Card</span>
+                            </label>
+                            <label class="payment-method-option">
+                                <input type="radio" name="paymentMethod" value="cash" checked
+                                    onchange="togglePaymentMethod('cash')">
+                                <span data-translate="cashOnDelivery">Cash on Delivery</span>
+                            </label>
+                        </div>
+
+                        <div id="card-payment-container" class="hidden">
+                            <div id="payment-element">
+                                <!-- Stripe Payment Element will be inserted here -->
+                            </div>
+                        </div>
+
+                        <div id="cash-payment-info">
+                            <div class="cash-info-box">
+                                <p>✓ <span data-translate="payCashMessage">Pay nicely with cash when your order
+                                        arrives.</span></p>
+                                <p>✓ <span data-translate="noCardNeeded">No credit card details required.</span></p>
+                            </div>
+                        </div>
+
+                        <div id="payment-message" class="hidden"></div>
+                    </section>
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div class="checkout-sidebar">
+                    <div class="order-summary-card">
+                        <h2 data-translate="orderSummary">Order Summary</h2>
+
+                        <div id="checkoutOrderItems" class="checkout-items">
+                            <!-- Cart items will be injected here -->
+                        </div>
+
+                        <div class="coupon-section">
+                            <div class="coupon-input-group">
+                                <input type="text" id="couponCode" placeholder="Discount code"
+                                    aria-label="Discount code">
+                                <button onclick="applyCoupon()" class="btn-apply" data-translate="apply">Apply</button>
+                            </div>
+                            <div id="couponMessage" class="coupon-message"></div>
+                        </div>
+
+                        <div class="summary-totals">
+                            <div class="summary-row">
+                                <span data-translate="subtotal">Subtotal</span>
+                                <span id="checkoutSubtotal">$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span data-translate="shipping">Shipping</span>
+                                <span id="checkoutShipping">$0.00</span>
+                            </div>
+                            <div class="summary-row discount-row hidden" id="checkoutDiscountRow">
+                                <span data-translate="discount">Discount</span>
+                                <span id="checkoutDiscount">-$0.00</span>
+                            </div>
+                            <div class="summary-row total-row">
+                                <span data-translate="total">Total</span>
+                                <span id="checkoutTotal">$0.00</span>
+                            </div>
+                        </div>
+
+                        <button id="submitPaymentBtn" class="btn btn-primary btn-block btn-lg"
+                            onclick="handlePaymentSubmission()">
+                            <span id="button-text" data-translate="payNow">Pay Now</span>
+                            <div class="spinner hidden" id="spinner"></div>
+                        </button>
+
+                        <p class="secure-checkout-text">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span data-translate="secureCheckout">Secure Checkout with Stripe</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDER SUCCESS PAGE -->
+    <div id="orderSuccessPage" class="page">
+        <div class="success-container">
+            <div class="success-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h1 data-translate="orderConfirmed">Order Confirmed!</h1>
+            <p class="success-message" data-translate="thankYouOrder">Thank you for your order. We've sent a
+                confirmation email to <span id="successEmail"></span>.</p>
+
+            <div class="order-details-card">
+                <div class="order-info-row">
+                    <strong data-translate="orderNumber">Order Number:</strong>
+                    <span id="successOrderNumber">#</span>
+                </div>
+                <div class="order-info-row">
+                    <strong data-translate="date">Date:</strong>
+                    <span id="successDate"></span>
+                </div>
+                <div class="order-info-row">
+                    <strong data-translate="total">Total:</strong>
+                    <span id="successTotal"></span>
+                </div>
+            </div>
+
+            <div class="success-actions">
+                <button class="btn btn-primary" onclick="showHomePage()" data-translate="continueShopping">Continue
+                    Shopping</button>
+                <button class="btn btn-secondary" onclick="showOrdersPage()" data-translate="viewOrder">View
+                    Order</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>
