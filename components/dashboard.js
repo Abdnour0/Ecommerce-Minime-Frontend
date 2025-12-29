@@ -1,6 +1,8 @@
 import translations from './translations.js';
 import { state } from './state.js';
 import { SettingsManager } from './settings.js';
+import { showNotification } from './ui-utils.js';
+import { hasDashboardAccess } from './dashboard-access.js';
 
 export const DashboardManager = {
     charts: {},
@@ -305,10 +307,30 @@ export const DashboardManager = {
 };
 
 export function showDashboardPage() {
+    // Check if user has dashboard access
+    if (!hasDashboardAccess()) {
+        // User not authorized - show access denied
+        showAccessDeniedPage();
+        return;
+    }
+    
     const dashboardPage = document.getElementById('dashboardPage');
     if (dashboardPage) {
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         dashboardPage.classList.add('active');
         DashboardManager.init();
+    }
+}
+
+export function showAccessDeniedPage() {
+    const accessDeniedPage = document.getElementById('accessDeniedPage');
+    if (accessDeniedPage) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        accessDeniedPage.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        // Fallback: redirect to home page if access denied page doesn't exist
+        window.showHomePage();
+        showNotification('Access denied. You do not have permission to view this page.', 'error');
     }
 }

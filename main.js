@@ -5,7 +5,8 @@ import { WishlistManager, renderWishlist } from './components/wishlist.js';
 import { SettingsManager } from './components/settings.js';
 import { OrderManager, renderOrders } from './components/orders.js';
 import { AddressManager } from './components/addresses.js';
-import { DashboardManager, showDashboardPage } from './components/dashboard.js';
+import { DashboardManager, showDashboardPage, showAccessDeniedPage } from './components/dashboard.js';
+import { updateDashboardLinkVisibility } from './components/dashboard-access.js';
 import { fetchProducts, renderProducts, openProductModal, closeProductModal, changeModalImage } from './components/products.js';
 import * as pages from './components/pages.js';
 import * as ui from './components/ui-handlers.js';
@@ -109,6 +110,7 @@ window.showSettingsPage = pages.showSettingsPage;
 window.showWishlistPage = pages.showWishlistPage;
 window.showCheckoutPage = pages.showCheckoutPage;
 window.showDashboardPage = showDashboardPage;
+window.showAccessDeniedPage = showAccessDeniedPage;
 window.showTermsPage = pages.showTermsPage;
 window.showPrivacyPage = pages.showPrivacyPage;
 window.showPage = pages.showPage;
@@ -123,6 +125,8 @@ window.handleLogin = ui.handleLogin;
 window.handleSignup = ui.handleSignup;
 window.handleLogout = ui.handleLogout;
 window.handleGoogleLogin = ui.handleGoogleLogin;
+window.showResetPasswordModal = ui.showResetPasswordModal;
+window.closeResetPasswordModal = ui.closeResetPasswordModal;
 
 // Cart functions
 window.openCart = ui.openCart;
@@ -263,6 +267,9 @@ class AppInitializer {
         // Update cart display
         ui.updateCart();
 
+        // Update dashboard link visibility based on current user
+        updateDashboardLinkVisibility();
+
         // Ensure home page is active by default
         const allPages = document.querySelectorAll('.page');
         const activePage = document.querySelector('.page.active');
@@ -325,6 +332,20 @@ class AppInitializer {
 
         // Cart update listener
         window.addEventListener('cartUpdated', () => ui.updateCart());
+
+        // Orders update listener - refresh dashboard and orders page
+        window.addEventListener('ordersUpdated', () => {
+            // Refresh dashboard recent orders if dashboard is visible
+            const dashboardPage = document.getElementById('dashboardPage');
+            if (dashboardPage && dashboardPage.classList.contains('active')) {
+                DashboardManager.renderRecentOrders();
+            }
+            // Refresh orders page if it's visible
+            const ordersPage = document.getElementById('ordersPage');
+            if (ordersPage && ordersPage.classList.contains('active')) {
+                renderOrders();
+            }
+        });
 
         // Settings dropdown
         this.setupSettingsDropdown();
@@ -472,6 +493,16 @@ class AppInitializer {
             });
         }
 
+        // Reset password modal
+        const resetPasswordModalOverlay = document.getElementById('resetPasswordModalOverlay');
+        if (resetPasswordModalOverlay) {
+            resetPasswordModalOverlay.addEventListener('click', (e) => {
+                if (e.target === resetPasswordModalOverlay) {
+                    ui.closeResetPasswordModal();
+                }
+            });
+        }
+
         // Escape key to close modals
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -479,6 +510,7 @@ class AppInitializer {
                 ui.closeAccountModal();
                 ui.closeSearchModal();
                 ui.closeAddressModal();
+                ui.closeResetPasswordModal();
                 ui.closeCart();
             }
         });
@@ -556,20 +588,136 @@ class AppInitializer {
             e.target.reset();
         };
 
-        // Forgot password form
+        // Reset password form
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
+        if (resetPasswordForm) {
+            resetPasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const emailInput = document.getElementById('resetEmailInput');
+                const passwordInput = document.getElementById('newPasswordInput');
+                const confirmPasswordInput = document.getElementById('confirmNewPasswordInput');
+                const email = emailInput?.value?.trim();
+                const password = passwordInput?.value;
+                const confirmPassword = confirmPasswordInput?.value;
+
+                // Clear previous errors
+                const emailError = document.getElementById('resetEmailError');
+                const passwordError = document.getElementById('newPasswordError');
+                const confirmPasswordError = document.getElementById('confirmNewPasswordError');
+                if (emailError) emailError.textContent = '';
+                if (passwordError) passwordError.textContent = '';
+                if (confirmPasswordError) confirmPasswordError.textContent = '';
+
+                // Validation
+                if (!email) {
+                    if (emailError) emailError.textContent = 'Email is required';
+                    return;
+                }
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    if (emailError) emailError.textContent = 'Please enter a valid email address';
+                    return;
+                }
+
+                if (!password || password.length < 6) {
+                    if (passwordError) passwordError.textContent = 'Password must be at least 6 characters';
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    if (confirmPasswordError) confirmPasswordError.textContent = 'Passwords do not match';
+                    return;
+                }
+
+                // Disable submit button during request
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn?.textContent;
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Resetting...';
+                }
+
+                try {
+                    const result = await AuthManager.resetPassword(email, password);
+                    if (result.success) {
+                        showNotification('Password reset successfully! You can now sign in with your new password.', 'success');
+                        resetPasswordForm.reset();
+                        // Close modal after a short delay and show login
+                        setTimeout(() => {
+                            ui.closeResetPasswordModal();
+                            ui.openAccountModal();
+                            ui.showLoginView();
+                        }, 1500);
+                    } else {
+                        showNotification(result.error || 'Failed to reset password. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error in reset password:', error);
+                    showNotification('An error occurred. Please try again.', 'error');
+                } finally {
+                    // Re-enable submit button
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        if (originalText) submitBtn.textContent = originalText;
+                    }
+                }
+            });
+        }
+
+        // Forgot password form (kept for backward compatibility, but not used in new flow)
         const forgotPasswordForm = document.getElementById('forgotPasswordForm');
         if (forgotPasswordForm) {
             forgotPasswordForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const email = document.getElementById('forgotEmail')?.value;
+                const emailInput = document.getElementById('forgotEmail');
+                const email = emailInput?.value?.trim();
+                const errorEl = document.getElementById('forgotEmailError');
 
-                if (email) {
+                // Clear previous errors
+                if (errorEl) errorEl.textContent = '';
+
+                if (!email) {
+                    if (errorEl) errorEl.textContent = 'Email is required';
+                    return;
+                }
+
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    if (errorEl) errorEl.textContent = 'Please enter a valid email address';
+                    return;
+                }
+
+                // Disable submit button during request
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn?.textContent;
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Sending...';
+                }
+
+                try {
                     const result = await AuthManager.forgotPassword(email);
                     if (result.success) {
-                        showNotification('Reset instructions sent to your email', 'success');
-                        ui.closeResetPasswordModal();
+                        showNotification(`Password reset instructions have been sent to ${email}`, 'success');
+                        forgotPasswordForm.reset();
+                        // Close modal after a short delay to show the notification
+                        setTimeout(() => {
+                            ui.closeResetPasswordModal();
+                        }, 2000);
                     } else {
-                        showNotification(result.error || 'Failed to send reset email', 'error');
+                        showNotification(result.error || 'Failed to send reset email. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error in forgot password:', error);
+                    showNotification('An error occurred. Please try again.', 'error');
+                } finally {
+                    // Re-enable submit button
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        if (originalText) submitBtn.textContent = originalText;
                     }
                 }
             });
@@ -677,6 +825,27 @@ class AppInitializer {
 
             if (status === 'succeeded') {
                 showNotification('Payment successful! Thank you for your order.', 'success');
+                
+                // Create order from stored order data
+                const pendingOrderData = sessionStorage.getItem('pendingStripeOrder');
+                if (pendingOrderData) {
+                    try {
+                        const orderData = JSON.parse(pendingOrderData);
+                        OrderManager.createOrder(orderData).then(() => {
+                            // Refresh orders display
+                            renderOrders();
+                            // Success notification already shown above
+                        }).catch((error) => {
+                            console.error('Error creating order from Stripe payment:', error);
+                            showNotification('Payment succeeded but order creation failed. Please contact support.', 'error');
+                        });
+                        sessionStorage.removeItem('pendingStripeOrder');
+                    } catch (error) {
+                        console.error('Error parsing order data from Stripe payment:', error);
+                        showNotification('Payment succeeded but order creation failed. Please contact support.', 'error');
+                    }
+                }
+                
                 CartManager.clear();
 
                 // Clear URL parameters
@@ -687,6 +856,8 @@ class AppInitializer {
                     pages.showOrdersPage();
                 }, 1000);
             } else {
+                // Clear pending order data on failure
+                sessionStorage.removeItem('pendingStripeOrder');
                 showNotification('Payment was not completed. Please try again.', 'error');
             }
         }

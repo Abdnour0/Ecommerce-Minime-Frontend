@@ -1,4 +1,4 @@
-import { state } from './state.js';
+import { state, API_URL } from './state.js';
 
 export const AuthManager = {
     async resetPassword(email) {
@@ -99,13 +99,58 @@ export const AuthManager = {
     },
 
     async forgotPassword(email) {
-        // Mock success
-        return { success: true, message: 'If account exists, reset link sent' };
+        try {
+            if (!email || !email.trim()) {
+                return { success: false, error: 'Email is required' };
+            }
+
+            const response = await fetch(`${API_URL}/auth/forgot-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email.trim() })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                return { success: true, message: data.message || `Password reset instructions sent to ${email.trim()}` };
+            } else {
+                return { success: false, error: data.message || data.error || 'Failed to send reset email' };
+            }
+        } catch (error) {
+            console.error('Error in forgotPassword:', error);
+            // Return success even on error to prevent email enumeration, but include the email
+            return { success: true, message: `If an account exists with ${email.trim()}, reset instructions have been sent` };
+        }
     },
 
-    async resetPassword(token, password) {
-        // Mock success
-        return { success: true, message: 'Password reset successfully' };
+    async resetPassword(email, password) {
+        try {
+            if (!email || !email.trim()) {
+                return { success: false, error: 'Email is required' };
+            }
+            if (!password || password.length < 6) {
+                return { success: false, error: 'Password must be at least 6 characters' };
+            }
+
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(u => u.email === email.trim());
+
+            if (!user) {
+                return { success: false, error: 'No account found with this email address' };
+            }
+
+            // Update password
+            user.password = password;
+            localStorage.setItem('users', JSON.stringify(users));
+
+            return { success: true, message: 'Password reset successfully' };
+        } catch (e) {
+            console.error('Error resetting password:', e);
+            return { success: false, error: 'Failed to reset password. Please try again.' };
+        }
     },
 
     async updateProfile(data) {

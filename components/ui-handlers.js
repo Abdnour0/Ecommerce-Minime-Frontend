@@ -1,7 +1,7 @@
 import { state, API_URL } from './state.js';
 import { AuthManager } from './auth.js';
 import { CartManager } from './cart.js';
-import { OrderManager } from './orders.js';
+import { OrderManager, renderOrders } from './orders.js';
 import { SettingsManager } from './settings.js';
 import { AddressManager } from './addresses.js';
 import { showNotification, escapeHtml } from './ui-utils.js';
@@ -317,14 +317,39 @@ export function performSearch() {
 }
 
 export function showResetPasswordModal() {
+    // Close account modal if open
     closeAccountModal();
-    document.getElementById('resetPasswordModalOverlay')?.classList.add('active');
-    document.getElementById('resetPasswordModal')?.classList.add('active');
+    
+    // Show reset password modal
+    const overlay = document.getElementById('resetPasswordModalOverlay');
+    const modal = document.getElementById('resetPasswordModal');
+    
+    if (overlay && modal) {
+        overlay.classList.add('active');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Show reset password form directly (skip email step)
+        const forgotPasswordView = document.getElementById('forgotPasswordView');
+        const resetPasswordFormView = document.getElementById('resetPasswordFormView');
+        if (forgotPasswordView) forgotPasswordView.style.display = 'none';
+        if (resetPasswordFormView) resetPasswordFormView.style.display = 'block';
+        
+        // Reset forms
+        const forgotForm = document.getElementById('forgotPasswordForm');
+        const resetForm = document.getElementById('resetPasswordForm');
+        if (forgotForm) forgotForm.reset();
+        if (resetForm) resetForm.reset();
+    }
 }
 
 export function closeResetPasswordModal() {
-    document.getElementById('resetPasswordModalOverlay')?.classList.remove('active');
-    document.getElementById('resetPasswordModal')?.classList.remove('active');
+    const overlay = document.getElementById('resetPasswordModalOverlay');
+    const modal = document.getElementById('resetPasswordModal');
+    
+    if (overlay) overlay.classList.remove('active');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 export function renderAddresses() {
@@ -548,6 +573,40 @@ export async function placeOrder() {
     // Redirect to new checkout or process order
     showNotification('Redirecting to secure checkout...', 'info');
     goToCheckout();
+}
+
+// Helper function to prepare order data from cart
+function prepareOrderData(paymentMethod, email) {
+    // Get cart items - ensure they have all required fields
+    const cartItems = state.cart.map(item => ({
+        id: item.id || item._id,
+        name: item.name || 'Product',
+        price: item.price || 0,
+        quantity: item.quantity || 1,
+        image: item.image || 'https://via.placeholder.com/400x300'
+    }));
+
+    const subtotal = CartManager.getTotal();
+    const shipping = 0; // Free shipping or calculate if needed
+    const tax = Math.round(subtotal * 0.1 * 100) / 100; // 10% tax (adjust as needed)
+    const total = subtotal + shipping + tax;
+
+    return {
+        items: cartItems,
+        subtotal: subtotal,
+        shipping: shipping,
+        tax: tax,
+        total: total,
+        paymentMethod: paymentMethod,
+        shippingAddress: {
+            line1: document.getElementById('address')?.value || '',
+            city: document.getElementById('city')?.value || '',
+            state: document.getElementById('state')?.value || '',
+            postal_code: document.getElementById('zip')?.value || '',
+            country: document.getElementById('country')?.value || 'US'
+        },
+        email: email
+    };
 }
 
 // CHECKOUT & PAYMENT
@@ -856,75 +915,107 @@ export async function handlePaymentSubmission() {
 
             // Simulate processing
             await new Promise(resolve => setTimeout(resolve, 1500));
-            // Fall through to success handling (same as cash/stripe success)
 
-            const finalTotal = CartManager.getTotal();
-            CartManager.clear();
+            // Prepare and create order
+            const email = document.getElementById('email')?.value || 'customer@example.com';
+            const orderData = prepareOrderData('card', email);
+            
+            try {
+                const createdOrder = await OrderManager.createOrder(orderData);
+                showNotification('Order placed successfully! Your order has been confirmed.', 'success');
+                
+                // Clear cart after successful order
+                CartManager.clear();
+
+            // Show success page
             window.location.href = '#orderSuccessPage';
             showPage('orderSuccessPage');
 
             // Populate success page
-            const email = document.getElementById('email')?.value || 'customer@example.com';
-
             const emailEl = document.getElementById('successEmail');
             if (emailEl) emailEl.textContent = email;
 
             const orderNumEl = document.getElementById('successOrderNumber');
-            if (orderNumEl) orderNumEl.textContent = '#' + Math.floor(Math.random() * 1000000);
+            if (orderNumEl) orderNumEl.textContent = '#' + String(createdOrder.id).slice(-8).toUpperCase();
 
             const dateEl = document.getElementById('successDate');
             if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
 
             const totalEl = document.getElementById('successTotal');
-            if (totalEl) totalEl.textContent = '$' + finalTotal.toFixed(2);
+            if (totalEl) totalEl.textContent = '$' + orderData.total.toFixed(2);
 
-            return; // Exit after mock success
+                // Refresh orders display
+                renderOrders();
+
+                return; // Exit after mock success
+            } catch (error) {
+                console.error('Error creating order:', error);
+                showNotification('Failed to create order. Please try again.', 'error');
+                btn.disabled = false;
+                if (btnText) btnText.textContent = 'Pay Now';
+                if (spinner) spinner.classList.add('hidden');
+                return;
+            }
         }
 
         if (paymentMethod === 'cash') {
             // Cash on Delivery Logic
-            const orderData = {
-                items: CartManager.items,
-                total: CartManager.getTotal(),
-                customer: {
-                    email: document.getElementById('email')?.value,
-                    phone: document.getElementById('phone')?.value,
-                    name: `${document.getElementById('firstName')?.value} ${document.getElementById('lastName')?.value} `.trim()
-                },
-                shippingAddress: {
-                    line1: document.getElementById('address')?.value,
-                    city: document.getElementById('city')?.value,
-                    state: document.getElementById('state')?.value,
-                    postal_code: document.getElementById('zip')?.value,
-                    country: document.getElementById('country')?.value
-                },
-                paymentMethod: 'cod',
-                status: 'pending'
-            };
+            const email = document.getElementById('email')?.value;
+            const orderData = prepareOrderData('cod', email);
+            
+            try {
+                // Create order
+                const createdOrder = await OrderManager.createOrder(orderData);
+                showNotification('Order placed successfully! Your order has been confirmed.', 'success');
 
-            // Simulate backend call for Cash Order
-            // In a real app, you would POST this to /orders
-            console.log('Processing Cash Order:', orderData);
+                // Mock success delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Mock success delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
+                // Clear cart after successful order
+                CartManager.clear();
 
-            CartManager.clear();
+            // Show success page
             window.location.href = '#orderSuccessPage';
             showPage('orderSuccessPage');
 
-            document.getElementById('successEmail').textContent = orderData.customer.email;
-            document.getElementById('successOrderNumber').textContent = '#' + Math.floor(Math.random() * 1000000);
-            document.getElementById('successDate').textContent = new Date().toLocaleDateString();
-            document.getElementById('successTotal').textContent = '$' + orderData.total.toFixed(2);
+            // Populate success page
+            const emailEl = document.getElementById('successEmail');
+            if (emailEl) emailEl.textContent = email;
+
+            const orderNumEl = document.getElementById('successOrderNumber');
+            if (orderNumEl) orderNumEl.textContent = '#' + String(createdOrder.id).slice(-8).toUpperCase();
+
+            const dateEl = document.getElementById('successDate');
+            if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
+
+            const totalEl = document.getElementById('successTotal');
+            if (totalEl) totalEl.textContent = '$' + orderData.total.toFixed(2);
+
+                // Refresh orders display
+                renderOrders();
+            } catch (error) {
+                console.error('Error creating order:', error);
+                showNotification('Failed to create order. Please try again.', 'error');
+                btn.disabled = false;
+                if (btnText) btnText.textContent = 'Pay Now';
+                if (spinner) spinner.classList.add('hidden');
+                return;
+            }
 
         } else {
             // Stripe Card Logic
+            // Prepare order data before redirect (to create order after successful payment)
+            const email = document.getElementById('email')?.value || state.currentUser?.email || '';
+            const orderData = prepareOrderData('card', email);
+            
+            // Store order data in sessionStorage to create order after redirect
+            sessionStorage.setItem('pendingStripeOrder', JSON.stringify(orderData));
+            
             const { error } = await state.stripe.confirmPayment({
                 elements: state.elements,
                 confirmParams: {
                     return_url: window.location.origin + window.location.pathname,
-                    receipt_email: document.getElementById('email')?.value || state.currentUser?.email || '',
+                    receipt_email: email,
                     shipping: {
                         name: `${document.getElementById('firstName')?.value || ''} ${document.getElementById('lastName')?.value || ''} `.trim(),
                         phone: document.getElementById('phone')?.value || '',
@@ -940,12 +1031,15 @@ export async function handlePaymentSubmission() {
             });
 
             if (error) {
+                // Clear pending order data if payment fails
+                sessionStorage.removeItem('pendingStripeOrder');
                 if (error.type === "card_error" || error.type === "validation_error") {
                     showMessage(error.message);
                 } else {
                     showMessage("An unexpected error occurred.");
                 }
             }
+            // Note: If payment succeeds, Stripe will redirect, and order will be created in handleURLParameters
         }
         btn.disabled = false;
         if (btnText) btnText.textContent = 'Pay Now';

@@ -7,7 +7,7 @@ import { showNotification } from './ui-utils.js';
 import { renderAddresses, closeAccountModal, updateCheckoutSummary } from './ui-handlers.js';
 
 export function closeAllModalsAndOverlays() {
-    const overlays = ['.cart-overlay', '.product-modal-overlay', '.search-modal-overlay', '.account-modal-overlay', '.side-menu-overlay', '#overlay', '#addressModalOverlay'];
+    const overlays = ['.cart-overlay', '.product-modal-overlay', '.search-modal-overlay', '.account-modal-overlay', '.side-menu-overlay', '#overlay', '#addressModalOverlay', '#resetPasswordModalOverlay'];
     overlays.forEach(selector => {
         const el = document.querySelector(selector);
         if (el) {
@@ -19,7 +19,7 @@ export function closeAllModalsAndOverlays() {
         }
     });
 
-    const modals = ['.product-modal', '.search-modal', '.account-modal', '#sideMenu', '#cartSidebar', '#addressModal'];
+    const modals = ['.product-modal', '.search-modal', '.account-modal', '#sideMenu', '#cartSidebar', '#addressModal', '#resetPasswordModal'];
     modals.forEach(selector => {
         const el = document.querySelector(selector);
         if (el) el.classList.remove('active', 'open');

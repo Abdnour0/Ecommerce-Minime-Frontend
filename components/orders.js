@@ -125,9 +125,10 @@ const OrderManager = {
                 const data = await response.json();
                 if (data.success) {
                     await this.fetchOrders();
+                    window.dispatchEvent(new CustomEvent('ordersUpdated', { detail: { orders: state.orders } }));
                     return { success: true };
                 } else {
-                    return { success: false, error: data.message };
+                    return { success: false, error: data.message || 'Failed to cancel order' };
                 }
             } else {
                 this.updateLocalStatus(orderId, 'Cancelled');
@@ -135,7 +136,7 @@ const OrderManager = {
             }
         } catch (e) {
             console.error('Error cancelling order:', e);
-            return { success: false, error: 'Network error' };
+            return { success: false, error: 'Network error. Please try again.' };
         }
     },
 
@@ -206,7 +207,20 @@ export function renderOrders() {
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         ${canCancel ? `
-                            <button class="btn-cancel-link-styled" onclick="window.OrderManager.cancelOrder('${orderId}').then(() => renderOrders())">
+                            <button class="btn-cancel-link-styled" onclick="(async () => {
+                                try {
+                                    const result = await window.OrderManager.cancelOrder('${orderId}');
+                                    if (result && result.success) {
+                                        window.showNotification('Order cancelled successfully.', 'success');
+                                        window.renderOrders();
+                                    } else {
+                                        window.showNotification(result?.error || 'Failed to cancel order. Please try again.', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Error cancelling order:', error);
+                                    window.showNotification('Failed to cancel order. Please try again.', 'error');
+                                }
+                            })()">
                                 CANCEL ORDER
                             </button>
                         ` : ''}
@@ -241,7 +255,7 @@ export function renderOrders() {
                             <div class="item-info">
                                 <h4>${item.name || 'Product'}</h4>
                                 <p class="item-meta">Quantity: ${item.quantity || 1}</p>
-                                <p class="item-price">$${(item.price || 0).toFixed(0)}</p>
+                                <p class="item-price">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
                             </div>
                         </div>
                     `).join('') : ''}

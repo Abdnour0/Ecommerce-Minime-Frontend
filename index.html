@@ -553,7 +553,7 @@
                         <span class="error-message" id="forgotEmailError"></span>
                     </div>
                     <button type="submit" class="submit-btn" data-translate="sendResetLink">Send Reset Code</button>
-                    <button type="button" class="btn-text" onclick="closeResetPasswordModal(); showLoginView();"
+                    <button type="button" class="btn-text" onclick="closeResetPasswordModal(); openAccountModal(); showLoginView();"
                         data-translate="backToSignIn">Back to Sign In</button>
                 </form>
             </div>
@@ -562,24 +562,29 @@
         <!-- Reset Password Form View -->
         <div class="account-view" id="resetPasswordFormView" style="display: none;">
             <div class="account-modal-content">
-                <h2 data-translate="setNewPassword">Set New Password</h2>
-                <p class="account-subtitle" data-translate="enterNewPasswordCode">Enter the reset code and your new
-                    password</p>
+                <h2 data-translate="setNewPassword">Reset Password</h2>
+                <p class="account-subtitle">Enter your email and new password to reset your account password</p>
 
                 <form id="resetPasswordForm" class="account-form">
-                    <input type="hidden" id="resetToken">
+                    <div class="form-group">
+                        <label for="resetEmailInput" data-translate="email">Email</label>
+                        <input type="email" id="resetEmailInput" name="email" placeholder="you@example.com" required autocomplete="email">
+                        <span class="error-message" id="resetEmailError"></span>
+                    </div>
                     <div class="form-group">
                         <label for="newPasswordInput" data-translate="newPassword">New Password</label>
                         <input type="password" id="newPasswordInput" name="password" placeholder="Min 6 characters"
-                            required minlength="6">
+                            required minlength="6" autocomplete="new-password">
                         <span class="error-message" id="newPasswordError"></span>
                     </div>
                     <div class="form-group">
                         <label for="confirmNewPasswordInput" data-translate="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmNewPasswordInput" required>
+                        <input type="password" id="confirmNewPasswordInput" placeholder="Confirm your new password" required autocomplete="new-password">
                         <span class="error-message" id="confirmNewPasswordError"></span>
                     </div>
                     <button type="submit" class="submit-btn" data-translate="resetPassword">Reset Password</button>
+                    <button type="button" class="btn-text" onclick="closeResetPasswordModal(); openAccountModal(); showLoginView();"
+                        data-translate="backToSignIn">Back to Sign In</button>
                 </form>
             </div>
         </div>
@@ -1757,6 +1762,30 @@
     </div>
 
 
+
+    <!-- ACCESS DENIED PAGE -->
+    <div id="accessDeniedPage" class="page">
+        <section class="account-page-section">
+            <div class="account-page-container">
+                <div class="access-denied-content">
+                    <div class="access-denied-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h1>Access Denied</h1>
+                    <p class="access-denied-message">You do not have permission to access this page.</p>
+                    <p class="access-denied-submessage">This dashboard is restricted to authorized users only.</p>
+                    <div class="access-denied-actions">
+                        <button class="btn btn-primary" onclick="window.showHomePage()">Go to Home</button>
+                        <button class="btn btn-secondary" onclick="window.openAccountModal()">Sign In</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
     <!-- DASHBOARD PAGE -->
     <div id="dashboardPage" class="page">
