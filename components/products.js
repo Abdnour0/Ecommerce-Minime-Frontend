@@ -1,19 +1,21 @@
+import { logger } from './logger.js';
 import { state } from './state.js';
 import { SettingsManager } from './settings.js';
 import { WishlistManager } from './wishlist.js';
 import { CartManager } from './cart.js';
-import { escapeHtml } from './ui-utils.js';
+import { escapeHtml, trapFocus } from './ui-utils.js';
 import { loadAndRenderReviews } from './reviews.js';
 import { fallbackProducts } from './fallback-products.js';
+import { RecentlyViewedManager } from './recently-viewed.js';
 
 // Direct fallback use without API call
 export async function fetchProducts() {
-    console.log('Loading products from local fallback data...');
+    logger.log('Loading products from local fallback data...');
     state.products = fallbackProducts.map(p => ({
         ...p,
         id: p.id || p._id
     }));
-    console.log(`Loaded ${state.products.length} products locally`);
+    logger.log(`Loaded ${state.products.length} products locally`);
 
     return true;
 }
@@ -48,6 +50,11 @@ export function renderProducts(container, filter = 'all') {
         filteredProducts = state.products.filter(p => p.category === 'women' && p.type === 'clothes');
     } else if (filter === 'sale') {
         filteredProducts = state.products.filter(p => p.onSale === true);
+    } else if (filter === 'recently-viewed') {
+        const viewedIds = RecentlyViewedManager.get();
+        filteredProducts = viewedIds.map(id => state.products.find(p => String(p.id || p._id) === String(id))).filter(Boolean);
+    } else if (filter === 'recommendations') {
+        filteredProducts = state.recommendations || [];
     }
 
     if (filteredProducts.length === 0) {
@@ -96,7 +103,10 @@ export function renderProducts(container, filter = 'all') {
             e.stopPropagation();
             const productId = btn.dataset.productId;
             WishlistManager.toggle(productId);
-            renderProducts(container, filter); // Re-render to update icon
+            const isWishlisted = WishlistManager.isInWishlist(productId);
+            btn.classList.toggle('active', isWishlisted);
+            const icon = btn.querySelector('svg');
+            if (icon) icon.setAttribute('fill', isWishlisted ? 'var(--accent-color)' : 'none');
         });
     });
 
@@ -131,8 +141,9 @@ export function renderProducts(container, filter = 'all') {
 }
 
 export function openProductModal(productId) {
-    console.log('openProductModal called with productId:', productId);
-    console.log('Available products:', state.products.length);
+    logger.log('openProductModal called with productId:', productId);
+    logger.log('Available products:', state.products.length);
+    RecentlyViewedManager.add(productId);
 
     // Find the product
     const product = state.products.find(p => {
@@ -151,7 +162,7 @@ export function openProductModal(productId) {
 
     // CRITICAL FIX: Set selectedProduct in state for addToCartFromModal
     state.selectedProduct = product;
-    console.log('state.selectedProduct set to:', product.name);
+    logger.log('state.selectedProduct set to:', product.name);
 
     // Query ALL required DOM elements at the start
     const productModal = document.getElementById('productModal');
@@ -237,8 +248,28 @@ export function openProductModal(productId) {
         };
     }
 
+    // Product Recommendations logic
+    const recommendedProducts = state.products
+        .filter(p => p.category === product.category && p.id !== product.id)
+        .slice(0, 4);
+
+    const recContainer = document.getElementById('modalRecommendations');
+    const recGrid = document.getElementById('modalRecommendationsGrid');
+    
+    if (recommendedProducts.length > 0 && recContainer && recGrid) {
+        state.recommendations = recommendedProducts;
+        recContainer.style.display = 'block';
+        renderProducts(recGrid, 'recommendations');
+    } else if (recContainer) {
+        recContainer.style.display = 'none';
+        state.recommendations = [];
+    }
+
     // Show the modal
-    if (productModal) productModal.classList.add('active');
+    if (productModal) {
+        productModal.classList.add('active');
+        trapFocus(productModal);
+    }
     if (productModalOverlay) productModalOverlay.classList.add('active');
     document.body.style.overflow = 'hidden';
 
@@ -252,11 +283,11 @@ export function openProductModal(productId) {
         newModalClose.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Product modal close button clicked');
+            logger.log('Product modal close button clicked');
             closeProductModal();
         });
 
-        console.log('Product modal close button event listener attached');
+        logger.log('Product modal close button event listener attached');
     }
 
     // Load and render reviews for this product
@@ -267,7 +298,7 @@ export function openProductModal(productId) {
         const closeBtn = document.getElementById('modalClose');
         if (closeBtn) {
             closeBtn.focus();
-            console.log('Modal close button focused');
+            logger.log('Modal close button focused');
         }
     }, 100);
 }
@@ -287,13 +318,13 @@ export function changeModalImage(imageSrc, thumbElement) {
 }
 
 export function closeProductModal() {
-    console.log('closeProductModal called');
+    logger.log('closeProductModal called');
     const productModal = document.getElementById('productModal');
     const productModalOverlay = document.getElementById('productModalOverlay');
 
     if (productModal) {
         productModal.classList.remove('active');
-        console.log('Product modal closed');
+        logger.log('Product modal closed');
     } else {
         console.warn('closeProductModal: productModal element not found');
     }
@@ -305,4 +336,22 @@ export function closeProductModal() {
     }
 
     document.body.style.overflow = '';
+}
+
+export function renderSkeletons(container, count = 4) {
+    if (!container) return;
+    
+    // Generate 'count' number of skeleton cards
+    const skeletonHTML = Array(count).fill(0).map(() => `
+        <div class="skeleton-card" role="presentation">
+            <div class="skeleton-image"></div>
+            <div class="product-info" style="padding: 1rem 0;">
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+                <div class="skeleton-text price"></div>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = skeletonHTML;
 }

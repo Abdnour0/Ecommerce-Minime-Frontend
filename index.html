@@ -7,6 +7,37 @@
     <meta name="description"
         content="MINIME - Sustainable, comfortable footwear and apparel made with natural materials">
     <meta name="keywords" content="sustainable shoes, eco-friendly footwear, natural materials, comfortable shoes">
+
+    <!-- PWA Application Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+
+    <!-- Open Graph / Social sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="MINIME - Naturally Comfortable Footwear">
+    <meta property="og:description" content="Sustainable, comfortable footwear and apparel made with natural materials.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&h=630&fit=crop">
+    <meta property="og:url" content="https://minime.store">
+    <meta property="og:site_name" content="MINIME">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MINIME - Naturally Comfortable Footwear">
+    <meta name="twitter:description" content="Sustainable, comfortable footwear and apparel made with natural materials.">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&h=630&fit=crop">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://js.stripe.com https://accounts.google.com https://cdn.jsdelivr.net;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https: blob:;
+        connect-src 'self' https://api.stripe.com https://accounts.google.com https://r.stripe.com http://localhost:5000;
+        frame-src https://js.stripe.com https://accounts.google.com;
+    ">
+
     <title>MINIME - Naturally Comfortable Footwear</title>
     <link rel="stylesheet" href="style.css?v=2">
     <style>
@@ -15,6 +46,7 @@
             display: none !important;
         }
     </style>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -712,6 +744,18 @@
 
             <div class="products-grid-scroll">
                 <div class="products-grid" id="homeProductGrid" role="list">
+                    <!-- Products will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Recently Viewed Section -->
+        <section class="products-section hidden" id="recentlyViewedSection" style="padding-top: 0;">
+            <div class="section-header-minimal">
+                <h2 data-translate="recentlyViewed">Recently Viewed</h2>
+            </div>
+            <div class="products-grid-scroll">
+                <div class="products-grid" id="recentlyViewedGrid" role="list">
                     <!-- Products will be inserted here by JavaScript -->
                 </div>
             </div>
@@ -2130,6 +2174,13 @@
                             </div>
                         </div>
                     </details>
+                </div>
+            </div>
+
+            <!-- Product Recommendations -->
+            <div class="modal-recommendations full-width" id="modalRecommendations" style="display: none; grid-column: 1 / -1; margin-top: 2rem; border-top: 1px solid var(--border-color, #e2e8f0); padding-top: 2rem;">
+                <h3 data-translate="youMightAlsoLike" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem;">You Might Also Like</h3>
+                <div class="products-grid" id="modalRecommendationsGrid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
                 </div>
             </div>
         </div>

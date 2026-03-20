@@ -1,3 +1,4 @@
+import { logger } from './logger.js';
 import { state } from './state.js';
 import { SettingsManager } from './settings.js';
 import { showNotification } from './ui-utils.js';
@@ -13,9 +14,9 @@ export const CartManager = {
     },
 
     add(productId) {
-        console.log('CartManager.add called with productId:', productId);
-        console.log('Current products:', state.products?.length || 0);
-        console.log('Current cart:', state.cart?.length || 0);
+        logger.log('CartManager.add called with productId:', productId);
+        logger.log('Current products:', state.products?.length || 0);
+        logger.log('Current cart:', state.cart?.length || 0);
         
         if (!productId) {
             console.error('CartManager.add: productId is required');
@@ -44,7 +45,7 @@ export const CartManager = {
             return;
         }
         
-        console.log('Product found:', product.name, product.id || product._id);
+        logger.log('Product found:', product.name, product.id || product._id);
         
         const existingItemIndex = state.cart.findIndex(item => {
             const itemId = String(item.id || item._id);
@@ -54,29 +55,33 @@ export const CartManager = {
         
         if (existingItemIndex !== -1) {
             state.cart[existingItemIndex].quantity = (state.cart[existingItemIndex].quantity || 1) + 1;
-            console.log('Updated existing cart item quantity:', state.cart[existingItemIndex].quantity);
+            logger.log('Updated existing cart item quantity:', state.cart[existingItemIndex].quantity);
         } else {
             state.cart.push({ ...product, quantity: 1 });
-            console.log('Added new item to cart:', product.name);
+            logger.log('Added new item to cart:', product.name);
         }
         
         this.save();
         this.update();
         this.showAddedNotification(product.name);
-        console.log('Cart updated successfully. Total items:', this.getItemCount());
+        logger.log('Cart updated successfully. Total items:', this.getItemCount());
     },
 
-    remove(index) {
-        state.cart.splice(index, 1);
-        this.save();
-        this.update();
+    remove(productId) {
+        const index = state.cart.findIndex(item => String(item.id || item._id) === String(productId));
+        if (index !== -1) {
+            state.cart.splice(index, 1);
+            this.save();
+            this.update();
+        }
     },
 
-    updateQuantity(index, change) {
-        if (state.cart[index]) {
+    updateQuantity(productId, change) {
+        const index = state.cart.findIndex(item => String(item.id || item._id) === String(productId));
+        if (index !== -1) {
             state.cart[index].quantity = (state.cart[index].quantity || 1) + change;
             if (state.cart[index].quantity <= 0) {
-                this.remove(index);
+                this.remove(productId);
             } else {
                 this.save();
                 this.update();

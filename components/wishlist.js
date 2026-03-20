@@ -1,14 +1,9 @@
+import { logger } from './logger.js';
 import { state } from './state.js';
-import { showNotification } from './ui-utils.js';
+import { showNotification, escapeHtml } from './ui-utils.js';
 import { SettingsManager } from './settings.js';
 import { CartManager } from './cart.js';
 import { openProductModal } from './products.js';
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
 
 export const WishlistManager = {
     init() {
@@ -34,7 +29,7 @@ export const WishlistManager = {
         state.wishlist = state.wishlist.filter(id => validIds.has(String(id)));
 
         if (state.wishlist.length !== originalLength) {
-            console.log(`Cleaned up wishlist: removed ${originalLength - state.wishlist.length} invalid items`);
+            logger.log(`Cleaned up wishlist: removed ${originalLength - state.wishlist.length} invalid items`);
             this.save();
             this.updateCounter();
 
@@ -87,7 +82,7 @@ export const WishlistManager = {
     },
 
     getProducts(allProducts) {
-        return allProducts.filter(p => state.wishlist.includes(String(p.id)));
+        return allProducts.filter(p => state.wishlist.includes(String(p.id || p._id)));
     }
 };
 

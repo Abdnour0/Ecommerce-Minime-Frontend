@@ -1,9 +1,8 @@
 import { state } from './state.js';
-
-export const ALLOWED_DASHBOARD_EMAIL = 'abdnourguellaa50@gmail.com';
+import { ADMIN_EMAILS } from '../config.js';
 
 export function hasDashboardAccess() {
-    return state.currentUser && state.currentUser.email === ALLOWED_DASHBOARD_EMAIL;
+    return state.currentUser && ADMIN_EMAILS.includes(state.currentUser.email);
 }
 
 export function updateDashboardLinkVisibility() {

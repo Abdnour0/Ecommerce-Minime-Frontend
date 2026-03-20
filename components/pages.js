@@ -4,10 +4,12 @@ import { AddressManager } from './addresses.js';
 import { renderProducts } from './products.js';
 import { renderOrders } from './orders.js';
 import { showNotification } from './ui-utils.js';
-import { renderAddresses, closeAccountModal, updateCheckoutSummary } from './ui-handlers.js';
+import { closeAccountModal } from './ui-handlers.js';
+import { renderAddresses, updateCheckoutSummary } from './checkout-ui.js';
+import { RecentlyViewedManager } from './recently-viewed.js';
 
 export function closeAllModalsAndOverlays() {
-    const overlays = ['.cart-overlay', '.product-modal-overlay', '.search-modal-overlay', '.account-modal-overlay', '.side-menu-overlay', '#overlay', '#addressModalOverlay', '#resetPasswordModalOverlay'];
+    const overlays = ['.cart-overlay', '.product-modal-overlay', '.search-modal-overlay', '.account-modal-overlay', '.side-menu-overlay', '#overlay', '#addressModalOverlay', '#resetPasswordModalOverlay', '#cartOverlay'];
     overlays.forEach(selector => {
         const el = document.querySelector(selector);
         if (el) {
@@ -28,30 +30,63 @@ export function closeAllModalsAndOverlays() {
     document.body.style.overflow = '';
 }
 
+const PAGE_TITLES = {
+    homePage:           'MINIME - Naturally Comfortable Footwear',
+    menPage:            'Men\'s Collection | MINIME',
+    womenPage:          'Women\'s Collection | MINIME',
+    salePage:           'Sale | MINIME',
+    sustainabilityPage: 'Sustainability | MINIME',
+    storesPage:         'Our Stores | MINIME',
+    ourStoryPage:       'Our Story | MINIME',
+    helpCenterPage:     'Help Center | MINIME',
+    returnsPage:        'Returns & Exchanges | MINIME',
+    shippingPage:       'Shipping Info | MINIME',
+    contactPage:        'Contact Us | MINIME',
+    careersPage:        'Careers | MINIME',
+    accessibilityPage:  'Accessibility | MINIME',
+    termsPage:          'Terms of Service | MINIME',
+    privacyPage:        'Privacy Policy | MINIME',
+    profilePage:        'My Profile | MINIME',
+    ordersPage:         'My Orders | MINIME',
+    addressesPage:      'My Addresses | MINIME',
+    settingsPage:       'Settings | MINIME',
+    wishlistPage:       'My Wishlist | MINIME',
+    checkoutPage:       'Checkout | MINIME',
+    dashboardPage:      'Admin Dashboard | MINIME',
+};
+
 export function showPage(pageId) {
     closeAllModalsAndOverlays();
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     const targetPage = document.getElementById(pageId);
     if (targetPage) targetPage.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
+    document.title = PAGE_TITLES[pageId] || 'MINIME';
+
     // Hide footer on checkout page
     const footer = document.querySelector('.footer');
     if (footer) {
-        if (pageId === 'checkoutPage') {
-            footer.style.display = 'none';
-        } else {
-            footer.style.display = '';
-        }
+        footer.style.display = pageId === 'checkoutPage' ? 'none' : '';
     }
 }
 
 export function showHomePage() {
     showPage('homePage');
-    // Re-render products when home page is shown
     const bestsellersGrid = document.getElementById('homeProductGrid');
     if (bestsellersGrid && state.products.length > 0) {
         renderProducts(bestsellersGrid, 'bestsellers');
+    }
+
+    const recentlyViewedSection = document.getElementById('recentlyViewedSection');
+    const recentlyViewedGrid = document.getElementById('recentlyViewedGrid');
+    if (recentlyViewedSection && recentlyViewedGrid) {
+        const viewedIds = RecentlyViewedManager.get();
+        if (viewedIds.length > 0 && state.products.length > 0) {
+            recentlyViewedSection.classList.remove('hidden');
+            renderProducts(recentlyViewedGrid, 'recently-viewed');
+        } else {
+            recentlyViewedSection.classList.add('hidden');
+        }
     }
 }
 

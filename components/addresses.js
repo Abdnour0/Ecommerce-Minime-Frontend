@@ -1,5 +1,7 @@
 import { API_URL } from './state.js';
 import { AuthManager } from './auth.js';
+import { logger } from './logger.js';
+
 
 export const AddressManager = {
     addresses: [],
@@ -96,7 +98,7 @@ export const AddressManager = {
             addresses.push(newAddress);
             localStorage.setItem('addresses', JSON.stringify(addresses));
             this.addresses = addresses;
-            console.log('Address saved to local storage');
+            logger.log('Address saved to local storage');
             return { success: true, address: newAddress };
         } catch (e) {
             console.error('Error saving address locally:', e);
@@ -137,7 +139,7 @@ export const AddressManager = {
                 addresses[index] = { ...addresses[index], ...addressData };
                 localStorage.setItem('addresses', JSON.stringify(addresses));
                 this.addresses = addresses;
-                console.log('Address updated in local storage');
+                logger.log('Address updated in local storage');
                 return { success: true };
             }
             return { success: false, error: 'Address not found' };
@@ -172,7 +174,7 @@ export const AddressManager = {
             const filtered = addresses.filter(a => a._id !== id);
             localStorage.setItem('addresses', JSON.stringify(filtered));
             this.addresses = filtered;
-            console.log('Address deleted from local storage');
+            logger.log('Address deleted from local storage');
             return { success: true };
         } catch (e) {
             console.error('Error deleting address locally:', e);

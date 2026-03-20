@@ -1,3 +1,4 @@
+import { logger } from './components/logger.js';
 import { state } from './components/state.js';
 import { AuthManager } from './components/auth.js';
 import { CartManager } from './components/cart.js';
@@ -7,11 +8,12 @@ import { OrderManager, renderOrders } from './components/orders.js';
 import { AddressManager } from './components/addresses.js';
 import { DashboardManager, showDashboardPage, showAccessDeniedPage } from './components/dashboard.js';
 import { updateDashboardLinkVisibility } from './components/dashboard-access.js';
-import { fetchProducts, renderProducts, openProductModal, closeProductModal, changeModalImage } from './components/products.js';
+import { fetchProducts, renderProducts, openProductModal, closeProductModal, changeModalImage, renderSkeletons } from './components/products.js';
 import * as pages from './components/pages.js';
 import * as ui from './components/ui-handlers.js';
 import { showNotification } from './components/ui-utils.js';
 import { ReviewManager, loadAndRenderReviews } from './components/reviews.js';
+import { renderAddresses } from './components/checkout-ui.js';
 
 // ============================================================================
 // GLOBAL ERROR HANDLING
@@ -146,7 +148,7 @@ window.closeAddressModal = ui.closeAddressModal;
 window.handleAddressSubmit = ui.handleAddressSubmit;
 window.editAddress = ui.editAddress;
 window.deleteAddress = ui.deleteAddress;
-window.renderAddresses = ui.renderAddresses;
+window.renderAddresses = renderAddresses;
 
 // Search functions
 window.openSearchModal = ui.openSearchModal;
@@ -157,7 +159,6 @@ window.performSearch = ui.performSearch;
 
 // Checkout functions
 window.goToCheckout = ui.goToCheckout;
-window.selectAddress = ui.selectAddress;
 window.handlePaymentSubmission = ui.handlePaymentSubmission;
 window.showAddressForm = ui.showAddressForm;
 window.applyCoupon = ui.applyCoupon;
@@ -173,8 +174,15 @@ window.renderWishlist = renderWishlist;
 window.loadAndRenderReviews = loadAndRenderReviews;
 
 // State (for debugging)
-window.state = state;
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    window.state = state;
+}
 window.errorHandler = errorHandler;
+
+// Modals
+window.openAddressSelectionModal = ui.openAddressSelectionModal;
+window.closeAddressSelectionModal = ui.closeAddressSelectionModal;
+window.fillCheckoutForm = ui.fillCheckoutForm;
 
 // ============================================================================
 // INITIALIZATION
@@ -262,7 +270,7 @@ class AppInitializer {
     }
 
     setupUI() {
-        console.log('🎨 Setting up UI...');
+        logger.log('🎨 Setting up UI...');
 
         // Update cart display
         ui.updateCart();
@@ -283,13 +291,17 @@ class AppInitializer {
     }
 
     async loadProducts() {
-        console.log('📦 Loading products...');
+        logger.log('📦 Loading products...');
 
         try {
+            const bestsellersGrid = document.getElementById('homeProductGrid');
+            if (bestsellersGrid) {
+                renderSkeletons(bestsellersGrid, 4);
+            }
+            
             await fetchProducts();
 
             // Render products on home page if active
-            const bestsellersGrid = document.getElementById('homeProductGrid');
             const homePage = document.getElementById('homePage');
 
             if (homePage && homePage.classList.contains('active') && bestsellersGrid) {
@@ -325,13 +337,20 @@ class AppInitializer {
     }
 
     setupEventListeners() {
-        console.log('🔗 Setting up event listeners...');
+        logger.log('🔗 Setting up event listeners...');
 
         // Scroll handler
         window.addEventListener('scroll', ui.handleScroll);
 
         // Cart update listener
         window.addEventListener('cartUpdated', () => ui.updateCart());
+
+        // Auth change listener
+        window.addEventListener('authChanged', () => {
+            updateDashboardLinkVisibility();
+            ui.updateCart();
+            ui.showAccountChoice();
+        });
 
         // Orders update listener - refresh dashboard and orders page
         window.addEventListener('ordersUpdated', () => {
@@ -430,16 +449,7 @@ class AppInitializer {
 
     setupModalHandlers() {
         // Product modal
-        const modalClose = document.getElementById('modalClose');
         const productModalOverlay = document.getElementById('productModalOverlay');
-
-        if (modalClose) {
-            modalClose.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                closeProductModal();
-            });
-        }
 
         if (productModalOverlay) {
             productModalOverlay.addEventListener('click', (e) => {
@@ -565,6 +575,11 @@ class AppInitializer {
                 const currentPassword = document.getElementById('currentPassword')?.value;
                 const newPassword = document.getElementById('newPassword')?.value;
                 const confirmPassword = document.getElementById('confirmNewPassword')?.value;
+
+                if (!newPassword || newPassword.length < 6) {
+                    showNotification('New password must be at least 6 characters', 'error');
+                    return;
+                }
 
                 if (newPassword !== confirmPassword) {
                     showNotification('Passwords do not match', 'error');
@@ -988,6 +1003,13 @@ const app = new AppInitializer();
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await app.init();
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('✅ ServiceWorker registered:', reg.scope))
+                .catch(err => console.error('❌ ServiceWorker registration failed:', err));
+        }
 
         // Log helpful debugging info in development
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {

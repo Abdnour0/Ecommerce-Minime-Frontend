@@ -1,6 +1,41 @@
 import { state, API_URL } from './state.js';
 import { AuthManager } from './auth.js';
 import { SettingsManager } from './settings.js';
+import { CartManager } from './cart.js';
+import { showNotification } from './ui-utils.js';
+
+export function prepareOrderData(paymentMethod, email) {
+    // Get cart items - ensure they have all required fields
+    const cartItems = state.cart.map(item => ({
+        id: item.id || item._id,
+        name: item.name || 'Product',
+        price: item.price || 0,
+        quantity: item.quantity || 1,
+        image: item.image || 'https://via.placeholder.com/400x300'
+    }));
+
+    const subtotal = CartManager.getTotal();
+    const shipping = 0; // Free shipping or calculate if needed
+    const tax = Math.round(subtotal * 0.1 * 100) / 100; // 10% tax (adjust as needed)
+    const total = subtotal + shipping + tax;
+
+    return {
+        items: cartItems,
+        subtotal: subtotal,
+        shipping: shipping,
+        tax: tax,
+        total: total,
+        paymentMethod: paymentMethod,
+        shippingAddress: {
+            line1: document.getElementById('address')?.value || '',
+            city: document.getElementById('city')?.value || '',
+            state: document.getElementById('state')?.value || '',
+            postal_code: document.getElementById('zip')?.value || '',
+            country: document.getElementById('country')?.value || 'US'
+        },
+        email: email
+    };
+}
 
 const OrderManager = {
     async init() {
@@ -207,20 +242,7 @@ export function renderOrders() {
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         ${canCancel ? `
-                            <button class="btn-cancel-link-styled" onclick="(async () => {
-                                try {
-                                    const result = await window.OrderManager.cancelOrder('${orderId}');
-                                    if (result && result.success) {
-                                        window.showNotification('Order cancelled successfully.', 'success');
-                                        window.renderOrders();
-                                    } else {
-                                        window.showNotification(result?.error || 'Failed to cancel order. Please try again.', 'error');
-                                    }
-                                } catch (error) {
-                                    console.error('Error cancelling order:', error);
-                                    window.showNotification('Failed to cancel order. Please try again.', 'error');
-                                }
-                            })()">
+                            <button class="btn-cancel-link-styled" data-cancel-order-id="${orderId}">
                                 CANCEL ORDER
                             </button>
                         ` : ''}
@@ -268,6 +290,29 @@ export function renderOrders() {
         `;
     }).join('');
 }
+
+// Event delegation for cancel buttons (attached once at module load time)
+document.addEventListener('click', async (e) => {
+    const ordersList = document.getElementById('ordersList');
+    if (!ordersList || !ordersList.contains(e.target)) return;
+
+    const btn = e.target.closest('[data-cancel-order-id]');
+    if (!btn) return;
+
+    const orderId = btn.dataset.cancelOrderId;
+    try {
+        const result = await OrderManager.cancelOrder(orderId);
+        if (result && result.success) {
+            showNotification('Order cancelled successfully.', 'success');
+            renderOrders();
+        } else {
+            showNotification(result?.error || 'Failed to cancel order. Please try again.', 'error');
+        }
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        showNotification('Failed to cancel order. Please try again.', 'error');
+    }
+});
 
 // Explicit exports to ensure they're available
 export { OrderManager };

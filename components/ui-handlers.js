@@ -1,14 +1,17 @@
+import { logger } from './logger.js';
 import { state, API_URL } from './state.js';
 import { AuthManager } from './auth.js';
 import { CartManager } from './cart.js';
-import { OrderManager, renderOrders } from './orders.js';
+import { OrderManager, renderOrders, prepareOrderData } from './orders.js';
 import { SettingsManager } from './settings.js';
 import { AddressManager } from './addresses.js';
-import { showNotification, escapeHtml } from './ui-utils.js';
+import { showNotification, escapeHtml, showConfirmDialog, trapFocus } from './ui-utils.js';
 import { showPage } from './pages.js';
+import { STRIPE_PUBLISHABLE_KEY } from '../config.js';
+import { renderAddresses, updateCheckoutSummary } from './checkout-ui.js';
 
 export function openAccountModal() {
-    console.log('openAccountModal called');
+    logger.log('openAccountModal called');
     const modal = document.getElementById('accountModal');
     const overlay = document.getElementById('accountModalOverlay');
 
@@ -18,60 +21,61 @@ export function openAccountModal() {
     }
 
     if (AuthManager.isAuthenticated()) {
-        console.log('openAccountModal: User authenticated, showing logged in view');
+        logger.log('openAccountModal: User authenticated, showing logged in view');
         showLoggedInView();
     } else {
-        console.log('openAccountModal: User not authenticated, showing account choice');
+        logger.log('openAccountModal: User not authenticated, showing account choice');
         showAccountChoice();
     }
 
     modal.classList.add('active');
     overlay.classList.add('active');
-    console.log('openAccountModal: Modal opened');
+    trapFocus(modal);
+    logger.log('openAccountModal: Modal opened');
 }
 
 export function closeAccountModal() {
-    console.log('closeAccountModal called');
+    logger.log('closeAccountModal called');
     const modal = document.getElementById('accountModal');
     const overlay = document.getElementById('accountModalOverlay');
 
     if (modal) modal.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
 
-    console.log('closeAccountModal: Modal closed');
+    logger.log('closeAccountModal: Modal closed');
 }
 
 export function showAccountChoice() {
-    console.log('showAccountChoice called');
+    logger.log('showAccountChoice called');
     document.querySelectorAll('.account-view').forEach(v => v.style.display = 'none');
-    const v = document.getElementById('accountChoiceView');
-    if (v) {
-        v.style.display = 'block';
-        console.log('showAccountChoice: Account choice view shown');
+    const viewEl = document.getElementById('accountChoiceView');
+    if (viewEl) {
+        viewEl.style.display = 'block';
+        logger.log('showAccountChoice: Account choice view shown');
     } else {
         console.error('showAccountChoice: accountChoiceView element not found');
     }
 }
 
 export function showLoginView() {
-    console.log('showLoginView called');
+    logger.log('showLoginView called');
     document.querySelectorAll('.account-view').forEach(v => v.style.display = 'none');
-    const v = document.getElementById('loginView');
-    if (v) {
-        v.style.display = 'block';
-        console.log('showLoginView: Login view shown');
+    const viewEl = document.getElementById('loginView');
+    if (viewEl) {
+        viewEl.style.display = 'block';
+        logger.log('showLoginView: Login view shown');
     } else {
         console.error('showLoginView: loginView element not found');
     }
 }
 
 export function showSignupView() {
-    console.log('showSignupView called');
+    logger.log('showSignupView called');
     document.querySelectorAll('.account-view').forEach(v => v.style.display = 'none');
-    const v = document.getElementById('signupView');
-    if (v) {
-        v.style.display = 'block';
-        console.log('showSignupView: Signup view shown');
+    const viewEl = document.getElementById('signupView');
+    if (viewEl) {
+        viewEl.style.display = 'block';
+        logger.log('showSignupView: Signup view shown');
     } else {
         console.error('showSignupView: signupView element not found');
     }
@@ -80,13 +84,13 @@ export function showSignupView() {
 export function showLoggedInView() {
     document.querySelectorAll('.account-view').forEach(v => v.style.display = 'none');
     if (state.currentUser) {
-        const n = document.getElementById('userName');
-        const e = document.getElementById('userEmail');
-        if (n) n.textContent = `Welcome, ${state.currentUser.firstName}!`;
-        if (e) e.textContent = state.currentUser.email;
+        const userNameEl = document.getElementById('userName');
+        const userEmailEl = document.getElementById('userEmail');
+        if (userNameEl) userNameEl.textContent = `Welcome, ${state.currentUser.firstName}!`;
+        if (userEmailEl) userEmailEl.textContent = state.currentUser.email;
     }
-    const v = document.getElementById('loggedInView');
-    if (v) v.style.display = 'block';
+    const viewEl = document.getElementById('loggedInView');
+    if (viewEl) viewEl.style.display = 'block';
 }
 
 export function handleGoogleLogin() { window.location.href = `${API_URL}/auth/google`; }
@@ -139,6 +143,12 @@ export async function handleSignup(e) {
         return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+
     if (password !== confirmPassword) {
         showNotification('Passwords do not match', 'error');
         return;
@@ -161,18 +171,18 @@ export async function handleSignup(e) {
 
 export function handleLogout() {
     AuthManager.logout();
-    window.location.reload();
+    showPage('homePage');
 }
 
 export function openCart() {
-    console.log('openCart called');
+    logger.log('openCart called');
     const cartSidebar = document.getElementById('cartSidebar');
     const cartOverlay = document.getElementById('cartOverlay');
     const overlay = document.getElementById('overlay');
 
     if (cartSidebar) {
         cartSidebar.classList.add('open', 'active');
-        console.log('Cart sidebar opened');
+        logger.log('Cart sidebar opened');
     } else {
         console.warn('openCart: cartSidebar element not found');
     }
@@ -189,14 +199,14 @@ export function openCart() {
 }
 
 export function closeCart() {
-    console.log('closeCart called');
+    logger.log('closeCart called');
     const cartSidebar = document.getElementById('cartSidebar');
     const cartOverlay = document.getElementById('cartOverlay');
     const overlay = document.getElementById('overlay');
 
     if (cartSidebar) {
         cartSidebar.classList.remove('open', 'active');
-        console.log('Cart sidebar closed');
+        logger.log('Cart sidebar closed');
     } else {
         console.warn('closeCart: cartSidebar element not found');
     }
@@ -211,10 +221,10 @@ export function closeCart() {
 }
 
 export function handleScroll() {
-    const n = document.getElementById('navbar');
-    if (n) {
-        if (window.scrollY > 50) n.classList.add('scrolled');
-        else n.classList.remove('scrolled');
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+        if (window.scrollY > 50) navbar.classList.add('scrolled');
+        else navbar.classList.remove('scrolled');
     }
 }
 
@@ -232,8 +242,8 @@ export function addToCart(productId) {
 }
 
 export function addToCartFromModal() {
-    console.log('addToCartFromModal called');
-    console.log('state.selectedProduct:', state.selectedProduct);
+    logger.log('addToCartFromModal called');
+    logger.log('state.selectedProduct:', state.selectedProduct);
 
     if (!state.selectedProduct) {
         console.error('addToCartFromModal: No product selected');
@@ -241,7 +251,7 @@ export function addToCartFromModal() {
         return;
     }
     const productId = state.selectedProduct.id || state.selectedProduct._id;
-    console.log('Product ID from modal:', productId);
+    logger.log('Product ID from modal:', productId);
 
     if (!productId) {
         console.error('addToCartFromModal: Product has no ID', state.selectedProduct);
@@ -252,20 +262,20 @@ export function addToCartFromModal() {
 }
 
 export function updateCart() {
-    const ct = document.getElementById('cartCount');
-    const ict = document.getElementById('cartItemCount');
-    const it = document.getElementById('cartItems');
-    const tot = document.getElementById('cartTotal');
+    const cartCountEl = document.getElementById('cartCount');
+    const cartItemCountEl = document.getElementById('cartItemCount');
+    const cartItemsEl = document.getElementById('cartItems');
+    const cartTotalEl = document.getElementById('cartTotal');
     const totalItems = CartManager.getItemCount();
-    if (ct) ct.textContent = totalItems;
-    if (ict) ict.textContent = totalItems;
+    if (cartCountEl) cartCountEl.textContent = totalItems;
+    if (cartItemCountEl) cartItemCountEl.textContent = totalItems;
     if (!state.cart || state.cart.length === 0) {
-        if (it) it.innerHTML = `<div class="cart-empty"><p>${SettingsManager.getTranslation('cartEmpty')}</p></div>`;
-        if (tot) tot.textContent = '$0.00';
+        if (cartItemsEl) cartItemsEl.innerHTML = `<div class="cart-empty"><p>${SettingsManager.getTranslation('cartEmpty')}</p></div>`;
+        if (cartTotalEl) cartTotalEl.textContent = '$0.00';
     } else {
-        if (tot) tot.textContent = `$${CartManager.getTotal().toFixed(2)}`;
-        if (it) {
-            it.innerHTML = state.cart.map((item, index) => `
+        if (cartTotalEl) cartTotalEl.textContent = `$${CartManager.getTotal().toFixed(2)}`;
+        if (cartItemsEl) {
+            cartItemsEl.innerHTML = state.cart.map((item) => `
                 <div class="cart-item">
                     <div class="cart-item-image">
                         <img src="${item.image || 'https://via.placeholder.com/96x96?text=No+Image'}" alt="${escapeHtml(item.name)}" onerror="this.src='https://via.placeholder.com/96x96?text=No+Image'">
@@ -274,12 +284,12 @@ export function updateCart() {
                         <div class="cart-item-name">${escapeHtml(item.name)}</div>
                         <div class="cart-item-price">$${item.price}</div>
                         <div class="cart-item-quantity">
-                            <button class="quantity-btn" onclick="window.CartManager.updateQuantity(${index}, -1)" aria-label="Decrease quantity">−</button>
+                            <button class="quantity-btn" onclick="window.CartManager.updateQuantity('${item.id || item._id}', -1)" aria-label="Decrease quantity">−</button>
                             <span class="quantity-value">${item.quantity || 1}</span>
-                            <button class="quantity-btn" onclick="window.CartManager.updateQuantity(${index}, 1)" aria-label="Increase quantity">+</button>
+                            <button class="quantity-btn" onclick="window.CartManager.updateQuantity('${item.id || item._id}', 1)" aria-label="Increase quantity">+</button>
                         </div>
                     </div>
-                    <button class="remove-item-btn" onclick="window.CartManager.remove(${index})" aria-label="Remove ${escapeHtml(item.name)} from cart">×</button>
+                    <button class="remove-item-btn" onclick="window.CartManager.remove('${item.id || item._id}')" aria-label="Remove ${escapeHtml(item.name)} from cart">×</button>
                 </div>
             `).join('');
         }
@@ -288,7 +298,11 @@ export function updateCart() {
 }
 
 export function openSearchModal() {
-    document.getElementById('searchModal')?.classList.add('active');
+    const sm = document.getElementById('searchModal');
+    if (sm) {
+        sm.classList.add('active');
+        trapFocus(sm);
+    }
     document.getElementById('searchModalOverlay')?.classList.add('active');
     document.getElementById('searchInput')?.focus();
 }
@@ -299,11 +313,11 @@ export function closeSearchModal() {
 }
 
 export function performSearch() {
-    const q = document.getElementById('searchInput')?.value.trim().toLowerCase();
-    const res = document.getElementById('searchResults');
-    if (!q || !res) return;
-    const items = state.products.filter(p => p.name.toLowerCase().includes(q));
-    res.innerHTML = items.length ? items.map(p => `
+    const query = document.getElementById('searchInput')?.value.trim().toLowerCase();
+    const resultsEl = document.getElementById('searchResults');
+    if (!query || !resultsEl) return;
+    const items = state.products.filter(p => p.name.toLowerCase().includes(query));
+    resultsEl.innerHTML = items.length ? items.map(p => `
         <div class="search-result-item" onclick="window.openProductModal('${p.id || p._id}'); window.closeSearchModal();">
             <div class="search-result-image">
                 <img src="${p.image}" alt="${escapeHtml(p.name)}">
@@ -327,6 +341,7 @@ export function showResetPasswordModal() {
     if (overlay && modal) {
         overlay.classList.add('active');
         modal.classList.add('active');
+        trapFocus(modal);
         document.body.style.overflow = 'hidden';
         
         // Show reset password form directly (skip email step)
@@ -352,52 +367,8 @@ export function closeResetPasswordModal() {
     document.body.style.overflow = '';
 }
 
-export function renderAddresses() {
-    const g = document.getElementById('addressesGrid');
-    if (!g) return;
-    g.innerHTML = AddressManager.addresses.length ? AddressManager.addresses.map(a => `
-        <div class="address-card">
-            <div class="address-card-header">
-                <div class="address-type-badge">
-                    ${a.isDefault ? '<span class="badge badge-primary">Default</span>' : ''}
-                    <span class="address-label">${escapeHtml(a.label)}</span>
-                </div>
-                <div class="address-actions">
-                    <button class="btn-icon" onclick="window.editAddress('${a._id}')" aria-label="Edit address">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
-                    <button class="btn-icon delete-btn" onclick="window.deleteAddress('${a._id}')" aria-label="Delete address">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="address-card-body">
-                <strong class="address-name">${escapeHtml(a.firstName)} ${escapeHtml(a.lastName)}</strong>
-                <p class="address-line">${escapeHtml(a.street)}</p>
-                <p class="address-line">${escapeHtml(a.city)}, ${escapeHtml(a.zip)}</p>
-                <p class="address-line">${escapeHtml(a.country)}</p>
-            </div>
-        </div>
-    `).join('') : `
-        <div class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="margin-bottom: 24px; color: var(--text-secondary);">
-                <path d="M32 58s20-10 20-25V12L32 4 12 12v21c0 15 20 25 20 25z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="32" cy="28" r="8" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <h3>No addresses saved</h3>
-            <p>Add an address for faster checkout</p>
-        </div>
-    `;
-}
-
 export function openAddressModal(id = null) {
-    console.log('openAddressModal called with id:', id);
+    logger.log('openAddressModal called with id:', id);
     const form = document.getElementById('addressForm');
     const addressIdInput = document.getElementById('addressId');
     const modal = document.getElementById('addressModal');
@@ -415,8 +386,8 @@ export function openAddressModal(id = null) {
 
     if (id && title) {
         title.textContent = 'Edit Address';
-        const a = AddressManager.addresses.find(x => x._id === id);
-        if (a) {
+        const existingAddress = AddressManager.addresses.find(x => x._id === id);
+        if (existingAddress) {
             const fieldMap = {
                 'label': 'addressLabel',
                 'phone': 'addressPhone',
@@ -431,14 +402,14 @@ export function openAddressModal(id = null) {
 
             Object.entries(fieldMap).forEach(([key, inputId]) => {
                 const input = document.getElementById(inputId);
-                if (input && a[key]) {
-                    input.value = a[key];
+                if (input && existingAddress[key]) {
+                    input.value = existingAddress[key];
                 }
             });
 
             const defaultCheckbox = document.getElementById('addressIsDefault');
             if (defaultCheckbox) {
-                defaultCheckbox.checked = a.isDefault || false;
+                defaultCheckbox.checked = existingAddress.isDefault || false;
             }
         }
     } else if (title) {
@@ -447,7 +418,8 @@ export function openAddressModal(id = null) {
 
     modal.classList.add('active');
     overlay.classList.add('active');
-    console.log('Address modal opened');
+    trapFocus(modal);
+    logger.log('Address modal opened');
 }
 
 export function closeAddressModal() {
@@ -457,9 +429,9 @@ export function closeAddressModal() {
 
 export async function handleAddressSubmit(e) {
     e.preventDefault();
-    console.log('handleAddressSubmit called');
+    logger.log('handleAddressSubmit called');
     const id = document.getElementById('addressId')?.value;
-    const d = {
+    const addressData = {
         label: document.getElementById('addressLabel')?.value,
         phone: document.getElementById('addressPhone')?.value,
         firstName: document.getElementById('addressFirstName')?.value,
@@ -472,26 +444,25 @@ export async function handleAddressSubmit(e) {
         isDefault: document.getElementById('addressIsDefault')?.checked || false
     };
 
-    console.log('Submitting address:', d);
-    const r = id ? await AddressManager.updateAddress(id, d) : await AddressManager.addAddress(d);
+    logger.log('Submitting address:', addressData);
+    const result = id ? await AddressManager.updateAddress(id, addressData) : await AddressManager.addAddress(addressData);
 
-    if (r.success) {
-        console.log('Address saved successfully');
+    if (result.success) {
+        logger.log('Address saved successfully');
         showNotification(id ? 'Address updated successfully' : 'Address added successfully', 'success');
         closeAddressModal();
         renderAddresses();
-        renderCheckoutAddresses(); // Also update checkout addresses
     } else {
-        console.error('Address save failed:', r.error);
-        showNotification(r.error || 'Failed to save address', 'error');
+        console.error('Address save failed:', result.error);
+        showNotification(result.error || 'Failed to save address', 'error');
     }
 }
 
 export function editAddress(id) { openAddressModal(id); }
 export async function deleteAddress(id) {
-    if (confirm('Delete?')) {
+    showConfirmDialog('Are you sure you want to delete this address? This cannot be undone.', async () => {
         if ((await AddressManager.deleteAddress(id)).success) renderAddresses();
-    }
+    });
 }
 
 export function showAddressForm() {
@@ -521,25 +492,42 @@ export function toggleReviewForm() {
 }
 
 export async function confirmDeleteAccount() {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-        return;
-    }
-    try {
-        const response = await fetch(`${API_URL}/auth/delete-account`, {
-            method: 'DELETE',
-            headers: AuthManager.getAuthHeader()
-        });
-        if (response.ok) {
-            handleLogout();
+    showConfirmDialog('Are you sure you want to delete your account? This action cannot be undone.', async () => {
+        try {
+            // Only call the backend if using a real (non-local) token
+            if (state.token && state.token !== 'local-dummy-token') {
+                const response = await fetch(`${API_URL}/auth/delete-account`, {
+                    method: 'DELETE',
+                    headers: AuthManager.getAuthHeader()
+                });
+                if (!response.ok) {
+                    throw new Error('Server delete failed');
+                }
+            }
+
+            // Always perform local deletion — remove user from the stored users array
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const updatedUsers = users.filter(u => u.email !== state.currentUser?.email);
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+
+            // Clear all user-related local data
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('token');
+            localStorage.removeItem('orders');
+            localStorage.removeItem('addresses');
+            localStorage.removeItem('wishlist');
+            localStorage.removeItem('cart');
+
             showNotification('Account deleted successfully', 'success');
-            window.showHomePage();
-        } else {
+            // Short delay so the notification is visible before reload
+            setTimeout(() => {
+                handleLogout();
+            }, 500);
+        } catch (error) {
+            console.error('Error deleting account:', error);
             showNotification('Failed to delete account', 'error');
         }
-    } catch (error) {
-        console.error('Error deleting account:', error);
-        showNotification('Failed to delete account', 'error');
-    }
+    });
 }
 
 export async function placeOrder() {
@@ -575,46 +563,13 @@ export async function placeOrder() {
     goToCheckout();
 }
 
-// Helper function to prepare order data from cart
-function prepareOrderData(paymentMethod, email) {
-    // Get cart items - ensure they have all required fields
-    const cartItems = state.cart.map(item => ({
-        id: item.id || item._id,
-        name: item.name || 'Product',
-        price: item.price || 0,
-        quantity: item.quantity || 1,
-        image: item.image || 'https://via.placeholder.com/400x300'
-    }));
-
-    const subtotal = CartManager.getTotal();
-    const shipping = 0; // Free shipping or calculate if needed
-    const tax = Math.round(subtotal * 0.1 * 100) / 100; // 10% tax (adjust as needed)
-    const total = subtotal + shipping + tax;
-
-    return {
-        items: cartItems,
-        subtotal: subtotal,
-        shipping: shipping,
-        tax: tax,
-        total: total,
-        paymentMethod: paymentMethod,
-        shippingAddress: {
-            line1: document.getElementById('address')?.value || '',
-            city: document.getElementById('city')?.value || '',
-            state: document.getElementById('state')?.value || '',
-            postal_code: document.getElementById('zip')?.value || '',
-            country: document.getElementById('country')?.value || 'US'
-        },
-        email: email
-    };
-}
 
 // CHECKOUT & PAYMENT
 export function goToCheckout() {
-    console.log('goToCheckout called');
-    console.log('Cart length:', state.cart.length);
-    console.log('Is authenticated:', AuthManager.isAuthenticated());
-    console.log('Cart items:', state.cart);
+    logger.log('goToCheckout called');
+    logger.log('Cart length:', state.cart.length);
+    logger.log('Is authenticated:', AuthManager.isAuthenticated());
+    logger.log('Cart items:', state.cart);
 
     if (!state.cart || state.cart.length === 0) {
         console.warn('goToCheckout: Cart is empty');
@@ -622,22 +577,22 @@ export function goToCheckout() {
         return;
     }
 
-    console.log('goToCheckout: Closing cart sidebar');
+    logger.log('goToCheckout: Closing cart sidebar');
     closeCart();
 
     if (!AuthManager.isAuthenticated()) {
-        console.log('goToCheckout: User not authenticated, opening login modal');
+        logger.log('goToCheckout: User not authenticated, opening login modal');
         showLoginView();
         openAccountModal();
         showNotification('Please sign in to checkout', 'info');
         return;
     }
 
-    console.log('goToCheckout: User authenticated, showing checkout page');
+    logger.log('goToCheckout: User authenticated, showing checkout page');
     if (window.showCheckoutPage) {
         try {
             window.showCheckoutPage();
-            console.log('goToCheckout: Checkout page shown, initializing payment');
+            logger.log('goToCheckout: Checkout page shown, initializing payment');
             initializePayment();
             checkSavedAddresses();
         } catch (error) {
@@ -718,10 +673,8 @@ export async function initializePayment() {
         }
 
         if (!state.stripe) {
-            // Try to load Stripe - you should set your Stripe publishable key
-            const stripeKey = 'pk_test_51Q...'; // Replace with your actual Stripe key
             if (typeof Stripe !== 'undefined') {
-                state.stripe = Stripe(stripeKey);
+                state.stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
             } else {
                 throw new Error('Stripe library not loaded');
             }
@@ -780,60 +733,6 @@ export async function initializePayment() {
     }
 }
 
-export function updateCheckoutSummary() {
-    const subtotal = CartManager.getTotal();
-    const shipping = subtotal > 75 ? 0 : 10;
-    let discount = 0;
-    if (state.currentCoupon) {
-        if (state.currentCoupon.discountType === 'percentage') {
-            discount = subtotal * (state.currentCoupon.discountValue / 100);
-        } else {
-            discount = state.currentCoupon.discountValue;
-        }
-    }
-    const total = Math.max(0, subtotal + shipping - discount);
-    const s = document.getElementById('checkoutSubtotal'); if (s) s.textContent = `$${subtotal.toFixed(2)} `;
-    const sh = document.getElementById('checkoutShipping'); if (sh) sh.textContent = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)} `;
-    const discountRow = document.getElementById('checkoutDiscountRow');
-    const discountEl = document.getElementById('checkoutDiscount');
-    if (discount > 0) {
-        if (discountRow) discountRow.classList.remove('hidden');
-        if (discountEl) discountEl.textContent = `- $${discount.toFixed(2)} `;
-    } else {
-        if (discountRow) discountRow.classList.add('hidden');
-    }
-    const t = document.getElementById('checkoutTotal'); if (t) t.textContent = `$${total.toFixed(2)} `;
-    const items = document.getElementById('checkoutOrderItems');
-    if (items) {
-        if (state.cart.length === 0) {
-            items.innerHTML = '<div class="checkout-empty">Your cart is empty</div>';
-        } else {
-            items.innerHTML = state.cart.map(i => `
-        <div class="checkout-item">
-            <img src="${i.image || 'https://via.placeholder.com/60x60?text=No+Image'}"
-                alt="${escapeHtml(i.name)}"
-                class="checkout-item-img"
-                onerror="this.src='https://via.placeholder.com/60x60?text=No+Image'">
-                <div class="checkout-item-info">
-                    <div class="checkout-item-title">${escapeHtml(i.name)}</div>
-                    <div class="checkout-item-meta">Quantity: ${i.quantity || 1}</div>
-                    <div class="checkout-item-price">$${(i.price * (i.quantity || 1)).toFixed(2)}</div>
-                </div>
-            </div>
-    `).join('');
-        }
-    }
-}
-
-export function renderCheckoutAddresses() {
-    // Legacy function kept to avoid breaking imports, but address selection is removed
-}
-
-
-
-export function selectAddress(el, id) {
-    // Legacy function
-}
 
 export async function applyCoupon() {
     const code = document.getElementById('couponCode')?.value.trim();
@@ -869,17 +768,27 @@ export async function applyCoupon() {
     }
 }
 
+function populateSuccessPage(email, orderId, total) {
+    showPage('orderSuccessPage');
+    
+    const emailEl = document.getElementById('successEmail');
+    if (emailEl) emailEl.textContent = email;
+
+    const orderNumEl = document.getElementById('successOrderNumber');
+    if (orderNumEl) orderNumEl.textContent = '#' + String(orderId).slice(-8).toUpperCase();
+
+    const dateEl = document.getElementById('successDate');
+    if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
+
+    const totalEl = document.getElementById('successTotal');
+    if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+}
+
 export async function handlePaymentSubmission() {
     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'card';
 
     // Check if we are using Stripe or Mock form
     const isMockPayment = paymentMethod === 'card' && (!state.stripe || !state.elements);
-
-    // Only block if it's a real Stripe attempt and Stripe is missing
-    if (paymentMethod === 'card' && !isMockPayment && (!state.stripe || !state.elements)) {
-        showNotification('Please complete all required fields', 'error');
-        return;
-    }
 
     const btn = document.getElementById('submitPaymentBtn');
     if (!btn) {
@@ -928,21 +837,7 @@ export async function handlePaymentSubmission() {
                 CartManager.clear();
 
             // Show success page
-            window.location.href = '#orderSuccessPage';
-            showPage('orderSuccessPage');
-
-            // Populate success page
-            const emailEl = document.getElementById('successEmail');
-            if (emailEl) emailEl.textContent = email;
-
-            const orderNumEl = document.getElementById('successOrderNumber');
-            if (orderNumEl) orderNumEl.textContent = '#' + String(createdOrder.id).slice(-8).toUpperCase();
-
-            const dateEl = document.getElementById('successDate');
-            if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
-
-            const totalEl = document.getElementById('successTotal');
-            if (totalEl) totalEl.textContent = '$' + orderData.total.toFixed(2);
+            populateSuccessPage(email, createdOrder.id, orderData.total);
 
                 // Refresh orders display
                 renderOrders();
@@ -975,21 +870,7 @@ export async function handlePaymentSubmission() {
                 CartManager.clear();
 
             // Show success page
-            window.location.href = '#orderSuccessPage';
-            showPage('orderSuccessPage');
-
-            // Populate success page
-            const emailEl = document.getElementById('successEmail');
-            if (emailEl) emailEl.textContent = email;
-
-            const orderNumEl = document.getElementById('successOrderNumber');
-            if (orderNumEl) orderNumEl.textContent = '#' + String(createdOrder.id).slice(-8).toUpperCase();
-
-            const dateEl = document.getElementById('successDate');
-            if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
-
-            const totalEl = document.getElementById('successTotal');
-            if (totalEl) totalEl.textContent = '$' + orderData.total.toFixed(2);
+            populateSuccessPage(email, createdOrder.id, orderData.total);
 
                 // Refresh orders display
                 renderOrders();
@@ -1034,9 +915,9 @@ export async function handlePaymentSubmission() {
                 // Clear pending order data if payment fails
                 sessionStorage.removeItem('pendingStripeOrder');
                 if (error.type === "card_error" || error.type === "validation_error") {
-                    showMessage(error.message);
+                    showNotification(error.message, 'error');
                 } else {
-                    showMessage("An unexpected error occurred.");
+                    showNotification("An unexpected error occurred.", 'error');
                 }
             }
             // Note: If payment succeeds, Stripe will redirect, and order will be created in handleURLParameters
@@ -1107,16 +988,16 @@ export function openAddressSelectionModal() {
         <div class="address-card" onclick="fillCheckoutForm(${index})" style="cursor: pointer; margin-bottom: 12px; height: auto;">
             <div class="address-card-header" style="margin-bottom: 8px;">
                 <div class="address-type-badge">
-                    <span class="badge ${addr.type === 'Home' ? 'badge-primary' : 'badge-secondary'}" style="background-color: var(--accent-color); color: white;">
-                        ${addr.type}
+                    <span class="badge ${addr.label === 'Home' ? 'badge-primary' : 'badge-secondary'}" style="background-color: var(--accent-color, #F37021); color: white;">
+                        ${escapeHtml(addr.label)}
                     </span>
                     ${addr.isDefault ? '<span class="badge" style="background: #eab308; color: black; margin-left: 8px;">Default</span>' : ''}
                 </div>
             </div>
             <div class="address-card-body">
                 <span class="address-name">${escapeHtml(addr.firstName)} ${escapeHtml(addr.lastName)}</span>
-                <div class="address-line">${escapeHtml(addr.address)}</div>
-                <div class="address-line">${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} ${escapeHtml(addr.zip)}</div>
+                <div class="address-line">${escapeHtml(addr.street)}</div>
+                <div class="address-line">${escapeHtml(addr.city)}, ${escapeHtml(addr.zip)}</div>
                 <div class="address-line">${escapeHtml(addr.country)}</div>
                 ${addr.phone ? `<div class="address-line" style="margin-top: 4px; font-size: 13px;">${escapeHtml(addr.phone)}</div>` : ''}
             </div>
@@ -1139,6 +1020,7 @@ export function openAddressSelectionModal() {
 
     modal.classList.add('active');
     overlay.classList.add('active');
+    trapFocus(modal);
 }
 
 export function closeAddressSelectionModal() {
@@ -1201,7 +1083,4 @@ export function fillCheckoutForm(index) {
     closeAddressSelectionModal();
 }
 
-// Expose functions globally
-window.openAddressSelectionModal = openAddressSelectionModal;
-window.closeAddressSelectionModal = closeAddressSelectionModal;
-window.fillCheckoutForm = fillCheckoutForm;
+// (Global assignments moved to main.js)

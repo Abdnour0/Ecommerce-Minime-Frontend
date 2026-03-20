@@ -77,61 +77,61 @@ export const SettingsManager = {
         this.updatePlaceholders(lang);
     },
 
-updatePlaceholders(lang) {
-    const placeholders = {
-        en: {
-            loginEmail: 'you@example.com',
-            loginPassword: 'Enter your password',
-            signupFirstName: 'John',
-            signupLastName: 'Doe',
-            signupEmail: 'you@example.com',
-            signupPassword: 'Create a password',
-            signupConfirmPassword: 'Confirm your password',
-            searchInput: 'Search products...',
-            cardNumber: '1234 5678 9012 3456',
-            expiry: 'MM/YY',
-            cvv: '123',
-            email: 'you@example.com'
-        },
-        fr: {
-            loginEmail: 'vous@exemple.com',
-            loginPassword: 'Entrez votre mot de passe',
-            signupFirstName: 'Jean',
-            signupLastName: 'Dupont',
-            signupEmail: 'vous@exemple.com',
-            signupPassword: 'Créer un mot de passe',
-            signupConfirmPassword: 'Confirmez votre mot de passe',
-            searchInput: 'Rechercher des produits...',
-            cardNumber: '1234 5678 9012 3456',
-            expiry: 'MM/AA',
-            cvv: '123',
-            email: 'vous@exemple.com'
-        },
-        ar: {
-            loginEmail: 'you@example.com',
-            loginPassword: 'أدخل كلمة المرور',
-            signupFirstName: 'محمد',
-            signupLastName: 'أحمد',
-            signupEmail: 'you@example.com',
-            signupPassword: 'إنشاء كلمة مرور',
-            signupConfirmPassword: 'تأكيد كلمة المرور',
-            searchInput: 'البحث عن منتجات...',
-            cardNumber: '1234 5678 9012 3456',
-            expiry: 'شهر/سنة',
-            cvv: '123',
-            email: 'you@example.com'
-        }
-    };
+    updatePlaceholders(lang) {
+        const placeholders = {
+            en: {
+                loginEmail: 'you@example.com',
+                loginPassword: 'Enter your password',
+                signupFirstName: 'John',
+                signupLastName: 'Doe',
+                signupEmail: 'you@example.com',
+                signupPassword: 'Create a password',
+                signupConfirmPassword: 'Confirm your password',
+                searchInput: 'Search products...',
+                cardNumber: '1234 5678 9012 3456',
+                expiry: 'MM/YY',
+                cvv: '123',
+                email: 'you@example.com'
+            },
+            fr: {
+                loginEmail: 'vous@exemple.com',
+                loginPassword: 'Entrez votre mot de passe',
+                signupFirstName: 'Jean',
+                signupLastName: 'Dupont',
+                signupEmail: 'vous@exemple.com',
+                signupPassword: 'Créer un mot de passe',
+                signupConfirmPassword: 'Confirmez votre mot de passe',
+                searchInput: 'Rechercher des produits...',
+                cardNumber: '1234 5678 9012 3456',
+                expiry: 'MM/AA',
+                cvv: '123',
+                email: 'vous@exemple.com'
+            },
+            ar: {
+                loginEmail: 'you@example.com',
+                loginPassword: 'أدخل كلمة المرور',
+                signupFirstName: 'محمد',
+                signupLastName: 'أحمد',
+                signupEmail: 'you@example.com',
+                signupPassword: 'إنشاء كلمة مرور',
+                signupConfirmPassword: 'تأكيد كلمة المرور',
+                searchInput: 'البحث عن منتجات...',
+                cardNumber: '1234 5678 9012 3456',
+                expiry: 'شهر/سنة',
+                cvv: '123',
+                email: 'you@example.com'
+            }
+        };
 
-    const langPlaceholders = placeholders[lang] || placeholders.en;
+        const langPlaceholders = placeholders[lang] || placeholders.en;
 
-    Object.keys(langPlaceholders).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.placeholder = langPlaceholders[id];
-        }
-    });
-},
+        Object.keys(langPlaceholders).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.placeholder = langPlaceholders[id];
+            }
+        });
+    },
 
     applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
