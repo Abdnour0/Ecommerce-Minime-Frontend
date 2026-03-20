@@ -6408,14 +6408,16 @@ body:has(#checkoutPage.active) .footer,
     }
 
     .nav-right {
-        gap: 4px;
+        gap: 2px;
+        overflow: visible;
+        flex-shrink: 0;
     }
 
     .icon-btn {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        min-height: 36px;
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
     }
 
     .icon-btn svg {
@@ -6423,13 +6425,17 @@ body:has(#checkoutPage.active) .footer,
         height: 18px;
     }
 
-    /* Hide non-essential nav-right buttons on mobile */
+    /* Hide non-essential nav-right buttons on mobile to make room for cart */
     #navDashboardLink {
-        display: none;
+        display: none !important;
     }
 
     .settings-dropdown {
-        display: none;
+        display: none !important;
+    }
+
+    #wishlistNavBtn {
+        display: none !important;
     }
 
     /* === HERO === */
