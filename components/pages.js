@@ -7,6 +7,7 @@ import { showNotification } from './ui-utils.js';
 import { closeAccountModal } from './ui-handlers.js';
 import { renderAddresses, updateCheckoutSummary } from './checkout-ui.js';
 import { RecentlyViewedManager } from './recently-viewed.js';
+import { renderWishlist } from './wishlist.js';
 
 export function closeAllModalsAndOverlays() {
     const overlays = ['.cart-overlay', '.product-modal-overlay', '.search-modal-overlay', '.account-modal-overlay', '.side-menu-overlay', '#overlay', '#addressModalOverlay', '#resetPasswordModalOverlay', '#cartOverlay'];
@@ -172,11 +173,10 @@ export function showSettingsPage(event) {
     showPage('settingsPage');
 }
 
-export async function showWishlistPage(event) {
+export function showWishlistPage(event) {
     if (event) event.preventDefault();
     showPage('wishlistPage');
     // Render wishlist when page is shown
-    const { renderWishlist } = await import('./wishlist.js');
     renderWishlist();
 }
 
