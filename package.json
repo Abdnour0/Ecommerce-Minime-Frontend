@@ -1,0 +1,31 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "A client-side e-commerce storefront for MINIME sustainable footwear and apparel. Built with vanilla JavaScript ES modules — no framework, no bundler required.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Abdnour0/ecommerce-frontend-v2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Abdnour0/ecommerce-frontend-v2/issues"
+  },
+  "homepage": "https://github.com/Abdnour0/ecommerce-frontend-v2#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "jsdom": "^29.0.0",
+    "terser": "^5.46.1",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.0"
+  }
+}
