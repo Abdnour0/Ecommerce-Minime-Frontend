@@ -8,10 +8,7 @@
  * Base URL for all API calls.
  * Change to your production backend URL before deploying.
  */
-export const API_URL =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:5000/api'
-        : '/api';
+// Standalone frontend - no API_URL needed
 
 /**
  * Stripe publishable key.

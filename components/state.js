@@ -1,6 +1,4 @@
-// API_URL is centralised in config.js — import it from there.
-// Kept here as a re-export so existing imports of API_URL from state.js continue to work.
-export { API_URL } from '../config.js';
+// API_URL removed
 
 
 export const state = {

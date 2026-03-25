@@ -1,4 +1,4 @@
-import { state, API_URL } from './state.js';
+import { state } from './state.js';
 import { AuthManager } from './auth.js';
 import { SettingsManager } from './settings.js';
 import { CartManager } from './cart.js';
@@ -55,22 +55,7 @@ const OrderManager = {
     },
 
     async fetchOrders() {
-        try {
-            const response = await fetch(`${API_URL}/orders`, {
-                headers: AuthManager.getAuthHeader()
-            });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.orders) {
-                    state.orders = data.orders;
-                    this.save();
-                    return true;
-                }
-            }
-        } catch (e) {
-            console.error('Error fetching orders:', e);
-        }
-        return false;
+        return true;
     },
 
     async createOrder(orderData) {
@@ -91,27 +76,6 @@ const OrderManager = {
             estimatedDelivery: this.calculateEstimatedDelivery()
         };
 
-        // Try to save to backend
-        try {
-            if (state.token && state.token !== 'local-dummy-token') {
-                const response = await fetch(`${API_URL}/orders`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...AuthManager.getAuthHeader()
-                    },
-                    body: JSON.stringify(order)
-                });
-                const data = await response.json();
-                if (data.success && data.order) {
-                    order.id = data.order._id || data.order.id || order.id;
-                    order._id = data.order._id;
-                }
-            }
-        } catch (e) {
-            console.error('Error saving order to backend:', e);
-        }
 
         // Always save locally as well
         state.orders.unshift(order);
@@ -152,23 +116,8 @@ const OrderManager = {
 
     async cancelOrder(orderId) {
         try {
-            if (AuthManager.isAuthenticated() && state.token !== 'local-dummy-token') {
-                const response = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
-                    method: 'PATCH',
-                    headers: AuthManager.getAuthHeader()
-                });
-                const data = await response.json();
-                if (data.success) {
-                    await this.fetchOrders();
-                    window.dispatchEvent(new CustomEvent('ordersUpdated', { detail: { orders: state.orders } }));
-                    return { success: true };
-                } else {
-                    return { success: false, error: data.message || 'Failed to cancel order' };
-                }
-            } else {
-                this.updateLocalStatus(orderId, 'Cancelled');
-                return { success: true };
-            }
+            this.updateLocalStatus(orderId, 'Cancelled');
+            return { success: true };
         } catch (e) {
             console.error('Error cancelling order:', e);
             return { success: false, error: 'Network error. Please try again.' };

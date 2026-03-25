@@ -30,12 +30,12 @@
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' https://js.stripe.com https://accounts.google.com https://cdn.jsdelivr.net;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https: blob:;
-        connect-src 'self' https://api.stripe.com https://accounts.google.com https://r.stripe.com http://localhost:5000;
-        frame-src https://js.stripe.com https://accounts.google.com;
+        connect-src 'self';
+        frame-src 'none';
     ">
 
     <title>MINIME - Naturally Comfortable Footwear</title>
@@ -50,8 +50,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://js.stripe.com/v3/"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Conditionally load Vercel Speed Insights (only on Vercel)

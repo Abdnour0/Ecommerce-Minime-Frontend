@@ -1,31 +1,24 @@
 import { state } from './state.js';
-import { API_URL } from '../config.js';
 import { logger } from './logger.js';
-
-// ---------------------------------------------------------------------------
-// SHA-256 password hashing (Web Crypto API — built into every modern browser)
-// ---------------------------------------------------------------------------
-async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
 
 export const AuthManager = {
     async init() {
         try {
-            state.token = localStorage.getItem('token') || null;
-            state.currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-
-            if (state.currentUser) {
-                window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: state.currentUser } }));
+            const token = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('currentUser');
+            if (!token || !storedUser) {
+                state.currentUser = null;
+                state.token = null;
+                return;
             }
+
+            state.token = token;
+            state.currentUser = JSON.parse(storedUser);
+            window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: state.currentUser } }));
+            return;
         } catch (e) {
-            logger.error('Error loading user:', e);
-            state.currentUser = null;
-            state.token = null;
+            logger.error('Error loading session:', e);
+            this.logout();
         }
     },
 
@@ -36,76 +29,68 @@ export const AuthManager = {
         return { success: false };
     },
 
-    async login(email, password) {
+    _getLocalUsers() {
         try {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const hashedInput = await hashPassword(password);
+            return JSON.parse(localStorage.getItem('users')) || [];
+        } catch { return []; }
+    },
 
-            // Support both hashed passwords (new) and plain-text passwords (migration path)
-            const user = users.find(u => {
-                if (!u || u.email !== email) return false;
-                // Accept if stored password matches the hash OR the plaintext (legacy accounts)
-                return u.password === hashedInput || u.password === password;
-            });
-
-            if (user) {
-                // Silently upgrade plain-text passwords to hashed on successful login
-                if (user.password === password) {
-                    user.password = hashedInput;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    logger.log('Migrated password to SHA-256 hash for', email);
-                }
-
-                state.currentUser = {
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.email,
-                    phone: user.phone || ''
-                };
-                state.token = 'local-dummy-token';
-                localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
-                localStorage.setItem('token', state.token);
-
-                window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: state.currentUser } }));
-                return { success: true, user: state.currentUser };
-            }
-            return { success: false, error: 'Invalid email or password' };
-        } catch (e) {
-            logger.error('Error during local login:', e);
-            return { success: false, error: 'Login failed' };
-        }
+    _saveLocalUsers(users) {
+        localStorage.setItem('users', JSON.stringify(users));
     },
 
     async signup(userData) {
-        try {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
+        const users = this._getLocalUsers();
 
-            if (users.find(u => u.email === userData.email)) {
-                return { success: false, error: 'Email already registered' };
-            }
-
-            const hashedPassword = await hashPassword(userData.password);
-            const newUser = { ...userData, password: hashedPassword };
-
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            state.currentUser = {
-                firstName: userData.firstName,
-                lastName: userData.lastName,
-                email: userData.email,
-                phone: userData.phone || ''
-            };
-            state.token = 'local-dummy-token';
-            localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
-            localStorage.setItem('token', state.token);
-
-            window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: state.currentUser } }));
-            return { success: true, user: state.currentUser };
-        } catch (e) {
-            logger.error('Error during local signup:', e);
-            return { success: false, error: 'Signup failed' };
+        // Check if email already exists
+        if (users.find(u => u.email === userData.email)) {
+            return { success: false, error: 'An account with this email already exists' };
         }
+
+        const user = {
+            _id: 'local_' + Date.now(),
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            password: userData.password,
+            createdAt: new Date().toISOString()
+        };
+
+        users.push(user);
+        this._saveLocalUsers(users);
+
+        const safeUser = { ...user };
+        delete safeUser.password;
+
+        const token = 'local-' + Date.now();
+        state.token = token;
+        state.currentUser = safeUser;
+        localStorage.setItem('token', token);
+        localStorage.setItem('currentUser', JSON.stringify(safeUser));
+        window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: state.currentUser } }));
+
+        return { success: true, user: safeUser };
+    },
+
+    async login(email, password) {
+        const users = this._getLocalUsers();
+        const user = users.find(u => u.email === email && u.password === password);
+
+        if (!user) {
+            return { success: false, error: 'Invalid email or password' };
+        }
+
+        const safeUser = { ...user };
+        delete safeUser.password;
+
+        const token = 'local-' + Date.now();
+        state.token = token;
+        state.currentUser = safeUser;
+        localStorage.setItem('token', token);
+        localStorage.setItem('currentUser', JSON.stringify(safeUser));
+        window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: state.currentUser } }));
+
+        return { success: true, user: safeUser };
     },
 
     logout() {
@@ -113,116 +98,78 @@ export const AuthManager = {
         state.token = null;
         localStorage.removeItem('currentUser');
         localStorage.removeItem('token');
-
         window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: null } }));
     },
 
     isAuthenticated() {
-        return state.currentUser !== null;
+        return state.currentUser !== null && state.token !== null;
     },
 
     async forgotPassword(email) {
-        try {
-            if (!email || !email.trim()) {
-                return { success: false, error: 'Email is required' };
-            }
-
-            const response = await fetch(`${API_URL}/auth/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email.trim() })
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                return { success: true, message: data.message || `Password reset instructions sent to ${email.trim()}` };
-            } else {
-                return { success: false, error: data.message || data.error || 'Failed to send reset email' };
-            }
-        } catch (error) {
-            logger.error('Error in forgotPassword:', error);
-            // Return success to prevent email enumeration
-            return { success: true, message: `If an account exists with ${email.trim()}, reset instructions have been sent` };
-        }
+        if (!email || !email.trim()) return { success: false, error: 'Email is required' };
+        return { success: true, message: 'If an account exists, a password reset link has been simulated.' };
     },
 
     async resetPassword(email, password) {
-        try {
-            if (!email || !email.trim()) {
-                return { success: false, error: 'Email is required' };
-            }
-            if (!password || password.length < 6) {
-                return { success: false, error: 'Password must be at least 6 characters' };
-            }
+        if (!email) return { success: false, error: 'Email is required' };
+        if (!password || password.length < 6) return { success: false, error: 'Password must be at least 6 characters' };
 
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.email === email.trim());
-
-            if (!user) {
-                return { success: false, error: 'No account found with this email address' };
-            }
-
-            // Store new password as hash
-            user.password = await hashPassword(password);
-            localStorage.setItem('users', JSON.stringify(users));
-
+        const users = this._getLocalUsers();
+        const userIndex = users.findIndex(u => u.email === email);
+        if (userIndex !== -1) {
+            users[userIndex].password = password;
+            this._saveLocalUsers(users);
             return { success: true, message: 'Password reset successfully' };
-        } catch (e) {
-            logger.error('Error resetting password:', e);
-            return { success: false, error: 'Failed to reset password. Please try again.' };
         }
+        return { success: false, error: 'No account found with this email' };
     },
 
-    async updateProfile(data) {
-        if (!state.currentUser) return { success: false, error: 'Not logged in' };
+    async updateProfile(profileData) {
+        if (!this.isAuthenticated()) return { success: false, error: 'Not logged in' };
 
         try {
-            state.currentUser = { ...state.currentUser, ...data };
-            localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+            const updatedUser = { ...state.currentUser, ...profileData };
+            state.currentUser = updatedUser;
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
 
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const userIndex = users.findIndex(u => u.email === state.currentUser.email);
-            if (userIndex !== -1) {
-                users[userIndex] = { ...users[userIndex], ...data };
-                localStorage.setItem('users', JSON.stringify(users));
+            const users = this._getLocalUsers();
+            const idx = users.findIndex(u => u.email === state.currentUser.email);
+            if (idx !== -1) {
+                users[idx] = { ...users[idx], ...profileData };
+                this._saveLocalUsers(users);
             }
 
+            window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: state.currentUser } }));
             return { success: true };
         } catch (e) {
-            logger.error('Error updating profile locally:', e);
-            return { success: false, error: 'Update failed' };
+            return { success: false, error: 'Local update failed' };
         }
     },
 
     async changePassword(currentPassword, newPassword) {
-        if (!state.currentUser) return { success: false, error: 'Not logged in' };
+        if (!this.isAuthenticated()) return { success: false, error: 'Not logged in' };
 
-        try {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const hashedCurrent = await hashPassword(currentPassword);
-
-            // Support both hashed and legacy plaintext passwords
-            const user = users.find(
-                u => u.email === state.currentUser.email &&
-                    (u.password === hashedCurrent || u.password === currentPassword)
-            );
-
-            if (!user) {
-                return { success: false, error: 'Current password is incorrect' };
-            }
-
-            user.password = await hashPassword(newPassword);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            return { success: true };
-        } catch (e) {
-            logger.error('Error changing password locally:', e);
-            return { success: false, error: 'Password change failed' };
+        const users = this._getLocalUsers();
+        const user = users.find(u => u.email === state.currentUser.email);
+        if (user && user.password === currentPassword) {
+            user.password = newPassword;
+            this._saveLocalUsers(users);
+            return { success: true, message: 'Password changed successfully' };
         }
+        return { success: false, error: 'Current password is incorrect' };
+    },
+    
+    async deleteAccount() {
+        if (!this.isAuthenticated()) return { success: false, error: 'Not logged in' };
+        
+        const users = this._getLocalUsers();
+        const filtered = users.filter(u => u.email !== state.currentUser?.email);
+        this._saveLocalUsers(filtered);
+        this.logout();
+        return { success: true };
     },
 
     getAuthHeader() {
-        return {};
+        return {}; // No longer needed
     }
 };

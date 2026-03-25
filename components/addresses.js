@@ -1,4 +1,4 @@
-import { API_URL } from './state.js';
+// No API_URL needed
 import { AuthManager } from './auth.js';
 import { logger } from './logger.js';
 
@@ -17,25 +17,6 @@ export const AddressManager = {
             console.warn('Error loading addresses from localStorage:', e);
             this.addresses = [];
         }
-
-        // Then try to sync with backend if authenticated
-        if (!AuthManager.isAuthenticated()) return;
-        try {
-            const response = await fetch(`${API_URL}/addresses`, {
-                credentials: 'include',
-                headers: AuthManager.getAuthHeader()
-            });
-            if (response.ok) {
-                const serverAddresses = await response.json();
-                if (Array.isArray(serverAddresses) && serverAddresses.length > 0) {
-                    this.addresses = serverAddresses;
-                    localStorage.setItem('addresses', JSON.stringify(serverAddresses));
-                }
-            }
-        } catch (e) {
-            console.warn('Error fetching addresses from server, using local storage:', e);
-            // Already loaded from localStorage above
-        }
     },
 
     async addAddress(addressData) {
@@ -46,45 +27,7 @@ export const AddressManager = {
             };
         }
 
-        try {
-            const response = await fetch(`${API_URL}/addresses`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...AuthManager.getAuthHeader()
-                },
-                body: JSON.stringify(addressData)
-            });
-
-            if (response.ok) {
-                const newAddress = await response.json();
-                await this.init(); // Refresh list
-                return { success: true, address: newAddress };
-            }
-
-            const errorData = await response.json().catch(() => ({}));
-
-            if (response.status === 401) {
-                return {
-                    success: false,
-                    error: 'Your session has expired. Please log in again to save addresses.'
-                };
-            }
-
-            if (response.status === 400 && errorData.message) {
-                return { success: false, error: errorData.message };
-            }
-
-            return {
-                success: false,
-                error: errorData.message || `Unable to save address (Error ${response.status}). Please try again.`
-            };
-        } catch (e) {
-            console.error('Error adding address:', e);
-            // Fallback to localStorage when backend is unavailable
-            return this.localAddAddress(addressData);
-        }
+        return this.localAddAddress(addressData);
     },
 
     localAddAddress(addressData) {
@@ -107,28 +50,7 @@ export const AddressManager = {
     },
 
     async updateAddress(id, addressData) {
-        try {
-            const response = await fetch(`${API_URL}/addresses/${id}`, {
-                method: 'PUT',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...AuthManager.getAuthHeader()
-                },
-                body: JSON.stringify(addressData)
-            });
-
-            if (response.ok) {
-                await this.init();
-                return { success: true };
-            }
-            const errorData = await response.json().catch(() => ({}));
-            return { success: false, error: errorData.message || 'Failed to update address' };
-        } catch (e) {
-            console.error('Error updating address:', e);
-            // Fallback to localStorage when backend is unavailable
-            return this.localUpdateAddress(id, addressData);
-        }
+        return this.localUpdateAddress(id, addressData);
     },
 
     localUpdateAddress(id, addressData) {
@@ -150,22 +72,7 @@ export const AddressManager = {
     },
 
     async deleteAddress(id) {
-        try {
-            const response = await fetch(`${API_URL}/addresses/${id}`, {
-                method: 'DELETE',
-                credentials: 'include',
-                headers: AuthManager.getAuthHeader()
-            });
-            if (response.ok) {
-                await this.init();
-                return { success: true };
-            }
-            return { success: false };
-        } catch (e) {
-            console.error('Error deleting address:', e);
-            // Fallback to localStorage when backend is unavailable
-            return this.localDeleteAddress(id);
-        }
+        return this.localDeleteAddress(id);
     },
 
     localDeleteAddress(id) {

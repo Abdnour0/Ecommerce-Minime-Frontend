@@ -1,5 +1,5 @@
 import { logger } from './logger.js';
-import { state, API_URL } from './state.js';
+import { state } from './state.js';
 import { AuthManager } from './auth.js';
 import { CartManager } from './cart.js';
 import { OrderManager, renderOrders, prepareOrderData } from './orders.js';
@@ -93,7 +93,7 @@ export function showLoggedInView() {
     if (viewEl) viewEl.style.display = 'block';
 }
 
-export function handleGoogleLogin() { window.location.href = `${API_URL}/auth/google`; }
+export function handleGoogleLogin() { showNotification('Google login is disabled in standalone mode', 'info'); }
 
 export async function handleLogin(e) {
     if (e) e.preventDefault();
@@ -617,18 +617,13 @@ window.togglePaymentMethod = function (method) {
         cardContainer.classList.remove('hidden');
         cashContainer.classList.add('hidden');
     }
-};
-
-// Initialize payment handlers
+}// Initialize payment handlers
 export async function initializePayment() {
     const paymentElement = document.getElementById('payment-element');
     if (!paymentElement) {
         console.warn('Payment element not found');
         return;
     }
-
-    // Show loading state
-    paymentElement.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">Loading payment form...</div>';
 
     const subtotal = CartManager.getTotal();
     const shipping = subtotal > 75 ? 0 : 10;
@@ -640,130 +635,65 @@ export async function initializePayment() {
             discount = state.currentCoupon.discountValue;
         }
     }
-    const total = Math.max(0, subtotal + shipping - discount);
 
-    // Unmount existing payment element if it exists
-    if (state.paymentElement) {
-        try {
-            state.paymentElement.unmount();
-        } catch (e) {
-            // Ignore unmount errors
-        }
-    }
-
-    try {
-        const formData = {
-            amount: Math.round(total * 100),
-            currency: 'usd'
-        };
-
-        const res = await fetch(`${API_URL}/payments/create-intent`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...AuthManager.getAuthHeader() },
-            body: JSON.stringify(formData)
-        });
-
-        if (!res.ok) {
-            throw new Error(`Payment initialization failed: ${res.status} `);
-        }
-
-        const data = await res.json();
-        if (!data.clientSecret) {
-            throw new Error('No client secret received');
-        }
-
-        if (!state.stripe) {
-            if (typeof Stripe !== 'undefined') {
-                state.stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-            } else {
-                throw new Error('Stripe library not loaded');
-            }
-        }
-
-        state.elements = state.stripe.elements({
-            appearance: { theme: 'stripe' },
-            clientSecret: data.clientSecret
-        });
-        state.paymentElement = state.elements.create('payment', { layout: 'tabs' });
-        state.paymentElement.mount('#payment-element');
-
-    } catch (e) {
-        console.error('Payment initialization error:', e);
-        const errorMessage = e.message || 'Connection failed';
-        const isConnectionError = errorMessage.includes('Failed to fetch') || errorMessage.includes('ERR_CONNECTION_REFUSED');
-
-        paymentElement.innerHTML = `
+    // Always render mock card form in standalone mode
+    paymentElement.innerHTML = `
         <div class="mock-card-form">
-                <div class="mock-form-header">
-                    <h3>Enter Payment Details</h3>
-                    <p>Stripe is unavailable. Using secure mock processing.</p>
+            <div class="mock-form-header">
+                <h3>Enter Payment Details</h3>
+                <p>Using secure local processing.</p>
+            </div>
+            
+            <div class="mock-form-group">
+                <label>Card Number</label>
+                <div class="mock-input-wrapper">
+                    <input type="text" id="mockCardNumber" placeholder="0000 0000 0000 0000" maxlength="19" 
+                        class="mock-input"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(.{4})/g, '$1 ').trim()">
+                    <svg class="mock-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/><path d="M2 10h20" stroke-width="2"/></svg>
                 </div>
-                
-                <div class="mock-form-group">
-                    <label>Card Number</label>
+            </div>
+            
+            <div class="mock-form-row">
+                <div class="mock-form-group" style="flex: 1;">
+                    <label>Expiry</label>
                     <div class="mock-input-wrapper">
-                        <input type="text" id="mockCardNumber" placeholder="0000 0000 0000 0000" maxlength="19" 
+                        <input type="text" id="mockCardExpiry" placeholder="MM/YY" maxlength="5"
                             class="mock-input"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(.{4})/g, '$1 ').trim()">
-                        <svg class="mock-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/><path d="M2 10h20" stroke-width="2"/></svg>
+                            oninput="this.value = this.value.replace(/\\D/g, '').replace(/^(\\d{2})(\\d)/, '$1/$2').slice(0, 5)">
                     </div>
                 </div>
-                
-                <div class="mock-form-row">
-                    <div class="mock-form-group" style="flex: 1;">
-                        <label>Expiry</label>
-                        <div class="mock-input-wrapper">
-                            <input type="text" id="mockCardExpiry" placeholder="MM/YY" maxlength="5"
-                                class="mock-input"
-                                oninput="this.value = this.value.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '$1/$2').slice(0, 5)">
-                        </div>
-                    </div>
-                    <div class="mock-form-group" style="flex: 1;">
-                        <label>CVC</label>
-                        <div class="mock-input-wrapper">
-                            <input type="text" id="mockCardCvc" placeholder="123" maxlength="3"
-                                class="mock-input"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            <svg class="mock-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="2"/></svg>
-                        </div>
+                <div class="mock-form-group" style="flex: 1;">
+                    <label>CVC</label>
+                    <div class="mock-input-wrapper">
+                        <input type="text" id="mockCardCvc" placeholder="123" maxlength="3"
+                            class="mock-input"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <svg class="mock-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="2"/></svg>
                     </div>
                 </div>
             </div>
-        `;
-    }
-}
-
-
-export async function applyCoupon() {
-    const code = document.getElementById('couponCode')?.value.trim();
+        </div>
+    `;
+}export async function applyCoupon() {
+    const code = document.getElementById('couponCode')?.value.trim().toUpperCase();
     const messageEl = document.getElementById('couponMessage');
     if (!code || !messageEl) return;
 
-    const subtotal = CartManager.getTotal();
-    try {
-        const response = await fetch(`${API_URL}/coupons/validate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...AuthManager.getAuthHeader() },
-            body: JSON.stringify({ code, cartTotal: subtotal })
-        });
-        const data = await response.json();
-        if (data.valid) {
-            state.currentCoupon = data.coupon;
-            messageEl.textContent = `Coupon applied: -${data.coupon.discountType === 'percentage' ? data.coupon.discountValue + '%' : '$' + data.coupon.discountValue} `;
-            messageEl.className = 'coupon-message success';
-            updateCheckoutSummary();
-            if (state.stripe) initializePayment();
-        } else {
-            state.currentCoupon = null;
-            messageEl.textContent = data.message || 'Invalid coupon code';
-            messageEl.className = 'coupon-message error';
-            updateCheckoutSummary();
-        }
-    } catch (error) {
-        console.error('Coupon error:', error);
-        messageEl.textContent = 'Failed to validate coupon';
-        messageEl.className = 'coupon-message error';
+    const validCoupons = {
+        'SAVE20': { discountType: 'percentage', discountValue: 20 },
+        'MINIME10': { discountType: 'fixed', discountValue: 10 }
+    };
+
+    if (validCoupons[code]) {
+        state.currentCoupon = validCoupons[code];
+        messageEl.textContent = `Coupon applied: -${state.currentCoupon.discountType === 'percentage' ? state.currentCoupon.discountValue + '%' : '$' + state.currentCoupon.discountValue}`;
+        messageEl.className = 'coupon-message success';
+        updateCheckoutSummary();
+    } else {
         state.currentCoupon = null;
+        messageEl.textContent = 'Invalid coupon code';
+        messageEl.className = 'coupon-message error';
         updateCheckoutSummary();
     }
 }
