@@ -172,6 +172,9 @@ window.showNotification = showNotification;
 window.renderOrders = renderOrders;
 window.renderWishlist = renderWishlist;
 window.loadAndRenderReviews = loadAndRenderReviews;
+window.openDirections = function(address) {
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+};
 
 // State (for debugging)
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -183,6 +186,25 @@ window.errorHandler = errorHandler;
 window.openAddressSelectionModal = ui.openAddressSelectionModal;
 window.closeAddressSelectionModal = ui.closeAddressSelectionModal;
 window.fillCheckoutForm = ui.fillCheckoutForm;
+
+window.togglePassword = function (btn) {
+    const wrapper = btn.closest('.password-wrapper');
+    if (!wrapper) return;
+    
+    const input = wrapper.querySelector('input');
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (eyeOpen) eyeOpen.style.display = 'none';
+        if (eyeClosed) eyeClosed.style.display = 'block';
+    } else {
+        input.type = 'password';
+        if (eyeOpen) eyeOpen.style.display = 'block';
+        if (eyeClosed) eyeClosed.style.display = 'none';
+    }
+};
 
 // ============================================================================
 // INITIALIZATION

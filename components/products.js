@@ -91,7 +91,7 @@ export function renderProducts(container, filter = 'all') {
                 <h3 class="product-name">${escapeHtml(product.name)}</h3>
                 <p class="product-description">${escapeHtml(product.description)}</p>
                 <div class="product-footer">
-                    <span class="product-price">$${product.price}</span>
+                    <span class="product-price">${product.onSale && product.originalPrice ? `<span class="original-price">$${product.originalPrice}</span> ` : ''}$${product.price}</span>
                     <button class="add-to-cart" data-product-id="${product.id}" aria-label="${addToCartText} ${escapeHtml(product.name)}">${addToCartText}</button>
                 </div>
             </div>
@@ -183,11 +183,29 @@ export function openProductModal(productId) {
     if (modalImage) modalImage.src = product.image;
     if (modalName) modalName.textContent = product.name;
     if (modalDescription) modalDescription.textContent = product.description;
-    if (modalPrice) modalPrice.textContent = `$${product.price}`;
+    if (modalPrice) {
+        modalPrice.innerHTML = product.onSale && product.originalPrice ? `<span class="original-price">$${product.originalPrice}</span> $${product.price}` : `$${product.price}`;
+    }
+    
+    // Update the Add to Cart button price
+    const modalPriceBtn = document.getElementById('modalPriceBtn');
+    if (modalPriceBtn) {
+        modalPriceBtn.textContent = `$${product.price}`;
+    }
     if (modalMaterial) modalMaterial.textContent = product.material;
     if (modalWeight) modalWeight.textContent = product.weight;
     if (modalOrigin) modalOrigin.textContent = product.origin;
     if (modalCare) modalCare.textContent = product.care;
+
+    // Update rating from product data
+    const ratingValue = product.rating || 4.5;
+    const modalRating = document.querySelector('#productModal .modal-rating');
+    if (modalRating) {
+        const fullStars = Math.floor(ratingValue);
+        const hasHalfStar = ratingValue % 1 >= 0.5;
+        const starsStr = '★'.repeat(fullStars) + (hasHalfStar ? '★' : '') + '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
+        modalRating.innerHTML = `<span class="stars" aria-label="${ratingValue} out of 5 stars">${starsStr}</span><span class="rating-text">${ratingValue} <span data-translate="outOf5">out of 5</span></span>`;
+    }
 
     // Handle product images gallery
     if (modalGallery && product.images) {
@@ -208,6 +226,51 @@ export function openProductModal(productId) {
                 if (e.key === 'Enter') {
                     changeModalImage(this.dataset.imageSrc, this);
                 }
+            });
+        });
+    }
+
+    // Handle Color buttons — render from product data
+    const colorContainer = document.querySelector('#productModal .color-options');
+    if (colorContainer && product.colors && product.colors.length > 0) {
+        colorContainer.innerHTML = product.colors.map((color, index) => 
+            `<button class="color-btn ${index === 0 ? 'selected' : ''}" style="background: ${color.hex};" title="${escapeHtml(color.name)}" aria-label="${escapeHtml(color.name)} color"></button>`
+        ).join('');
+
+        colorContainer.querySelectorAll('.color-btn').forEach((btn, index) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                colorContainer.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+
+                // Try to map color index to image index
+                if (product.images && product.images.length > 0) {
+                    const mappedIndex = index < product.images.length ? index : 0;
+                    const modalImage = document.getElementById('modalImage');
+                    const galleryThumbs = document.querySelectorAll('#modalGallery .gallery-thumb');
+                    const thumbEl = galleryThumbs[mappedIndex] || galleryThumbs[0];
+
+                    if (thumbEl) {
+                        changeModalImage(product.images[mappedIndex], thumbEl);
+                    }
+                }
+            });
+        });
+    }
+
+    // Handle Size buttons — render from product data
+    const sizeContainer = document.querySelector('#productModal .size-options');
+    if (sizeContainer && product.sizes && product.sizes.length > 0) {
+        sizeContainer.innerHTML = product.sizes.map((size, index) => 
+            `<button class="size-btn ${index === 1 ? 'selected' : ''}">${escapeHtml(size)}</button>`
+        ).join('');
+
+        const sizeBtns = sizeContainer.querySelectorAll('.size-btn');
+        sizeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                sizeContainer.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
             });
         });
     }

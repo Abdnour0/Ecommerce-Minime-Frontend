@@ -341,8 +341,14 @@
 
                     <div class="form-group">
                         <label for="loginPassword" data-translate="password">Password</label>
-                        <input type="password" id="loginPassword" name="password" placeholder="Enter your password"
+                        <div class="password-wrapper">
+    <input type="password" id="loginPassword" name="password" placeholder="Enter your password"
                             required autocomplete="current-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         <span class="error-message" id="loginPasswordError"></span>
                     </div>
 
@@ -432,16 +438,28 @@
 
                     <div class="form-group">
                         <label for="signupPassword" data-translate="password">Password</label>
-                        <input type="password" id="signupPassword" name="password" placeholder="Create a password"
+                        <div class="password-wrapper">
+    <input type="password" id="signupPassword" name="password" placeholder="Create a password"
                             required minlength="6" autocomplete="new-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         <span class="error-message" id="signupPasswordError"></span>
                         <span class="field-hint" data-translate="passwordHint">Must be at least 6 characters</span>
                     </div>
 
                     <div class="form-group">
                         <label for="signupConfirmPassword" data-translate="confirmPassword">Confirm Password</label>
-                        <input type="password" id="signupConfirmPassword" name="confirmPassword"
+                        <div class="password-wrapper">
+    <input type="password" id="signupConfirmPassword" name="confirmPassword"
                             placeholder="Confirm your password" required autocomplete="new-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         <span class="error-message" id="signupConfirmPasswordError"></span>
                     </div>
 
@@ -603,13 +621,25 @@
                     </div>
                     <div class="form-group">
                         <label for="newPasswordInput" data-translate="newPassword">New Password</label>
-                        <input type="password" id="newPasswordInput" name="password" placeholder="Min 6 characters"
+                        <div class="password-wrapper">
+    <input type="password" id="newPasswordInput" name="password" placeholder="Min 6 characters"
                             required minlength="6" autocomplete="new-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         <span class="error-message" id="newPasswordError"></span>
                     </div>
                     <div class="form-group">
                         <label for="confirmNewPasswordInput" data-translate="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmNewPasswordInput" placeholder="Confirm your new password" required autocomplete="new-password">
+                        <div class="password-wrapper">
+    <input type="password" id="confirmNewPasswordInput" placeholder="Confirm your new password" required autocomplete="new-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         <span class="error-message" id="confirmNewPasswordError"></span>
                     </div>
                     <button type="submit" class="submit-btn" data-translate="resetPassword">Reset Password</button>
@@ -1565,19 +1595,37 @@
                     <form class="account-page-form" id="passwordForm">
                         <div class="form-group">
                             <label for="currentPassword" data-translate="currentPassword">Current Password</label>
-                            <input type="password" id="currentPassword" placeholder="Enter current password"
+                            <div class="password-wrapper">
+    <input type="password" id="currentPassword" placeholder="Enter current password"
                                 autocomplete="current-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         </div>
                         <div class="form-group">
                             <label for="newPassword" data-translate="newPassword">New Password</label>
-                            <input type="password" id="newPassword" placeholder="Enter new password"
+                            <div class="password-wrapper">
+    <input type="password" id="newPassword" placeholder="Enter new password"
                                 autocomplete="new-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         </div>
                         <div class="form-group">
                             <label for="confirmNewPassword" data-translate="confirmNewPassword">Confirm New
                                 Password</label>
-                            <input type="password" id="confirmNewPassword" placeholder="Confirm new password"
+                            <div class="password-wrapper">
+    <input type="password" id="confirmNewPassword" placeholder="Confirm new password"
                                 autocomplete="new-password">
+    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Toggle password visibility">
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+</div>
                         </div>
                         <button type="submit" class="btn btn-primary" data-translate="updatePassword">Update
                             Password</button>
@@ -2508,7 +2556,6 @@
         </div>
     </div>
 
-    <script type="module" src="main.js"></script>
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
@@ -2582,10 +2629,11 @@
                     <a href="#" onclick="showTermsPage(event)" data-translate="termsOfService">Terms of Service</a>
                     <a href="#" onclick="showAccessibilityPage(event)" data-translate="accessibility">Accessibility</a>
                 </nav>
-                <p>&copy; 2024 MINIME, Inc. <span data-translate="allRightsReserved">All Rights Reserved.</span></p>
+                <p>&copy; 2025 MINIME, Inc. <span data-translate="allRightsReserved">All Rights Reserved.</span></p>
             </div>
         </div>
     </footer>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>
