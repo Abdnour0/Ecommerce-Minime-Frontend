@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --primary-color: #212A2F;
+  --secondary-color: #626567;
+  --accent-color: #F37021;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FAFAF9] text-gray-900 antialiased selection:bg-orange-500/10 selection:text-orange-600;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D1D5DB;
+}
