@@ -87,5 +87,10 @@ export const AuthManager = {
     getAuthHeader() {
         const token = localStorage.getItem('token');
         return token ? { 'Authorization': `Bearer ${token}` } : {};
+    },
+
+    loginWithOAuth(provider) {
+        window.location.href = `${API_CONFIG.BASE_URL}/auth/${provider}/`;
+        return Promise.resolve({ success: true });
     }
 };

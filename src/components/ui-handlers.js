@@ -509,32 +509,17 @@ export function toggleReviewForm() {
 export async function confirmDeleteAccount() {
     showConfirmDialog('Are you sure you want to delete your account? This action cannot be undone.', async () => {
         try {
-            // Only call the backend if using a real (non-local) token
-            if (state.token && state.token !== 'local-dummy-token') {
-                const response = await fetch(`${API_URL}/auth/delete-account`, {
-                    method: 'DELETE',
-                    headers: AuthManager.getAuthHeader()
-                });
-                if (!response.ok) {
-                    throw new Error('Server delete failed');
-                }
-            }
+            await apiFetch('/auth/delete-account/', { method: 'DELETE' });
 
-            // Always perform local deletion — remove user from the stored users array
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const updatedUsers = users.filter(u => u.email !== state.currentUser?.email);
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-            // Clear all user-related local data
             localStorage.removeItem('currentUser');
             localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
             localStorage.removeItem('orders');
             localStorage.removeItem('addresses');
             localStorage.removeItem('wishlist');
             localStorage.removeItem('cart');
 
             showNotification('Account deleted successfully', 'success');
-            // Short delay so the notification is visible before reload
             setTimeout(() => {
                 handleLogout();
             }, 500);
@@ -841,7 +826,7 @@ export async function handlePaymentSubmission() {
             const { error } = await state.stripe.confirmPayment({
                 elements: state.elements,
                 confirmParams: {
-                    return_url: window.location.origin + window.location.pathname,
+                    return_url: window.location.origin + '/',
                     receipt_email: email,
                     shipping: {
                         name: `${document.getElementById('firstName')?.value || ''} ${document.getElementById('lastName')?.value || ''} `.trim(),

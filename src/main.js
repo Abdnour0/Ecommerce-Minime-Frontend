@@ -78,112 +78,110 @@ window.addEventListener('error', (event) => {
 });
 
 // ============================================================================
-// EXPOSE MANAGERS & FUNCTIONS TO WINDOW (for debugging)
+// EXPOSE MANAGERS & FUNCTIONS TO WINDOW (required for inline onclick handlers)
 // ============================================================================
 
-if (isDev()) {
-    // Managers
-    window.AuthManager = AuthManager;
-    window.CartManager = CartManager;
-    window.WishlistManager = WishlistManager;
-    window.SettingsManager = SettingsManager;
-    window.OrderManager = OrderManager;
-    window.AddressManager = AddressManager;
-    window.DashboardManager = DashboardManager;
-    window.ReviewManager = ReviewManager;
+// Managers
+window.AuthManager = AuthManager;
+window.CartManager = CartManager;
+window.WishlistManager = WishlistManager;
+window.SettingsManager = SettingsManager;
+window.OrderManager = OrderManager;
+window.AddressManager = AddressManager;
+window.DashboardManager = DashboardManager;
+window.ReviewManager = ReviewManager;
 
-    // Page navigation functions
-    window.showHomePage = pages.showHomePage;
-    window.showMenPage = pages.showMenPage;
-    window.showWomenPage = pages.showWomenPage;
-    window.showSalePage = pages.showSalePage;
-    window.showSustainabilityPage = pages.showSustainabilityPage;
-    window.showStoresPage = pages.showStoresPage;
-    window.showOurStoryPage = pages.showOurStoryPage;
-    window.showHelpCenterPage = pages.showHelpCenterPage;
-    window.showReturnsPage = pages.showReturnsPage;
-    window.showShippingPage = pages.showShippingPage;
-    window.showContactPage = pages.showContactPage;
-    window.showCareersPage = pages.showCareersPage;
-    window.showAccessibilityPage = pages.showAccessibilityPage;
-    window.showProfilePage = pages.showProfilePage;
-    window.showOrdersPage = pages.showOrdersPage;
-    window.showAddressesPage = pages.showAddressesPage;
-    window.showSettingsPage = pages.showSettingsPage;
-    window.showWishlistPage = pages.showWishlistPage;
-    window.showCheckoutPage = pages.showCheckoutPage;
-    window.showDashboardPage = showDashboardPage;
-    window.showAccessDeniedPage = showAccessDeniedPage;
-    window.showTermsPage = pages.showTermsPage;
-    window.showPrivacyPage = pages.showPrivacyPage;
-    window.showPage = pages.showPage;
+// Page navigation functions
+window.showHomePage = pages.showHomePage;
+window.showMenPage = pages.showMenPage;
+window.showWomenPage = pages.showWomenPage;
+window.showSalePage = pages.showSalePage;
+window.showSustainabilityPage = pages.showSustainabilityPage;
+window.showStoresPage = pages.showStoresPage;
+window.showOurStoryPage = pages.showOurStoryPage;
+window.showHelpCenterPage = pages.showHelpCenterPage;
+window.showReturnsPage = pages.showReturnsPage;
+window.showShippingPage = pages.showShippingPage;
+window.showContactPage = pages.showContactPage;
+window.showCareersPage = pages.showCareersPage;
+window.showAccessibilityPage = pages.showAccessibilityPage;
+window.showProfilePage = pages.showProfilePage;
+window.showOrdersPage = pages.showOrdersPage;
+window.showAddressesPage = pages.showAddressesPage;
+window.showSettingsPage = pages.showSettingsPage;
+window.showWishlistPage = pages.showWishlistPage;
+window.showCheckoutPage = pages.showCheckoutPage;
+window.showDashboardPage = showDashboardPage;
+window.showAccessDeniedPage = showAccessDeniedPage;
+window.showTermsPage = pages.showTermsPage;
+window.showPrivacyPage = pages.showPrivacyPage;
+window.showPage = pages.showPage;
 
-    // Account modal functions
-    window.openAccountModal = ui.openAccountModal;
-    window.closeAccountModal = ui.closeAccountModal;
-    window.showLoginView = ui.showLoginView;
-    window.showSignupView = ui.showSignupView;
-    window.showAccountChoice = ui.showAccountChoice;
-    window.handleLogin = ui.handleLogin;
-    window.handleSignup = ui.handleSignup;
-    window.handleLogout = ui.handleLogout;
-    window.handleGoogleLogin = ui.handleGoogleLogin;
-    window.showResetPasswordModal = ui.showResetPasswordModal;
-    window.closeResetPasswordModal = ui.closeResetPasswordModal;
+// Account modal functions
+window.openAccountModal = ui.openAccountModal;
+window.closeAccountModal = ui.closeAccountModal;
+window.showLoginView = ui.showLoginView;
+window.showSignupView = ui.showSignupView;
+window.showAccountChoice = ui.showAccountChoice;
+window.handleLogin = ui.handleLogin;
+window.handleSignup = ui.handleSignup;
+window.handleLogout = ui.handleLogout;
+window.handleGoogleLogin = ui.handleGoogleLogin;
+window.showResetPasswordModal = ui.showResetPasswordModal;
+window.closeResetPasswordModal = ui.closeResetPasswordModal;
 
-    // Cart functions
-    window.openCart = ui.openCart;
-    window.closeCart = ui.closeCart;
-    window.addToCart = ui.addToCart;
-    window.addToCartFromModal = ui.addToCartFromModal;
-    window.updateCart = ui.updateCart;
+// Cart functions
+window.openCart = ui.openCart;
+window.closeCart = ui.closeCart;
+window.addToCart = ui.addToCart;
+window.addToCartFromModal = ui.addToCartFromModal;
+window.updateCart = ui.updateCart;
 
-    // Product modal functions
-    window.openProductModal = openProductModal;
-    window.closeProductModal = closeProductModal;
-    window.changeModalImage = changeModalImage;
+// Product modal functions
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
+window.changeModalImage = changeModalImage;
 
-    // Address functions
-    window.openAddressModal = ui.openAddressModal;
-    window.closeAddressModal = ui.closeAddressModal;
-    window.handleAddressSubmit = ui.handleAddressSubmit;
-    window.editAddress = ui.editAddress;
-    window.deleteAddress = ui.deleteAddress;
-    window.renderAddresses = renderAddresses;
+// Address functions
+window.openAddressModal = ui.openAddressModal;
+window.closeAddressModal = ui.closeAddressModal;
+window.handleAddressSubmit = ui.handleAddressSubmit;
+window.editAddress = ui.editAddress;
+window.deleteAddress = ui.deleteAddress;
+window.renderAddresses = renderAddresses;
 
-    // Search functions
-    window.openSearchModal = ui.openSearchModal;
-    window.closeSearchModal = ui.closeSearchModal;
-    window.performSearch = ui.performSearch;
+// Search functions
+window.openSearchModal = ui.openSearchModal;
+window.closeSearchModal = ui.closeSearchModal;
+window.performSearch = ui.performSearch;
 
-    // Checkout functions
-    window.goToCheckout = ui.goToCheckout;
-    window.handlePaymentSubmission = ui.handlePaymentSubmission;
-    window.showAddressForm = ui.showAddressForm;
-    window.applyCoupon = ui.applyCoupon;
-    window.continueAsGuest = ui.continueAsGuest;
-    window.toggleReviewForm = ui.toggleReviewForm;
-    window.confirmDeleteAccount = ui.confirmDeleteAccount;
-    window.placeOrder = ui.placeOrder;
+// Checkout functions
+window.goToCheckout = ui.goToCheckout;
+window.handlePaymentSubmission = ui.handlePaymentSubmission;
+window.showAddressForm = ui.showAddressForm;
+window.applyCoupon = ui.applyCoupon;
+window.continueAsGuest = ui.continueAsGuest;
+window.toggleReviewForm = ui.toggleReviewForm;
+window.confirmDeleteAccount = ui.confirmDeleteAccount;
+window.placeOrder = ui.placeOrder;
 
-    // Utility functions
-    window.showNotification = showNotification;
-    window.renderOrders = renderOrders;
-    window.renderWishlist = renderWishlist;
-    window.loadAndRenderReviews = loadAndRenderReviews;
-    window.openDirections = function(address) {
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
-    };
+// Utility functions
+window.showNotification = showNotification;
+window.renderOrders = renderOrders;
+window.renderWishlist = renderWishlist;
+window.loadAndRenderReviews = loadAndRenderReviews;
+window.openDirections = function(address) {
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+};
 
-    // State (for debugging)
-    window.state = state;
-    window.errorHandler = errorHandler;
+// State (for debugging)
+window.state = state;
+window.errorHandler = errorHandler;
 
-    // Modals
-    window.openAddressSelectionModal = ui.openAddressSelectionModal;
-    window.closeAddressSelectionModal = ui.closeAddressSelectionModal;
-    window.fillCheckoutForm = ui.fillCheckoutForm;
-}
+// Modals
+window.openAddressSelectionModal = ui.openAddressSelectionModal;
+window.closeAddressSelectionModal = ui.closeAddressSelectionModal;
+window.fillCheckoutForm = ui.fillCheckoutForm;
 
 window.togglePassword = function (btn) {
     const wrapper = btn.closest('.password-wrapper');

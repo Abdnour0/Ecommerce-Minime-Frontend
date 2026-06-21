@@ -25,12 +25,20 @@ export const AddressManager = {
     async fetchAddresses() {
         try {
             const data = await apiFetch(API_CONFIG.ENDPOINTS.AUTH.ADDRESSES);
-            // Map backend fields back to frontend aliases if necessary
+            // Map backend snake_case to frontend camelCase
             this.addresses = data.map(a => ({
-                ...a,
+                id: a.id,
                 _id: a.id,
+                label: a.label,
+                firstName: a.first_name,
+                lastName: a.last_name,
                 street: a.street_address,
-                zip: a.zip_code
+                city: a.city,
+                state: a.state,
+                zip: a.zip_code,
+                country: a.country,
+                isDefault: a.is_default,
+                phone: a.phone || ''
             }));
             localStorage.setItem('addresses', JSON.stringify(this.addresses));
             return true;
@@ -65,7 +73,7 @@ export const AddressManager = {
             });
 
             await this.fetchAddresses(); // Refresh local list
-            return { success: true, address: this.addresses.find(a => a.id === newAddress.id) };
+            return { success: true, address: this.addresses.find(a => a._id === newAddress.id) };
         } catch (error) {
             logger.error('Failed to save address to API:', error);
             return { success: false, error: error.message };

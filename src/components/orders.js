@@ -3,6 +3,7 @@ import { AuthManager } from './auth.js';
 import { CartManager } from './cart.js';
 import { logger } from './logger.js';
 import { SettingsManager } from './settings.js';
+import { escapeHtml } from './ui-utils.js';
 import { API_CONFIG, apiFetch } from './api-config.js';
 
 export function prepareOrderData(paymentMethod, email) {
@@ -135,8 +136,16 @@ const OrderManager = {
     },
 
     async cancelOrder(orderId) {
-        // Needs a Django endpoint like /api/orders/<id>/cancel/
-        return { success: false, error: 'Cancellation via API not yet implemented.' };
+        try {
+            const result = await apiFetch(`${API_CONFIG.ENDPOINTS.ORDERS}${orderId}/cancel/`, {
+                method: 'POST'
+            });
+            await this.fetchOrders();
+            return { success: true, order: result };
+        } catch (error) {
+            logger.error('Failed to cancel order:', error);
+            return { success: false, error: error.message || 'Failed to cancel order.' };
+        }
     },
 
     getStatusColor(status) {
@@ -190,8 +199,8 @@ export function renderOrders() {
             <div class="order-card">
                 <div class="order-header">
                     <div>
-                        <h3>Order #${String(orderId).slice(-8).toUpperCase()}</h3>
-                        <p class="order-date">${orderDate.toLocaleDateString(SettingsManager.currentLanguage || 'en', {
+                        <h3>Order #${escapeHtml(String(orderId).slice(-8).toUpperCase())}</h3>
+                        <p class="order-date">${orderDate.toLocaleDateString(state.currentLanguage || 'en', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -199,7 +208,7 @@ export function renderOrders() {
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         ${canCancel ? `
-                            <button class="btn-cancel-link-styled" data-cancel-order-id="${orderId}">
+                            <button class="btn-cancel-link-styled" data-cancel-order-id="${escapeHtml(orderId)}">
                                 CANCEL ORDER
                             </button>
                         ` : ''}
@@ -220,7 +229,7 @@ export function renderOrders() {
                     </div>
                     <div class="tracking-info">
                         <span class="tracking-label">YOUR TRACKING NUMBER IS</span>
-                        <p class="tracking-number">${order.trackingNumber}</p>
+                        <p class="tracking-number">${escapeHtml(order.trackingNumber)}</p>
                     </div>
                 </div>
                 ` : ''}
@@ -229,10 +238,10 @@ export function renderOrders() {
                     ${order.items && order.items.length > 0 ? order.items.map(item => `
                         <div class="order-item-detail">
                             <div class="item-thumbnail">
-                                <img src="${item.image || 'https://via.placeholder.com/400x300'}" alt="${item.name || 'Product'}">
+                                <img src="${item.image || 'https://via.placeholder.com/400x300'}" alt="${escapeHtml(item.name || 'Product')}">
                             </div>
                             <div class="item-info">
-                                <h4>${item.name || 'Product'}</h4>
+                                <h4>${escapeHtml(item.name || 'Product')}</h4>
                                 <p class="item-meta">Quantity: ${item.quantity || 1}</p>
                                 <p class="item-price">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
                             </div>
