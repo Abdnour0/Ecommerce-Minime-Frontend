@@ -116,6 +116,7 @@ window.showAccessDeniedPage = showAccessDeniedPage;
 window.showTermsPage = pages.showTermsPage;
 window.showPrivacyPage = pages.showPrivacyPage;
 window.showPage = pages.showPage;
+window.updateCheckoutProgress = pages.updateCheckoutProgress;
 
 // Account modal functions
 window.openAccountModal = ui.openAccountModal;
@@ -547,6 +548,22 @@ class AppInitializer {
     }
 
     setupFormHandlers() {
+        // Real-time inline validation for all forms
+        document.querySelectorAll('input[required], select[required]').forEach(el => {
+            el.addEventListener('blur', () => {
+                if (el.value.trim()) {
+                    el.classList.remove('input-error');
+                } else {
+                    el.classList.add('input-error');
+                }
+            });
+            el.addEventListener('input', () => {
+                if (el.value.trim()) {
+                    el.classList.remove('input-error');
+                }
+            });
+        });
+
         // Login form
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {

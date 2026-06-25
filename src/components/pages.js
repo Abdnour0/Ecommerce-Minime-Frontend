@@ -189,6 +189,18 @@ export function showCheckoutPage(event) {
     closeAccountModal();
     showPage('checkoutPage');
     updateCheckoutSummary();
+    updateCheckoutProgress(1);
+}
+
+export function updateCheckoutProgress(step) {
+    const steps = ['stepCart', 'stepShipping', 'stepPayment', 'stepConfirmation'];
+    steps.forEach((id, index) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('active', 'completed');
+        if (index + 1 === step) el.classList.add('active');
+        else if (index + 1 < step) el.classList.add('completed');
+    });
 }
 
 export function showHelpCenterPage(event) { if (event) event.preventDefault(); showPage('helpCenterPage'); }

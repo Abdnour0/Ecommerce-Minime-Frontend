@@ -64,6 +64,7 @@ export const CartManager = {
         this.save();
         this.update();
         this.showAddedNotification(product.name);
+        this.animateBadge();
         logger.log('Cart updated successfully. Total items:', this.getItemCount());
     },
 
@@ -114,6 +115,15 @@ export const CartManager = {
 
     getItemCount() {
         return state.cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    },
+
+    animateBadge() {
+        const badge = document.getElementById('cartCount');
+        if (badge) {
+            badge.classList.remove('pop');
+            void badge.offsetWidth;
+            badge.classList.add('pop');
+        }
     },
 
     clear() {

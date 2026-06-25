@@ -782,10 +782,8 @@
             <div class="section-header-minimal">
                 <h2 data-translate="recentlyViewed">Recently Viewed</h2>
             </div>
-            <div class="products-grid-scroll">
-                <div class="products-grid" id="recentlyViewedGrid" role="list">
-                    <!-- Products will be inserted here by JavaScript -->
-                </div>
+            <div class="recently-viewed-scroll" id="recentlyViewedGrid" role="list">
+                <!-- Products will be inserted here by JavaScript -->
             </div>
         </section>
 
@@ -2232,6 +2230,14 @@
         </div>
     </div>
 
+    <!-- Sticky Add-to-Cart Bar (Mobile) -->
+    <div class="sticky-cart-bar" id="stickyCartBar">
+        <span class="sticky-price" id="stickyPrice"></span>
+        <button class="btn btn-primary" id="stickyAddToCart" onclick="addToCartFromModal()">
+            <span data-translate="addToCart">Add to Cart</span>
+        </button>
+    </div>
+
     <!-- Cart Sidebar -->
     <div class="cart-overlay" id="overlay"></div>
     <div class="cart-sidebar" id="cartSidebar" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
@@ -2340,6 +2346,25 @@
     <div id="checkoutPage" class="page">
         <div class="checkout-container">
             <h1 data-translate="checkout">Checkout</h1>
+
+            <div class="checkout-progress">
+                <div class="progress-step active" id="stepCart">
+                    <span class="step-number">1</span>
+                    <span class="step-label" data-translate="cart">Cart</span>
+                </div>
+                <div class="progress-step" id="stepShipping">
+                    <span class="step-number">2</span>
+                    <span class="step-label" data-translate="shipping">Shipping</span>
+                </div>
+                <div class="progress-step" id="stepPayment">
+                    <span class="step-number">3</span>
+                    <span class="step-label" data-translate="payment">Payment</span>
+                </div>
+                <div class="progress-step" id="stepConfirmation">
+                    <span class="step-number">4</span>
+                    <span class="step-label" data-translate="confirmation">Confirmation</span>
+                </div>
+            </div>
 
             <div class="checkout-layout">
                 <!-- Left Column: Shipping & Payment -->

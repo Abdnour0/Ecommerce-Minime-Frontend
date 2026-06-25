@@ -92,6 +92,10 @@ export function renderProducts(container, filter = 'all') {
 
         const isWishlisted = WishlistManager.isInWishlist(product.id);
 
+        const colorDots = product.colors && product.colors.length > 0
+            ? `<div class="product-colors">${product.colors.slice(0, 5).map(c => `<span class="product-color-dot" style="background:${c.hex}" title="${escapeHtml(c.name)}"></span>`).join('')}${product.colors.length > 5 ? `<span class="product-color-dot" style="font-size:9px;display:flex;align-items:center;justify-content:center;background:var(--background-light);border-color:var(--border-color);color:var(--text-secondary)">+${product.colors.length - 5}</span>` : ''}</div>`
+            : '';
+
         return `
         <div class="product-card" role="listitem" data-product-id="${product.id}" tabindex="0">
             <div class="product-image">
@@ -105,6 +109,7 @@ export function renderProducts(container, filter = 'all') {
             </div>
             <div class="product-info">
                 <h3 class="product-name">${escapeHtml(product.name)}</h3>
+                ${colorDots}
                 <p class="product-description">${escapeHtml(product.description)}</p>
                 <div class="product-footer">
                     <span class="product-price">${product.onSale && product.originalPrice ? `<span class="original-price">$${product.originalPrice}</span> ` : ''}$${product.price}</span>
@@ -369,6 +374,14 @@ export function openProductModal(productId) {
         logger.log('Product modal close button event listener attached');
     }
 
+    // Show sticky cart bar on mobile
+    const stickyBar = document.getElementById('stickyCartBar');
+    const stickyPrice = document.getElementById('stickyPrice');
+    if (stickyBar && stickyPrice) {
+        stickyPrice.textContent = `$${product.price}`;
+        stickyBar.classList.add('show');
+    }
+
     // Load and render reviews for this product
     loadAndRenderReviews(productId);
 
@@ -400,6 +413,9 @@ export function closeProductModal() {
     logger.log('closeProductModal called');
     const productModal = document.getElementById('productModal');
     const productModalOverlay = document.getElementById('productModalOverlay');
+    const stickyBar = document.getElementById('stickyCartBar');
+
+    if (stickyBar) stickyBar.classList.remove('show');
 
     if (productModal) {
         productModal.classList.remove('active');
