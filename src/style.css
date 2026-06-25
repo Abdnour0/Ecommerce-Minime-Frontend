@@ -271,6 +271,65 @@ img {
     line-height: 1.2;
 }
 
+/* Fly-to-Cart Animation */
+@keyframes flyToCart {
+    0% { transform: scale(1) translate(0, 0); opacity: 1; }
+    100% { transform: scale(0.2) translate(var(--fly-x), var(--fly-y)); opacity: 0; }
+}
+
+.fly-clone {
+    position: fixed;
+    z-index: 99999;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    pointer-events: none;
+    animation: flyToCart 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary-color, #212A2F);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 900;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 80px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+    }
+}
+
 @keyframes cartBadgePop {
     0% { transform: scale(1); }
     50% { transform: scale(1.4); }

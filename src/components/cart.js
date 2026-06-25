@@ -68,6 +68,11 @@ export const CartManager = {
         logger.log('Cart updated successfully. Total items:', this.getItemCount());
     },
 
+    addWithAnimation(productId, element) {
+        this.flyToCart(element);
+        this.add(productId);
+    },
+
     remove(productId) {
         const index = state.cart.findIndex(item => String(item.id || item._id) === String(productId));
         if (index !== -1) {
@@ -115,6 +120,23 @@ export const CartManager = {
 
     getItemCount() {
         return state.cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    },
+
+    flyToCart(element) {
+        const rect = element.getBoundingClientRect();
+        const cartBtn = document.getElementById('cartBtn');
+        if (!cartBtn) return;
+        const targetRect = cartBtn.getBoundingClientRect();
+        const clone = element.cloneNode(true);
+        clone.classList.add('fly-clone');
+        clone.style.left = rect.left + 'px';
+        clone.style.top = rect.top + 'px';
+        clone.style.width = rect.width + 'px';
+        clone.style.height = rect.height + 'px';
+        clone.style.setProperty('--fly-x', (targetRect.left - rect.left) + 'px');
+        clone.style.setProperty('--fly-y', (targetRect.top - rect.top) + 'px');
+        document.body.appendChild(clone);
+        clone.addEventListener('animationend', () => clone.remove());
     },
 
     animateBadge() {

@@ -361,6 +361,23 @@ class AppInitializer {
         // Scroll handler
         window.addEventListener('scroll', ui.handleScroll);
 
+        // Back to top button visibility
+        const backToTop = document.getElementById('backToTop');
+        if (backToTop) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 400) backToTop.classList.add('visible');
+                else backToTop.classList.remove('visible');
+            });
+        }
+
+        // Keyboard shortcut: Ctrl+K / Cmd+K to open search
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                ui.openSearchModal();
+            }
+        });
+
         // Cart update listener
         window.addEventListener('cartUpdated', () => ui.updateCart());
 
@@ -449,19 +466,52 @@ class AppInitializer {
     setupMobileMenu() {
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const navLinks = document.getElementById('navLinks');
+        const sideMenu = document.getElementById('sideMenu');
+        const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+        const sideMenuClose = document.getElementById('sideMenuClose');
 
-        if (mobileMenuBtn && navLinks) {
+        const openSideMenu = () => {
+            if (sideMenu) sideMenu.classList.add('active');
+            if (sideMenuOverlay) sideMenuOverlay.classList.add('active');
+            if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeSideMenu = () => {
+            if (sideMenu) sideMenu.classList.remove('active');
+            if (sideMenuOverlay) sideMenuOverlay.classList.remove('active');
+            if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        };
+
+        if (mobileMenuBtn) {
             mobileMenuBtn.addEventListener('click', () => {
-                const isActive = navLinks.classList.toggle('active');
-                mobileMenuBtn.setAttribute('aria-expanded', isActive);
-                document.body.style.overflow = isActive ? 'hidden' : '';
+                const isOpen = sideMenu?.classList.contains('active');
+                if (isOpen) closeSideMenu();
+                else openSideMenu();
             });
+        }
 
-            // Close mobile menu when clicking a link
+        if (sideMenuOverlay) {
+            sideMenuOverlay.addEventListener('click', closeSideMenu);
+        }
+
+        if (sideMenuClose) {
+            sideMenuClose.addEventListener('click', closeSideMenu);
+        }
+
+        // Close side menu when clicking a nav link
+        if (sideMenu) {
+            sideMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', closeSideMenu);
+            });
+        }
+
+        // Also keep navLinks behavior for non-mobile
+        if (navLinks) {
             navLinks.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
                     navLinks.classList.remove('active');
-                    mobileMenuBtn.setAttribute('aria-expanded', 'false');
                     document.body.style.overflow = '';
                 });
             });

@@ -156,6 +156,10 @@ export function renderProducts(container, filter = 'all') {
                 logger.error('Add to cart button missing product-id attribute');
                 return;
             }
+            // Find product image for fly animation
+            const card = btn.closest('.product-card');
+            const img = card?.querySelector('.product-image img');
+            if (img) CartManager.flyToCart(img);
             CartManager.add(productId);
         });
     });
