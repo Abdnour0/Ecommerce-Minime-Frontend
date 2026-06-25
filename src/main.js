@@ -453,6 +453,7 @@ class AppInitializer {
             mobileMenuBtn.addEventListener('click', () => {
                 const isActive = navLinks.classList.toggle('active');
                 mobileMenuBtn.setAttribute('aria-expanded', isActive);
+                document.body.style.overflow = isActive ? 'hidden' : '';
             });
 
             // Close mobile menu when clicking a link
@@ -460,6 +461,7 @@ class AppInitializer {
                 link.addEventListener('click', () => {
                     navLinks.classList.remove('active');
                     mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
                 });
             });
         }

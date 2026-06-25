@@ -31,6 +31,7 @@ export function openAccountModal() {
     modal.classList.add('active');
     overlay.classList.add('active');
     trapFocus(modal);
+    document.body.style.overflow = 'hidden';
     logger.log('openAccountModal: Modal opened');
 }
 
@@ -39,9 +40,9 @@ export function closeAccountModal() {
     const modal = document.getElementById('accountModal');
     const overlay = document.getElementById('accountModalOverlay');
 
-    if (modal) modal.classList.remove('active');
+    if (modal)     modal.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
-
+    document.body.style.overflow = '';
     logger.log('closeAccountModal: Modal closed');
 }
 
@@ -197,6 +198,7 @@ export function openCart() {
 
     if (cartSidebar) {
         cartSidebar.classList.add('open', 'active');
+        document.body.style.overflow = 'hidden';
         logger.log('Cart sidebar opened');
     } else {
         logger.warn('openCart: cartSidebar element not found');
@@ -218,6 +220,8 @@ export function closeCart() {
     const cartSidebar = document.getElementById('cartSidebar');
     const cartOverlay = document.getElementById('cartOverlay');
     const overlay = document.getElementById('overlay');
+
+    document.body.style.overflow = '';
 
     if (cartSidebar) {
         cartSidebar.classList.remove('open', 'active');
@@ -320,11 +324,13 @@ export function openSearchModal() {
     }
     document.getElementById('searchModalOverlay')?.classList.add('active');
     document.getElementById('searchInput')?.focus();
+    document.body.style.overflow = 'hidden';
 }
 
 export function closeSearchModal() {
     document.getElementById('searchModal')?.classList.remove('active');
     document.getElementById('searchModalOverlay')?.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 export function performSearch() {
@@ -434,12 +440,14 @@ export function openAddressModal(id = null) {
     modal.classList.add('active');
     overlay.classList.add('active');
     trapFocus(modal);
+    document.body.style.overflow = 'hidden';
     logger.log('Address modal opened');
 }
 
 export function closeAddressModal() {
     document.getElementById('addressModal')?.classList.remove('active');
     document.getElementById('addressModalOverlay')?.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 export async function handleAddressSubmit(e) {
@@ -952,6 +960,7 @@ export function openAddressSelectionModal() {
     modal.classList.add('active');
     overlay.classList.add('active');
     trapFocus(modal);
+    document.body.style.overflow = 'hidden';
 }
 
 export function closeAddressSelectionModal() {
@@ -959,6 +968,7 @@ export function closeAddressSelectionModal() {
     const overlay = document.getElementById('addressSelectionModalOverlay');
     if (modal) modal.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 export function fillCheckoutForm(index) {

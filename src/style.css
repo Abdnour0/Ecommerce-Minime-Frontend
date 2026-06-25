@@ -825,6 +825,7 @@ img {
     padding: 32px;
     max-height: calc(100vh - 120px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .search-modal-content h2 {
@@ -938,8 +939,8 @@ img {
     position: absolute;
     top: 16px;
     right: 16px;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--background-light, #FAFAF9);
     display: flex;
@@ -1197,7 +1198,7 @@ img {
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 32px;
 }
 
@@ -2736,8 +2737,8 @@ input:checked+.toggle-slider:before {
 }
 
 .close-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2759,6 +2760,7 @@ input:checked+.toggle-slider:before {
     flex: 1;
     padding: 24px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .cart-empty {
@@ -2829,10 +2831,10 @@ input:checked+.toggle-slider:before {
 }
 
 .quantity-btn {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    min-height: 32px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border: 1px solid var(--border-color, #E5E5E4);
     border-radius: 6px;
     display: flex;
@@ -3391,10 +3393,10 @@ input:checked+.toggle-slider:before {
 }
 
 /* Force clear overlays on checkout page */
-#checkoutPage.active~.cart-overlay,
-#checkoutPage.active~.product-modal-overlay,
-#checkoutPage.active~.search-modal-overlay,
-#checkoutPage.active~.account-modal-overlay {
+body:has(#checkoutPage.active) .cart-overlay,
+body:has(#checkoutPage.active) .product-modal-overlay,
+body:has(#checkoutPage.active) .search-modal-overlay,
+body:has(#checkoutPage.active) .account-modal-overlay {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -3402,8 +3404,7 @@ input:checked+.toggle-slider:before {
 }
 
 /* Hide footer on checkout page - handled by JavaScript in pages.js */
-body:has(#checkoutPage.active) .footer,
-#checkoutPage.active~.footer {
+body:has(#checkoutPage.active) .footer {
     display: none !important;
 }
 
@@ -4088,8 +4089,10 @@ body:has(#checkoutPage.active) .footer,
     }
 
     .color-btn {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        min-width: 44px;
+        height: 44px;
+        min-height: 44px;
     }
 
     .size-btn {
@@ -4409,6 +4412,7 @@ body:has(#checkoutPage.active) .footer,
     z-index: 1600;
     transition: left 0.3s ease;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .side-menu.active {
@@ -4759,6 +4763,7 @@ body:has(#checkoutPage.active) .footer,
     padding: 32px;
     max-height: 90vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .address-modal-header {
@@ -4784,6 +4789,8 @@ body:has(#checkoutPage.active) .footer,
     align-items: center;
     justify-content: center;
     transition: background 0.2s;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .address-modal-close:hover {
@@ -5147,7 +5154,7 @@ body:has(#checkoutPage.active) .footer,
 .checkout-container {
     max-width: 1200px;
     margin: 40px auto;
-    padding: 40px 20px 80px;
+    padding: 112px 20px 80px;
     min-height: calc(100vh - 80px);
 }
 
@@ -5510,9 +5517,10 @@ body:has(#checkoutPage.active) .footer,
 /* Order Success Page */
 .success-container {
     max-width: 600px;
-    margin: 60px auto;
+    margin: 0 auto;
+    padding: 132px 40px 40px;
     text-align: center;
-    padding: 40px;
+    min-height: 100vh;
 }
 
 .success-icon {
@@ -5774,6 +5782,14 @@ body:has(#checkoutPage.active) .footer,
         padding: 100px 20px 60px;
     }
 
+    .wishlist-toggle-btn {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Show wishlist toggle on touch devices */
+@media (hover: none) {
     .wishlist-toggle-btn {
         opacity: 1;
         transform: none;
@@ -6456,7 +6472,7 @@ body:has(#checkoutPage.active) .footer,
     .nav-links {
         display: none;
         position: fixed;
-        top: 72px;
+        top: 60px;
         left: 0;
         right: 0;
         bottom: 0;
@@ -6492,10 +6508,10 @@ body:has(#checkoutPage.active) .footer,
     }
 
     .icon-btn {
-        width: 34px;
-        height: 34px;
-        min-width: 34px;
-        min-height: 34px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
     }
 
     .icon-btn svg {
@@ -6825,6 +6841,7 @@ body:has(#checkoutPage.active) .footer,
 
     .search-modal-content {
         padding: 16px;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* === SIDE MENU === */
@@ -6859,6 +6876,24 @@ body:has(#checkoutPage.active) .footer,
     /* === ACCOUNT MODAL === */
     .account-modal-content {
         padding: 32px 20px;
+    }
+
+    .account-modal,
+    #addressModal {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        top: 0;
+        left: 0;
+        transform: none;
+        border-radius: 0;
+        border-radius: 0;
+    }
+
+    .account-modal.active,
+    #addressModal.active {
+        transform: none;
     }
 }
 
