@@ -4,30 +4,47 @@ export function escapeHtml(text) {
     return div.innerHTML;
 }
 
+const activeToasts = [];
+
 export function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = 'cart-notification';
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
 
-    const colors = {
-        error: '#DC2626',
-        info: '#3B82F6',
-        success: '#F37021'
-    };
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span class="toast-text">${escapeHtml(message)}</span><div class="toast-progress"></div>`;
 
-    notification.style.background = colors[type] || colors.success;
-    notification.innerHTML = `<span>${escapeHtml(message)}</span>`;
-    document.body.appendChild(notification);
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    closeBtn.onclick = () => dismissToast(toast);
+    toast.appendChild(closeBtn);
 
+    container.appendChild(toast);
+    activeToasts.push(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    const timer = setTimeout(() => dismissToast(toast), 3500);
+    toast._timer = timer;
+
+    toast._progressTimer = setTimeout(() => {
+        const bar = toast.querySelector('.toast-progress');
+        if (bar) bar.style.width = '0%';
+    }, 100);
+}
+
+function dismissToast(toast) {
+    if (toast._dismissed) return;
+    toast._dismissed = true;
+    clearTimeout(toast._timer);
+    toast.classList.remove('show');
+    toast.classList.add('hide');
     setTimeout(() => {
-        notification.classList.add('show');
-    }, 10);
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 3000);
+        toast.remove();
+        const idx = activeToasts.indexOf(toast);
+        if (idx > -1) activeToasts.splice(idx, 1);
+    }, 300);
 }
 
 export function debounce(func, wait) {
@@ -115,12 +132,12 @@ export function trapFocus(element) {
         
         if (!isTabPressed) return;
         
-        if (e.shiftKey) { /* shift + tab */
+        if (e.shiftKey) {
             if (document.activeElement === firstFocusableEl) {
                 lastFocusableEl.focus();
                 e.preventDefault();
             }
-        } else { /* tab */
+        } else {
             if (document.activeElement === lastFocusableEl) {
                 firstFocusableEl.focus();
                 e.preventDefault();

@@ -251,6 +251,7 @@ export function renderOrders() {
                 
                 <div class="order-footer-simple">
                      <p>Total: <strong>$${(order.total || 0).toFixed(2)}</strong></p>
+                     <button class="btn btn-outline btn-sm" onclick="window.openOrderDetailModal('${escapeHtml(String(order._id || order.id))}')">View Details</button>
                 </div>
             </div>
         `;
@@ -279,6 +280,138 @@ document.addEventListener('click', async (e) => {
         showNotification('Failed to cancel order. Please try again.', 'error');
     }
 });
+
+export function renderOrderTimeline(order, container) {
+    const steps = [
+        { status: 'pending', label: 'Order Placed' },
+        { status: 'processing', label: 'Processing' },
+        { status: 'shipped', label: 'Shipped' },
+        { status: 'delivered', label: 'Delivered' }
+    ];
+    const status = (order.status || 'pending').toLowerCase();
+    let currentIdx = steps.findIndex(s => s.status === status);
+    if (currentIdx === -1) currentIdx = status === 'cancelled' ? -2 : 0;
+    const isCancelled = status === 'cancelled';
+
+    container.innerHTML = `
+        <div class="order-timeline">
+            ${steps.map((step, i) => {
+                let cls = 'timeline-step';
+                if (isCancelled && i === currentIdx) {
+                    // Show cancelled state on the step it was cancelled
+                } else if (i < currentIdx) {
+                    cls += ' completed';
+                } else if (i === currentIdx) {
+                    cls += ' active';
+                }
+                const date = i === 0 ? new Date(order.createdAt || order.date) : (order[`${step.status}_at`] ? new Date(order[`${step.status}_at`]) : null);
+                return `
+                    <div class="${cls}">
+                        <div class="timeline-dot">${i < currentIdx && !isCancelled ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>' : i + 1}</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${step.label}</div>
+                            ${date ? `<div class="timeline-date">${date.toLocaleDateString(state.currentLanguage || 'en', { month: 'short', day: 'numeric', year: 'numeric' })}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+            ${isCancelled ? `
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="background:var(--error-color,#DC2626);color:#fff;">✕</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title" style="color:var(--error-color,#DC2626);">Cancelled</div>
+                        ${order.cancelled_at ? `<div class="timeline-date">${new Date(order.cancelled_at).toLocaleDateString(state.currentLanguage || 'en', { month: 'short', day: 'numeric', year: 'numeric' })}</div>` : ''}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+let orderDetailModalOpen = false;
+
+export function openOrderDetailModal(orderId) {
+    const order = OrderManager.getOrderById(orderId);
+    if (!order) {
+        showNotification('Order not found.', 'error');
+        return;
+    }
+    orderDetailModalOpen = true;
+    document.body.style.overflow = 'hidden';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay order-detail-overlay';
+
+    const inner = document.createElement('div');
+    inner.className = 'order-detail-modal';
+
+    const orderDate = new Date(order.createdAt || order.date);
+    const orderIdDisplay = String(order._id || order.id).slice(-8).toUpperCase();
+
+    let timelineHtml = '<div class="order-timeline-placeholder">Loading...</div>';
+
+    const closeModal = () => {
+        if (!orderDetailModalOpen) return;
+        orderDetailModalOpen = false;
+        document.body.style.overflow = '';
+        modal.remove();
+    };
+
+    inner.innerHTML = `
+        <div class="modal-header">
+            <h2>Order #${escapeHtml(orderIdDisplay)}</h2>
+            <button class="modal-close" aria-label="Close order detail">✕</button>
+        </div>
+        <div class="order-detail-body">
+            <div class="order-detail-section">
+                <h3>Status</h3>
+                <div class="timeline-wrap" id="orderTimelineWrap"></div>
+            </div>
+            <div class="order-detail-section">
+                <h3>Items</h3>
+                <div class="order-items-list">
+                    ${order.items && order.items.length > 0 ? order.items.map(item => `
+                        <div class="order-item-detail">
+                            <div class="item-thumbnail">
+                                <img src="${item.image || 'https://via.placeholder.com/400x300'}" alt="${escapeHtml(item.name || 'Product')}">
+                            </div>
+                            <div class="item-info">
+                                <h4>${escapeHtml(item.name || 'Product')}</h4>
+                                <p class="item-meta">Qty: ${item.quantity || 1} ${item.selected_size ? `| Size: ${escapeHtml(item.selected_size)}` : ''}</p>
+                                <p class="item-price">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                            </div>
+                        </div>
+                    `).join('') : '<p>No items</p>'}
+                </div>
+            </div>
+            <div class="order-detail-section">
+                <h3>Summary</h3>
+                <div class="order-summary-rows">
+                    <div class="summary-row"><span>Subtotal</span><span>$${(order.subtotal || order.total || 0).toFixed(2)}</span></div>
+                    <div class="summary-row"><span>Shipping</span><span>${order.shipping_cost ? '$' + Number(order.shipping_cost).toFixed(2) : 'FREE'}</span></div>
+                    <div class="summary-row total"><span>Total</span><span>$${(order.total || 0).toFixed(2)}</span></div>
+                    ${order.payment_method ? `<div class="summary-row"><span>Payment</span><span>${escapeHtml(order.payment_method)}</span></div>` : ''}
+                    ${order.shipping_address ? `<div class="summary-row"><span>Shipping to</span><span>${escapeHtml(order.shipping_address)}</span></div>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+
+    modal.appendChild(inner);
+    document.body.appendChild(modal);
+
+    requestAnimationFrame(() => {
+        const wrap = document.getElementById('orderTimelineWrap');
+        if (wrap) renderOrderTimeline(order, wrap);
+    });
+
+    inner.querySelector('.modal-close').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', function handler(e) { if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', handler); } });
+}
+
+// Expose for onclick handlers
+window.openOrderDetailModal = openOrderDetailModal;
 
 // Explicit exports to ensure they're available
 export { OrderManager };
