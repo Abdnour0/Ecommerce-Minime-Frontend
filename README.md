@@ -29,10 +29,6 @@ A client-side e-commerce storefront for MINIME sustainable footwear and apparel.
 ### Run locally
 
 ```bash
-# Option 1 — npx serve (no install needed)
-npx serve .
-
-# Option 2 — Vite dev server (recommended)
 npm run dev
 ```
 
