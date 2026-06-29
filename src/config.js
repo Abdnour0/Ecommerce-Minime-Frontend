@@ -21,4 +21,4 @@ export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KE
  * Admin email addresses that are granted dashboard access.
  * Add additional emails separated by commas.
  */
-export const ADMIN_EMAILS = ['abdnourguellaa50@gmail.com'];
+export const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').filter(Boolean);

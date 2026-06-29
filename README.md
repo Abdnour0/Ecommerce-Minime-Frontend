@@ -1,6 +1,6 @@
 # MINIME — E-Commerce Frontend
 
-A client-side e-commerce storefront for MINIME sustainable footwear and apparel. Built with vanilla JavaScript ES modules — no framework, no bundler required.
+A client-side e-commerce storefront for MINIME sustainable footwear and apparel. Built with vanilla JavaScript ES modules — no framework required.
 
 ---
 
@@ -9,7 +9,6 @@ A client-side e-commerce storefront for MINIME sustainable footwear and apparel.
 - Product catalogue with filtering (Men, Women, Sale, Bestsellers)
 - Shopping cart (persisted to `localStorage`)
 - Wishlist
-- User authentication (localStorage-based, no backend required)
 - Multi-language support: English, French, Arabic (RTL)
 - Light / Dark theme
 - Checkout with Stripe card payment + Cash on Delivery fallback
@@ -33,24 +32,27 @@ A client-side e-commerce storefront for MINIME sustainable footwear and apparel.
 # Option 1 — npx serve (no install needed)
 npx serve .
 
-# Option 2 — Vite dev server
-npm install -g vite
-vite
+# Option 2 — Vite dev server (recommended)
+npm run dev
 ```
 
-Then open `http://localhost:3000` (or the port shown).
+Then open `http://localhost:5173` (or the port shown).
 
 ---
 
 ## Configuration
 
-Edit **`config.js`** before deploying:
+Copy `.env.example` to `.env` and set the required variables:
 
-| Variable | Description |
-|----------|-------------|
-| `API_URL` | Backend REST API base URL |
-| `STRIPE_PUBLISHABLE_KEY` | Your Stripe publishable key (`pk_live_…` or `pk_test_…`) |
-| `ADMIN_EMAILS` | Email addresses granted dashboard access |
+```bash
+cp .env.example .env
+```
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_API_URL` | Yes | Backend REST API base URL |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Yes | Stripe publishable key (`pk_live_…` or `pk_test_…`) |
+| `VITE_ADMIN_EMAILS` | No | Comma-separated admin email addresses for dashboard access |
 
 ---
 
@@ -59,13 +61,12 @@ Edit **`config.js`** before deploying:
 ```
 FrontEnd/
 ├── index.html              # Single-page app shell (all pages as hidden divs)
-├── main.js                 # App entry point — initialises all managers
-├── config.js               # Environment configuration (API URL, Stripe key)
+├── main.js                 # App entry point
+├── config.js               # Runtime config (reads from Vite env vars)
 ├── style.css               # Global styles
-├── style-addresses.css     # Address-specific styles
 └── components/
     ├── state.js            # Shared application state
-    ├── auth.js             # Authentication (localStorage-based)
+    ├── auth.js             # Authentication
     ├── cart.js             # Shopping cart logic
     ├── wishlist.js         # Wishlist logic + rendering
     ├── orders.js           # Order management + rendering
@@ -76,9 +77,8 @@ FrontEnd/
     ├── settings.js         # Language & theme
     ├── translations.js     # All UI strings in 3 languages
     ├── pages.js            # Page navigation helpers
-    ├── ui-handlers.js      # UI event handlers (cart, checkout, modals…)
+    ├── ui-handlers.js      # UI event handlers
     ├── ui-utils.js         # Shared utilities (notifications, escapeHtml)
-    ├── logger.js           # Development-only logging utility
     ├── dashboard.js        # Admin dashboard (Chart.js)
     ├── dashboard-access.js # Dashboard access control
     └── dom.js              # DOM element references
@@ -86,22 +86,10 @@ FrontEnd/
 
 ---
 
-## Authentication
-
-This project uses **localStorage-only** authentication — no real backend is required. Passwords are hashed with **SHA-256** via the Web Crypto API before storage.
-
-> ⚡ For production, replace `auth.js` with calls to a real backend (e.g. Node/Express + bcrypt).
-
----
-
 ## Deployment
 
-1. Set `STRIPE_PUBLISHABLE_KEY` in `config.js`
-2. Set `API_URL` to your production backend
-3. Deploy the entire `FrontEnd/` folder to any static host:
-   - **Vercel**: `vercel deploy`
-   - **Netlify**: drag-and-drop the folder
-   - **GitHub Pages**: push to `gh-pages` branch
+1. Set the required environment variables on your hosting platform (Vercel, Netlify, Cloudflare Pages, etc.)
+2. Deploy the `dist/` folder after running `npm run build`
 
 For SPA routing (so page refreshes don't 404), add a redirect rule:
 
@@ -114,15 +102,6 @@ For SPA routing (so page refreshes don't 404), add a redirect rule:
 ```json
 { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
 ```
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes
-4. Open a Pull Request against `main`
 
 ---
 
