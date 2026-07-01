@@ -35,7 +35,8 @@ export function prepareOrderData(paymentMethod, email) {
         total_amount: total,
         payment_method: paymentMethod,
         shipping_address: shippingAddressString,
-        payment_id: 'mock_pay_' + Date.now() // Simulation
+        payment_id: 'mock_pay_' + Date.now(), // Simulation
+        coupon_code: state.currentCoupon?.couponId ? state.currentCoupon.code : undefined,
     };
 }
 

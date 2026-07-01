@@ -1,3 +1,45 @@
+export function optimizedImageUrl(url, width, format) {
+    if (!url || !url.includes('unsplash.com')) return url;
+    try {
+        const base = url.split('?')[0];
+        const params = new URLSearchParams(url.split('?')[1] || '');
+        params.set('w', String(width));
+        params.set('q', '80');
+        params.set('fit', 'clip');
+        if (format) params.set('fm', format);
+        return `${base}?${params.toString()}`;
+    } catch {
+        return url;
+    }
+}
+
+export function responsiveImageHtml(url, alt, className, lazy) {
+    if (!url || !url.includes('unsplash.com')) {
+        return `<img src="${url || ''}" alt="${escapeHtml(alt || '')}"${className ? ` class="${className}"` : ''}${lazy !== false ? ' loading="lazy" decoding="async"' : ''}>`;
+    }
+    const base = url.split('?')[0];
+    const params = new URLSearchParams(url.split('?')[1] || '');
+
+    const buildUrl = (w, fm) => {
+        const p = new URLSearchParams(params);
+        p.set('w', String(w));
+        p.set('q', '80');
+        p.set('fit', 'clip');
+        if (fm) p.set('fm', fm);
+        return `${base}?${p.toString()}`;
+    };
+
+    const fallbackUrl = buildUrl(600, '');
+    const webpSrcset = [320, 480, 600, 800, 1200].map(w => `${buildUrl(w, 'webp')} ${w}w`).join(', ');
+    const jpgSrcset = [320, 480, 600, 800, 1200].map(w => `${buildUrl(w, '')} ${w}w`).join(', ');
+
+    return `<picture>
+        <source type="image/webp" srcset="${webpSrcset}" sizes="(max-width: 600px) 100vw, 600px">
+        <source type="image/jpeg" srcset="${jpgSrcset}" sizes="(max-width: 600px) 100vw, 600px">
+        <img src="${fallbackUrl}" alt="${escapeHtml(alt || '')}"${className ? ` class="${className}"` : ''}${lazy !== false ? ' loading="lazy" decoding="async"' : ''}>
+    </picture>`;
+}
+
 export function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -12,6 +54,9 @@ export function showNotification(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
     toast.innerHTML = `<span class="toast-text">${escapeHtml(message)}</span><div class="toast-progress"></div>`;
 
     const closeBtn = document.createElement('button');
@@ -116,7 +161,7 @@ export function showConfirmDialog(message, onConfirm) {
 }
 
 export function trapFocus(element) {
-    const focusableEls = element.querySelectorAll('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), select:not([disabled])');
+    const focusableEls = element.querySelectorAll('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="email"]:not([disabled]), input[type="password"]:not([disabled]), input[type="tel"]:not([disabled]), input[type="number"]:not([disabled]), input[type="search"]:not([disabled]), input[type="url"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"]), details > summary:first-child');
     if (!focusableEls.length) return;
     const firstFocusableEl = focusableEls[0];  
     const lastFocusableEl = focusableEls[focusableEls.length - 1];

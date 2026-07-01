@@ -2,6 +2,7 @@ import { logger } from './logger.js';
 import { state } from './state.js';
 import { SettingsManager } from './settings.js';
 import { showNotification } from './ui-utils.js';
+import { apiFetch, API_CONFIG } from './api-config.js';
 
 export const CartManager = {
     init() {
@@ -95,6 +96,8 @@ export const CartManager = {
         }
     },
 
+    _syncTimeout: null,
+
     save() {
         try {
             localStorage.setItem('cart', JSON.stringify(state.cart));
@@ -102,6 +105,31 @@ export const CartManager = {
             logger.error('Error saving cart:', e);
             showNotification('Unable to save cart', 'error');
         }
+        this.syncToServer();
+    },
+
+    syncToServer() {
+        if (this._syncTimeout) clearTimeout(this._syncTimeout);
+        if (!state.currentUser || !state.cart || state.cart.length === 0) return;
+
+        this._syncTimeout = setTimeout(async () => {
+            try {
+                const items = state.cart.map(item => ({
+                    product_id: item.id || item._id,
+                    quantity: item.quantity || 1,
+                    price: item.price,
+                    name: item.name,
+                    image: item.image,
+                }));
+                await apiFetch('/cart/sync/', {
+                    method: 'POST',
+                    body: JSON.stringify({ items }),
+                });
+            } catch (e) {
+                // Silently fail — cart is still saved locally
+                logger.warn('Cart sync to server failed:', e);
+            }
+        }, 2000);
     },
 
     update() {

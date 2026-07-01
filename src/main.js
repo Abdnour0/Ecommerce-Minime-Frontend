@@ -426,7 +426,8 @@ class AppInitializer {
         // Search input
         this.setupSearchInput();
 
-
+        // Search filters (category chips, price range)
+        ui.setupSearchFilters();
     }
 
     setupSettingsDropdown() {

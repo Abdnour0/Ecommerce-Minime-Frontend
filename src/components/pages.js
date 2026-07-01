@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import { AuthManager } from './auth.js';
 import { AddressManager } from './addresses.js';
-import { renderProducts } from './products.js';
+import { renderProducts, renderRecommendations } from './products.js';
 import { renderOrders } from './orders.js';
 import { showNotification } from './ui-utils.js';
 import { closeAccountModal } from './ui-handlers.js';
@@ -29,6 +29,49 @@ export function closeAllModalsAndOverlays() {
     });
 
     document.body.style.overflow = '';
+}
+
+const PAGE_BREADCRUMBS = {
+    menPage:            'Men',
+    womenPage:          'Women',
+    salePage:           'Sale',
+    sustainabilityPage: 'Sustainability',
+    storesPage:         'Our Stores',
+    ourStoryPage:       'Our Story',
+    helpCenterPage:     'Help Center',
+    returnsPage:        'Returns & Exchanges',
+    shippingPage:       'Shipping Info',
+    contactPage:        'Contact Us',
+    careersPage:        'Careers',
+    accessibilityPage:  'Accessibility',
+    termsPage:          'Terms of Service',
+    privacyPage:        'Privacy Policy',
+    profilePage:        'My Profile',
+    ordersPage:         'My Orders',
+    addressesPage:      'My Addresses',
+    settingsPage:       'Settings',
+    wishlistPage:       'My Wishlist',
+    checkoutPage:       'Checkout',
+    dashboardPage:      'Admin Dashboard',
+};
+
+function updateBreadcrumbs(pageId) {
+    const nav = document.getElementById('breadcrumbNav');
+    const currentEl = document.getElementById('breadcrumbCurrent');
+    if (!nav || !currentEl) return;
+
+    if (pageId === 'homePage') {
+        nav.style.display = 'none';
+        return;
+    }
+
+    const label = PAGE_BREADCRUMBS[pageId];
+    if (label) {
+        currentEl.textContent = label;
+        nav.style.display = 'block';
+    } else {
+        nav.style.display = 'none';
+    }
 }
 
 const PAGE_TITLES = {
@@ -63,6 +106,7 @@ export function showPage(pageId) {
     if (targetPage) targetPage.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.title = PAGE_TITLES[pageId] || 'MINIME';
+    updateBreadcrumbs(pageId);
 
     // Hide footer on checkout page
     const footer = document.querySelector('.footer');
@@ -88,6 +132,11 @@ export function showHomePage() {
         } else {
             recentlyViewedSection.classList.add('hidden');
         }
+    }
+
+    const recommendationsGrid = document.getElementById('recommendationsGrid');
+    if (recommendationsGrid) {
+        renderRecommendations(recommendationsGrid);
     }
 }
 

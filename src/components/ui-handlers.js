@@ -9,6 +9,37 @@ import { showNotification, escapeHtml, showConfirmDialog, trapFocus } from './ui
 import { showPage } from './pages.js';
 import { STRIPE_PUBLISHABLE_KEY } from '../config.js';
 import { renderAddresses, updateCheckoutSummary } from './checkout-ui.js';
+import { API_URL } from '../config.js';
+
+let lastFocusedElement = null;
+
+export function storeLastFocus() {
+    const active = document.activeElement;
+    if (active && active !== document.body) {
+        lastFocusedElement = active;
+    }
+}
+
+export function restoreLastFocus() {
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
+    }
+    lastFocusedElement = null;
+}
+
+export function hideBackgroundContent() {
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => page.setAttribute('aria-hidden', 'true'));
+    const header = document.querySelector('header, nav[role="navigation"]:not(.side-menu)');
+    if (header) header.setAttribute('aria-hidden', 'true');
+}
+
+export function showBackgroundContent() {
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => page.removeAttribute('aria-hidden'));
+    const header = document.querySelector('header, nav[role="navigation"]:not(.side-menu)');
+    if (header) header.removeAttribute('aria-hidden');
+}
 
 export function openAccountModal() {
     logger.log('openAccountModal called');
@@ -28,6 +59,8 @@ export function openAccountModal() {
         showAccountChoice();
     }
 
+    storeLastFocus();
+    hideBackgroundContent();
     modal.classList.add('active');
     overlay.classList.add('active');
     trapFocus(modal);
@@ -43,6 +76,8 @@ export function closeAccountModal() {
     if (modal)     modal.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
     document.body.style.overflow = '';
+    showBackgroundContent();
+    restoreLastFocus();
     logger.log('closeAccountModal: Modal closed');
 }
 
@@ -197,6 +232,8 @@ export function openCart() {
     const overlay = document.getElementById('overlay');
 
     if (cartSidebar) {
+        storeLastFocus();
+        hideBackgroundContent();
         cartSidebar.classList.add('open', 'active');
         document.body.style.overflow = 'hidden';
         logger.log('Cart sidebar opened');
@@ -237,6 +274,8 @@ export function closeCart() {
         overlay.classList.remove('active');
         overlay.style.display = 'none';
     }
+    showBackgroundContent();
+    restoreLastFocus();
 }
 
 export function handleScroll() {
@@ -319,6 +358,8 @@ export function updateCart() {
 export function openSearchModal() {
     const sm = document.getElementById('searchModal');
     if (sm) {
+        storeLastFocus();
+        hideBackgroundContent();
         sm.classList.add('active');
         trapFocus(sm);
     }
@@ -331,24 +372,69 @@ export function closeSearchModal() {
     document.getElementById('searchModal')?.classList.remove('active');
     document.getElementById('searchModalOverlay')?.classList.remove('active');
     document.body.style.overflow = '';
+    showBackgroundContent();
+    restoreLastFocus();
+}
+
+let _searchCategory = '';
+let _searchPriceMin = 0;
+let _searchPriceMax = Infinity;
+
+export function setupSearchFilters() {
+    document.querySelectorAll('#searchCategoryChips .search-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#searchCategoryChips .search-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            _searchCategory = chip.dataset.category;
+            performSearch();
+        });
+    });
+
+    document.getElementById('searchPriceMin')?.addEventListener('input', () => {
+        _searchPriceMin = parseFloat(document.getElementById('searchPriceMin').value) || 0;
+        performSearch();
+    });
+
+    document.getElementById('searchPriceMax')?.addEventListener('input', () => {
+        const val = document.getElementById('searchPriceMax').value;
+        _searchPriceMax = val ? parseFloat(val) : Infinity;
+        performSearch();
+    });
 }
 
 export function performSearch() {
     const query = document.getElementById('searchInput')?.value.trim().toLowerCase();
     const resultsEl = document.getElementById('searchResults');
-    if (!query || !resultsEl) return;
-    const items = state.products.filter(p => p.name.toLowerCase().includes(query));
+    if (!resultsEl) return;
+
+    if (!query && !_searchCategory && !_searchPriceMin && _searchPriceMax === Infinity) {
+        resultsEl.innerHTML = '';
+        return;
+    }
+
+    const items = state.products.filter(p => {
+        if (query && !p.name.toLowerCase().includes(query) && !(p.description || '').toLowerCase().includes(query) && !(p.category || '').toLowerCase().includes(query)) {
+            return false;
+        }
+        if (_searchCategory === 'sale' && !p.onSale) return false;
+        if (_searchCategory === 'men' && p.category !== 'men') return false;
+        if (_searchCategory === 'women' && p.category !== 'women') return false;
+        if (p.price < _searchPriceMin || p.price > _searchPriceMax) return false;
+        return true;
+    });
+
     resultsEl.innerHTML = items.length ? items.map(p => `
         <div class="search-result-item" onclick="window.openProductModal('${p.id || p._id}'); window.closeSearchModal();">
             <div class="search-result-image">
-                <img src="${p.image}" alt="${escapeHtml(p.name)}">
+                <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy">
             </div>
             <div class="search-result-info">
-                <h4 class="search-result-name">${escapeHtml(p.name)}</h4>
-                <div class="search-result-price">$${p.price}</div>
+                <h4 class="search-result-name">${escapeHtml(p.name)} <span class="search-result-badge">${escapeHtml(p.category || '')}</span></h4>
+                <div class="search-result-description">${escapeHtml((p.description || '').substring(0, 60))}${(p.description || '').length > 60 ? '...' : ''}</div>
+                <div class="search-result-price">${p.onSale && p.originalPrice ? `<span class="original-price">$${p.originalPrice}</span> ` : ''}$${p.price}</div>
             </div>
         </div>
-    `).join('') : '<div class="no-results">No results found</div>';
+    `).join('') : '<div class="search-no-results">No results found</div>';
 }
 
 export function showResetPasswordModal() {
@@ -360,6 +446,8 @@ export function showResetPasswordModal() {
     const modal = document.getElementById('resetPasswordModal');
     
     if (overlay && modal) {
+        storeLastFocus();
+        hideBackgroundContent();
         overlay.classList.add('active');
         modal.classList.add('active');
         trapFocus(modal);
@@ -386,6 +474,8 @@ export function closeResetPasswordModal() {
     if (overlay) overlay.classList.remove('active');
     if (modal) modal.classList.remove('active');
     document.body.style.overflow = '';
+    showBackgroundContent();
+    restoreLastFocus();
 }
 
 export function openAddressModal(id = null) {
@@ -439,6 +529,8 @@ export function openAddressModal(id = null) {
 
     modal.classList.add('active');
     overlay.classList.add('active');
+    storeLastFocus();
+    hideBackgroundContent();
     trapFocus(modal);
     document.body.style.overflow = 'hidden';
     logger.log('Address modal opened');
@@ -448,6 +540,8 @@ export function closeAddressModal() {
     document.getElementById('addressModal')?.classList.remove('active');
     document.getElementById('addressModalOverlay')?.classList.remove('active');
     document.body.style.overflow = '';
+    showBackgroundContent();
+    restoreLastFocus();
 }
 
 export async function handleAddressSubmit(e) {
@@ -689,22 +783,37 @@ export async function applyCoupon() {
     const messageEl = document.getElementById('couponMessage');
     if (!code || !messageEl) return;
 
-    const validCoupons = {
-        'SAVE20': { discountType: 'percentage', discountValue: 20 },
-        'MINIME10': { discountType: 'fixed', discountValue: 10 }
-    };
+    const cartItems = state.cart.map(i => ({ product_id: i.id, quantity: i.quantity }));
+    const total = CartManager.getTotal();
 
-    if (validCoupons[code]) {
-        state.currentCoupon = validCoupons[code];
-        messageEl.textContent = `Coupon applied: -${state.currentCoupon.discountType === 'percentage' ? state.currentCoupon.discountValue + '%' : '$' + state.currentCoupon.discountValue}`;
-        messageEl.className = 'coupon-message success';
-        updateCheckoutSummary();
-    } else {
+    try {
+        const resp = await fetch(`${API_URL}/coupons/validate/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${state.token || localStorage.getItem('accessToken')}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code, cart_items: cartItems, total_amount: total }),
+        });
+
+        if (resp.ok) {
+            const data = await resp.json();
+            state.currentCoupon = { discountType: data.discount_type, discountValue: data.discount_value, couponId: data.coupon_id, code: data.code };
+            messageEl.textContent = `Coupon applied: ${data.display}`;
+            messageEl.className = 'coupon-message success';
+        } else {
+            state.currentCoupon = null;
+            const err = await resp.json();
+            messageEl.textContent = err.detail || 'Invalid coupon code';
+            messageEl.className = 'coupon-message error';
+        }
+    } catch (e) {
         state.currentCoupon = null;
-        messageEl.textContent = 'Invalid coupon code';
+        messageEl.textContent = 'Failed to validate coupon. Please try again.';
         messageEl.className = 'coupon-message error';
-        updateCheckoutSummary();
     }
+
+    updateCheckoutSummary();
 }
 
 function populateSuccessPage(email, orderId, total) {
@@ -917,6 +1026,8 @@ export function openAddressSelectionModal() {
         overlay.addEventListener('click', closeAddressSelectionModal);
     }
 
+    storeLastFocus();
+    hideBackgroundContent();
     // Populate modal content
     if (addresses.length === 0) {
         showNotification('No saved addresses found', 'info');
@@ -969,6 +1080,8 @@ export function closeAddressSelectionModal() {
     if (modal) modal.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
     document.body.style.overflow = '';
+    showBackgroundContent();
+    restoreLastFocus();
 }
 
 export function fillCheckoutForm(index) {

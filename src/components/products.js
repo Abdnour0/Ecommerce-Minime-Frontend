@@ -3,11 +3,12 @@ import { state } from './state.js';
 import { SettingsManager } from './settings.js';
 import { WishlistManager } from './wishlist.js';
 import { CartManager } from './cart.js';
-import { escapeHtml, trapFocus } from './ui-utils.js';
+import { escapeHtml, trapFocus, responsiveImageHtml } from './ui-utils.js';
 import { loadAndRenderReviews } from './reviews.js';
 import { API_CONFIG, apiFetch } from './api-config.js';
 import { fallbackProducts } from './fallback-products.js';
 import { RecentlyViewedManager } from './recently-viewed.js';
+import { storeLastFocus, restoreLastFocus, hideBackgroundContent, showBackgroundContent } from './ui-handlers.js';
 
 // Fetch products from Django Backend
 export async function fetchProducts() {
@@ -100,7 +101,7 @@ export function renderProducts(container, filter = 'all') {
         <div class="product-card" role="listitem" data-product-id="${product.id}" tabindex="0">
             <div class="product-image">
                 ${product.badge ? `<div class="product-badge">${escapeHtml(badgeText)}</div>` : ''}
-                <img src="${product.image}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/600x600?text=Image+Not+Available'">
+                ${responsiveImageHtml(product.image, product.name, '', true)}
                 <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" data-product-id="${product.id}" aria-label="Toggle Wishlist">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'var(--accent-color)' : 'none'}" stroke="currentColor" stroke-width="2">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -205,7 +206,23 @@ export function openProductModal(productId) {
     const modalClose = document.getElementById('modalClose');
 
     // Populate modal with product data
-    if (modalImage) modalImage.src = product.image;
+    if (modalImage) {
+        modalImage.src = product.image;
+        if (product.image && product.image.includes('unsplash.com')) {
+            const base = product.image.split('?')[0];
+            const params = new URLSearchParams(product.image.split('?')[1] || '');
+            const buildUrl = (w, fm) => {
+                const p = new URLSearchParams(params);
+                p.set('w', String(w));
+                p.set('q', '85');
+                p.set('fit', 'clip');
+                if (fm) p.set('fm', fm);
+                return `${base}?${p.toString()}`;
+            };
+            modalImage.srcset = [480, 800, 1200, 1600].map(w => `${buildUrl(w, '')} ${w}w`).join(', ');
+            modalImage.sizes = '(max-width: 768px) 100vw, 600px';
+        }
+    }
     if (modalName) modalName.textContent = product.name;
     if (modalDescription) modalDescription.textContent = product.description;
     if (modalPrice) {
@@ -355,6 +372,8 @@ export function openProductModal(productId) {
 
     // Show the modal
     if (productModal) {
+        storeLastFocus();
+        hideBackgroundContent();
         productModal.classList.add('active');
         trapFocus(productModal);
     }
@@ -413,6 +432,46 @@ export function changeModalImage(imageSrc, thumbElement) {
     }
 }
 
+export function renderRecommendations(container, count = 4) {
+    if (!container) return;
+
+    const recentlyViewedIds = RecentlyViewedManager.get();
+    if (recentlyViewedIds.length === 0 || !state.products || state.products.length === 0) {
+        const section = document.getElementById('recommendationsSection');
+        if (section) section.classList.add('hidden');
+        return;
+    }
+
+    const viewedProducts = recentlyViewedIds
+        .map(id => state.products.find(p => String(p.id || p._id) === String(id)))
+        .filter(Boolean);
+
+    if (viewedProducts.length === 0) {
+        const section = document.getElementById('recommendationsSection');
+        if (section) section.classList.add('hidden');
+        return;
+    }
+
+    const viewedCategories = [...new Set(viewedProducts.map(p => p.category))];
+    const viewedIds = new Set(viewedProducts.map(p => String(p.id || p._id)));
+
+    const recommendations = state.products
+        .filter(p => viewedCategories.includes(p.category) && !viewedIds.has(String(p.id || p._id)))
+        .slice(0, count);
+
+    if (recommendations.length === 0) {
+        const section = document.getElementById('recommendationsSection');
+        if (section) section.classList.add('hidden');
+        return;
+    }
+
+    state.recommendations = recommendations;
+    const section = document.getElementById('recommendationsSection');
+    if (section) section.classList.remove('hidden');
+
+    renderProducts(container, 'recommendations');
+}
+
 export function closeProductModal() {
     logger.log('closeProductModal called');
     const productModal = document.getElementById('productModal');
@@ -435,6 +494,8 @@ export function closeProductModal() {
     }
 
     document.body.style.overflow = '';
+    showBackgroundContent();
+    restoreLastFocus();
 }
 
 export function renderSkeletons(container, count = 4) {
