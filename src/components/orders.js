@@ -393,6 +393,7 @@ export function openOrderDetailModal(orderId) {
                     <div class="summary-row total"><span>Total</span><span>$${(order.total || 0).toFixed(2)}</span></div>
                     ${order.payment_method ? `<div class="summary-row"><span>Payment</span><span>${escapeHtml(order.payment_method)}</span></div>` : ''}
                     ${order.shipping_address ? `<div class="summary-row"><span>Shipping to</span><span>${escapeHtml(order.shipping_address)}</span></div>` : ''}
+                    ${order.tracking_number ? `<div class="summary-row"><span>Tracking</span><span><a href="https://${order.carrier ? `${order.carrier}.com/tracking/` : 'www.google.com/search?q='}${encodeURIComponent(order.tracking_number)}" target="_blank" rel="noopener">${escapeHtml(order.tracking_number)}${order.carrier ? ` (${escapeHtml(order.carrier)})` : ''}</a></span></div>` : ''}
                 </div>
             </div>
         </div>

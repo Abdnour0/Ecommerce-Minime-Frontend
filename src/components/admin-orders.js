@@ -94,12 +94,13 @@ export const AdminOrdersManager = {
                             <th data-translate="total">Total</th>
                             <th data-translate="status">Status</th>
                             <th data-translate="payment">Payment</th>
+                            <th data-translate="tracking">Tracking</th>
                             <th data-translate="date">Date</th>
                             <th data-translate="actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="adminOrdersBody">
-                        <tr><td colspan="8" class="loading-cell">Loading...</td></tr>
+                        <tr><td colspan="9" class="loading-cell">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -137,12 +138,13 @@ export const AdminOrdersManager = {
         const getT = (k) => translations[state.currentLanguage]?.[k] || translations.en[k] || k;
 
         if (this.orders.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="empty-cell">${getT('noOrdersFound') || 'No orders found.'}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="empty-cell">${getT('noOrdersFound') || 'No orders found.'}</td></tr>`;
             return;
         }
 
         tbody.innerHTML = this.orders.map(order => {
             const statusColor = STATUS_COLORS[order.status] || '#626567';
+            const hasTracking = order.tracking_number;
             return `
                 <tr>
                     <td class="order-id-cell">#${order.id.slice(-8).toUpperCase()}</td>
@@ -157,6 +159,13 @@ export const AdminOrdersManager = {
                     <td>
                         <small>${order.payment_method}</small><br>
                         <small class="payment-${order.payment_status}">${order.payment_status}</small>
+                    </td>
+                    <td>
+                        <div class="tracking-cell" id="tracking-${order.id}" style="cursor:pointer;"
+                             onclick="AdminOrdersManager.editTracking('${order.id}')">
+                            ${hasTracking ? `<small>${order.tracking_number}</small>` : `<small style="color:#999;">${getT('addTracking') || 'Add tracking'}</small>`}
+                            ${order.carrier ? `<br><small style="color:#666;">${order.carrier}</small>` : ''}
+                        </div>
                     </td>
                     <td><small>${new Date(order.created_at).toLocaleDateString()}</small></td>
                     <td>
@@ -247,6 +256,54 @@ export const AdminOrdersManager = {
             logger.error('Failed to export orders:', err);
             showNotification('Failed to export orders.', 'error');
         }
+    },
+
+    editTracking(orderId) {
+        const cell = document.getElementById(`tracking-${orderId}`);
+        if (!cell) return;
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) return;
+        const getT = (k) => translations[state.currentLanguage]?.[k] || translations.en[k] || k;
+
+        cell.style.cursor = 'default';
+        cell.onclick = null;
+        cell.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <input type="text" id="trackNum-${orderId}" placeholder="${getT('trackingNumber') || 'Tracking #'}"
+                    value="${order.tracking_number || ''}" style="width:120px;padding:2px 4px;font-size:11px;">
+                <input type="text" id="trackCarrier-${orderId}" placeholder="${getT('carrier') || 'Carrier'}"
+                    value="${order.carrier || ''}" style="width:120px;padding:2px 4px;font-size:11px;">
+                <div style="display:flex;gap:4px;">
+                    <button class="btn btn-primary btn-sm" style="padding:2px 8px;font-size:11px;"
+                        onclick="AdminOrdersManager.saveTracking('${orderId}')">${getT('save') || 'Save'}</button>
+                    <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;"
+                        onclick="AdminOrdersManager.cancelTracking('${orderId}')">${getT('cancel') || 'Cancel'}</button>
+                </div>
+            </div>
+        `;
+    },
+
+    async saveTracking(orderId) {
+        const trackingNumber = document.getElementById(`trackNum-${orderId}`).value;
+        const carrier = document.getElementById(`trackCarrier-${orderId}`).value;
+
+        try {
+            const resp = await fetch(`${API_URL}/admin/orders/${orderId}/tracking/`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ tracking_number: trackingNumber, carrier }),
+            });
+            if (!resp.ok) throw new Error('Update failed');
+            showNotification('Tracking info updated.', 'success');
+            await this.fetchOrders();
+        } catch (err) {
+            logger.error('Failed to update tracking:', err);
+            showNotification('Failed to update tracking.', 'error');
+        }
+    },
+
+    cancelTracking(orderId) {
+        this.fetchOrders();
     },
 
     goBack() {
