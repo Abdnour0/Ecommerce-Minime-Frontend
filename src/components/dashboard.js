@@ -13,6 +13,7 @@ import { AdminReportsManager } from './admin-reports.js';
 import { AdminActivityLogManager } from './admin-activity-log.js';
 import { AdminEmailTemplatesManager } from './admin-email-templates.js';
 import { AdminWishlistManager } from './admin-wishlist.js';
+import { AdminBackupManager } from './admin-backups.js';
 
 window.AdminOrdersManager = AdminOrdersManager;
 window.AdminProductsManager = AdminProductsManager;
@@ -23,6 +24,7 @@ window.AdminReportsManager = AdminReportsManager;
 window.AdminActivityLogManager = AdminActivityLogManager;
 window.AdminEmailTemplatesManager = AdminEmailTemplatesManager;
 window.AdminWishlistManager = AdminWishlistManager;
+window.AdminBackupManager = AdminBackupManager;
 
 function getAuthHeaders() {
     const token = state.token || localStorage.getItem('accessToken');
