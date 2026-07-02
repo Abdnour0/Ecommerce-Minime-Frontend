@@ -177,6 +177,14 @@ export const AdminOrdersManager = {
                             <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
                             <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
+                        ${order.payment_status === 'paid' ? `
+                            <button class="btn btn-sm" style="margin-top:4px;background:#FEE2E2;color:#DC2626;border:1px solid #FECACA;width:100%;"
+                                onclick="AdminOrdersManager.refundOrder('${order.id}')">
+                                ${getT('refund') || 'Refund'}
+                            </button>
+                        ` : order.payment_status === 'refunded' ? `
+                            <small style="color:#DC2626;display:block;margin-top:4px;text-align:center;">${getT('refunded') || 'Refunded'}</small>
+                        ` : ''}
                     </td>
                 </tr>
             `;
@@ -212,6 +220,30 @@ export const AdminOrdersManager = {
         } catch (err) {
             logger.error('Failed to update status:', err);
             showNotification('Failed to update order status', 'error');
+        }
+    },
+
+    async refundOrder(orderId) {
+        const getT = (k) => translations[state.currentLanguage]?.[k] || translations.en[k] || k;
+        const reason = prompt(getT('refundReason') || 'Reason for refund:');
+        if (reason === null) return;
+
+        try {
+            const resp = await fetch(`${API_URL}/admin/orders/${orderId}/refund/`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ reason }),
+            });
+            if (!resp.ok) {
+                const errData = await resp.json();
+                showNotification(errData.detail || 'Refund failed', 'error');
+                return;
+            }
+            showNotification('Order refunded successfully.', 'success');
+            await this.fetchOrders();
+        } catch (err) {
+            logger.error('Failed to refund order:', err);
+            showNotification('Failed to process refund.', 'error');
         }
     },
 
