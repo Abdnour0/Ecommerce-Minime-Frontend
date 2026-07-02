@@ -327,6 +327,23 @@ export const AdminProductsManager = {
                     <label>${getT('careInstructions') || 'Care Instructions'}</label>
                     <textarea id="pf_care" rows="2">${product.care_instructions || ''}</textarea>
                 </div>
+                <details style="margin:12px 0;border:1px solid #ddd;border-radius:6px;padding:8px 12px;">
+                    <summary style="cursor:pointer;font-weight:600;font-size:14px;color:#374151;">${getT('seoFields') || 'SEO Fields'}</summary>
+                    <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
+                        <div class="form-group">
+                            <label>${getT('metaTitle') || 'Meta Title'}</label>
+                            <input type="text" id="pf_metaTitle" value="${product.meta_title || ''}" class="form-input" placeholder="${getT('metaTitlePlaceholder') || 'Page title override (max 255 chars)'}">
+                        </div>
+                        <div class="form-group">
+                            <label>${getT('metaDescription') || 'Meta Description'}</label>
+                            <textarea id="pf_metaDesc" rows="2" class="form-input" placeholder="${getT('metaDescPlaceholder') || 'Short description for search results'}">${product.meta_description || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>${getT('metaKeywords') || 'Meta Keywords'}</label>
+                            <input type="text" id="pf_metaKeywords" value="${product.meta_keywords || ''}" class="form-input" placeholder="${getT('metaKeywordsPlaceholder') || 'Comma-separated keywords'}">
+                        </div>
+                    </div>
+                </details>
                 ${isEdit ? `
                 <div class="form-group">
                     <label>${getT('images') || 'Images'}</label>
@@ -418,6 +435,9 @@ export const AdminProductsManager = {
             weight: document.getElementById('pf_weight').value,
             origin: document.getElementById('pf_origin').value,
             care_instructions: document.getElementById('pf_care').value,
+            meta_title: document.getElementById('pf_metaTitle')?.value || '',
+            meta_description: document.getElementById('pf_metaDesc')?.value || '',
+            meta_keywords: document.getElementById('pf_metaKeywords')?.value || '',
         };
 
         if (!data.name) {
@@ -569,7 +589,7 @@ export const AdminProductsManager = {
                 <div class="form-group">
                     <label>${getT('csvColumns') || 'Required columns'}: <code>name, category, price</code></label>
                     <p style="font-size:12px;color:#78716C;margin:4px 0 0;">
-                        ${getT('csvOptional') || 'Optional'}: description, stock_quantity, on_sale, original_price, badge, material, weight, origin, care_instructions
+                        ${getT('csvOptional') || 'Optional'}: description, stock_quantity, on_sale, original_price, badge, material, weight, origin, care_instructions, meta_title, meta_description, meta_keywords
                     </p>
                 </div>
                 <div id="importResult" style="margin-top:12px;"></div>
