@@ -11,6 +11,7 @@ import { AdminReviewsManager } from './admin-reviews.js';
 import { AdminCouponsManager } from './admin-coupons.js';
 import { AdminReportsManager } from './admin-reports.js';
 import { AdminActivityLogManager } from './admin-activity-log.js';
+import { AdminEmailTemplatesManager } from './admin-email-templates.js';
 
 window.AdminOrdersManager = AdminOrdersManager;
 window.AdminProductsManager = AdminProductsManager;
@@ -19,6 +20,7 @@ window.AdminReviewsManager = AdminReviewsManager;
 window.AdminCouponsManager = AdminCouponsManager;
 window.AdminReportsManager = AdminReportsManager;
 window.AdminActivityLogManager = AdminActivityLogManager;
+window.AdminEmailTemplatesManager = AdminEmailTemplatesManager;
 
 function getAuthHeaders() {
     const token = state.token || localStorage.getItem('accessToken');
