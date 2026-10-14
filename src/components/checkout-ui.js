@@ -2,6 +2,7 @@ import { escapeHtml } from './ui-utils.js';
 import { AddressManager } from './addresses.js';
 import { CartManager } from './cart.js';
 import { state } from './state.js';
+import { SettingsManager } from './settings.js';
 
 export function renderAddresses() {
     const addressesGrid = document.getElementById('addressesGrid');
@@ -41,8 +42,8 @@ export function renderAddresses() {
                 <path d="M32 58s20-10 20-25V12L32 4 12 12v21c0 15 20 25 20 25z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <circle cx="32" cy="28" r="8" stroke="currentColor" stroke-width="2"/>
             </svg>
-            <h3>No addresses saved</h3>
-            <p>Add an address for faster checkout</p>
+            <h3>${SettingsManager.getTranslation('noAddressesSaved')}</h3>
+            <p>${SettingsManager.getTranslation('addAddressFaster')}</p>
         </div>
     `;
 }
@@ -60,7 +61,7 @@ export function updateCheckoutSummary() {
     }
     const total = Math.max(0, subtotal + shipping - discount);
     const subtotalEl = document.getElementById('checkoutSubtotal'); if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-    const shippingEl = document.getElementById('checkoutShipping'); if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`;
+    const shippingEl = document.getElementById('checkoutShipping'); if (shippingEl) shippingEl.textContent = shipping === 0 ? SettingsManager.getTranslation('freeShippingShort') || 'Free' : `$${shipping.toFixed(2)}`;
     const discountRow = document.getElementById('checkoutDiscountRow');
     const discountEl = document.getElementById('checkoutDiscount');
     if (discount > 0) {
@@ -73,7 +74,7 @@ export function updateCheckoutSummary() {
     const items = document.getElementById('checkoutOrderItems');
     if (items) {
         if (state.cart.length === 0) {
-            items.innerHTML = '<div class="checkout-empty">Your cart is empty</div>';
+            items.innerHTML = `<div class="checkout-empty">${SettingsManager.getTranslation('cartEmpty')}</div>`;
         } else {
             items.innerHTML = state.cart.map(i => `
         <div class="checkout-item">
@@ -83,7 +84,7 @@ export function updateCheckoutSummary() {
                 onerror="this.src='https://via.placeholder.com/60x60?text=No+Image'">
                 <div class="checkout-item-info">
                     <div class="checkout-item-title">${escapeHtml(i.name)}</div>
-                    <div class="checkout-item-meta">Quantity: ${i.quantity || 1}</div>
+                    <div class="checkout-item-meta">${SettingsManager.getTranslation('quantity') || 'Quantity'}: ${i.quantity || 1}</div>
                     <div class="checkout-item-price">$${(i.price * (i.quantity || 1)).toFixed(2)}</div>
                 </div>
             </div>

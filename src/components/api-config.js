@@ -12,9 +12,14 @@ export const API_CONFIG = {
             REFRESH: '/auth/login/refresh/',
             ME: '/auth/me/',
             ADDRESSES: '/auth/addresses/',
+            PASSWORD_CHANGE: '/auth/password/change/',
+            PASSWORD_RESET: '/auth/password-reset/',
+            PASSWORD_RESET_CONFIRM: '/auth/password-reset/confirm/',
+            SOCIAL: '/auth/{provider}/',
         },
         ORDERS: '/orders/',
         REVIEWS: '/reviews/',
+        STOCK_ALERTS: '/stock-alerts/',
     }
 };
 
@@ -93,7 +98,8 @@ export const apiFetch = async (endpoint, options = {}, retryOnUnauthorized = tru
     
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || errorData.message || `API Error: ${response.status}`);
+        const fieldErrors = Object.values(errorData).flat().join('; ');
+        throw new Error(errorData.detail || errorData.message || fieldErrors || `API Error: ${response.status}`);
     }
     
     // Return empty object for 204 No Content

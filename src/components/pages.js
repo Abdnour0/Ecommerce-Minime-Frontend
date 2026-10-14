@@ -10,7 +10,7 @@ import { RecentlyViewedManager } from './recently-viewed.js';
 import { renderWishlist } from './wishlist.js';
 
 export function closeAllModalsAndOverlays() {
-    const overlays = ['.cart-overlay', '.product-modal-overlay', '.search-modal-overlay', '.account-modal-overlay', '.side-menu-overlay', '#overlay', '#addressModalOverlay', '#resetPasswordModalOverlay', '#cartOverlay'];
+    const overlays = ['.cart-overlay', '.product-modal-overlay', '.search-modal-overlay', '.account-modal-overlay', '.side-menu-overlay', '#overlay', '#addressModalOverlay', '#resetPasswordModalOverlay'];
     overlays.forEach(selector => {
         const el = document.querySelector(selector);
         if (el) {
@@ -181,11 +181,13 @@ export function showProfilePage(event) {
     showPage('profilePage');
 
     if (state.currentUser) {
-        const fields = ['firstName', 'lastName', 'email', 'phone'];
+        const fields = ['firstName', 'lastName', 'email'];
         fields.forEach(field => {
             const el = document.getElementById(`profile${field.charAt(0).toUpperCase() + field.slice(1)}`);
             if (el) el.value = state.currentUser[field] || '';
         });
+        const phoneEl = document.getElementById('profilePhone');
+        if (phoneEl) phoneEl.value = state.currentUser.phone_number || state.currentUser.phone || '';
     }
 }
 

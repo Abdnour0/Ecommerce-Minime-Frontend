@@ -21,12 +21,7 @@
     "url": "https://github.com/Abdnour0/ecommerce-frontend-v2/issues"
   },
   "homepage": "https://github.com/Abdnour0/ecommerce-frontend-v2#readme",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.50.0",
-    "clsx": "^2.1.1",
-    "framer-motion": "^12.38.0",
-    "tailwind-merge": "^3.6.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.3.0",

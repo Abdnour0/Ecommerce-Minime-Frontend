@@ -48,9 +48,16 @@ export function escapeHtml(text) {
 
 const activeToasts = [];
 
+const MAX_TOASTS = 5;
+
 export function showNotification(message, type = 'success') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
+
+    while (activeToasts.length >= MAX_TOASTS) {
+        const oldest = activeToasts.shift();
+        if (oldest && oldest.parentNode) oldest.remove();
+    }
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -107,36 +114,17 @@ export function debounce(func, wait) {
 export function showConfirmDialog(message, onConfirm) {
     const dialog = document.createElement('div');
     dialog.className = 'confirm-dialog-overlay';
-    dialog.style.position = 'fixed';
-    dialog.style.top = '0';
-    dialog.style.left = '0';
-    dialog.style.width = '100%';
-    dialog.style.height = '100%';
-    dialog.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    dialog.style.display = 'flex';
-    dialog.style.alignItems = 'center';
-    dialog.style.justifyContent = 'center';
-    dialog.style.zIndex = '9999';
+    dialog.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
 
     const content = document.createElement('div');
-    content.style.backgroundColor = 'var(--bg-color, white)';
-    content.style.color = 'var(--text-color, black)';
-    content.style.padding = '2rem';
-    content.style.borderRadius = '8px';
-    content.style.maxWidth = '400px';
-    content.style.width = '90%';
-    content.style.textAlign = 'center';
-    content.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    content.style.cssText = 'background:var(--bg-color,white);color:var(--text-color,black);padding:2rem;border-radius:8px;max-width:400px;width:90%;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1);';
 
     const text = document.createElement('p');
     text.textContent = message;
-    text.style.marginBottom = '1.5rem';
-    text.style.fontSize = '1.1rem';
+    text.style.cssText = 'margin-bottom:1.5rem;font-size:1.1rem;';
 
     const btnContainer = document.createElement('div');
-    btnContainer.style.display = 'flex';
-    btnContainer.style.gap = '1rem';
-    btnContainer.style.justifyContent = 'center';
+    btnContainer.style.cssText = 'display:flex;gap:1rem;justify-content:center;';
 
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancel';
@@ -146,18 +134,22 @@ export function showConfirmDialog(message, onConfirm) {
     const confirmBtn = document.createElement('button');
     confirmBtn.textContent = 'Confirm';
     confirmBtn.className = 'btn btn-primary';
-    confirmBtn.onclick = () => {
-        dialog.remove();
-        onConfirm();
-    };
+
+    const close = () => { dialog.remove(); document.removeEventListener('keydown', onKey); };
+    const onKey = (e) => { if (e.key === 'Escape') close(); if (e.key === 'Tab') trapFocus(dialog); };
+
+    confirmBtn.onclick = () => { close(); onConfirm(); };
+    cancelBtn.onclick = close;
 
     btnContainer.appendChild(cancelBtn);
     btnContainer.appendChild(confirmBtn);
     content.appendChild(text);
     content.appendChild(btnContainer);
     dialog.appendChild(content);
-
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
+    document.addEventListener('keydown', onKey);
     document.body.appendChild(dialog);
+    setTimeout(() => trapFocus(dialog), 50);
 }
 
 export function trapFocus(element) {

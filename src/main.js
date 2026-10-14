@@ -14,6 +14,42 @@ import * as ui from './components/ui-handlers.js';
 import { showNotification } from './components/ui-utils.js';
 import { ReviewManager, loadAndRenderReviews } from './components/reviews.js';
 import { renderAddresses } from './components/checkout-ui.js';
+import { ProductComparisonManager } from './components/product-comparison.js';
+import { handleStockAlert } from './components/stock-alert.js';
+
+// ============================================================================
+// SOCIAL AUTH CALLBACK HANDLER
+// ============================================================================
+
+function handleSocialAuthCallback() {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token')) return;
+
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+
+    if (!accessToken) return;
+
+    localStorage.setItem('token', accessToken);
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+
+    AuthManager.checkSession()
+        .then(result => {
+            if (result.success) {
+                window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: result.user } }));
+                window.location.hash = '';
+                showNotification('Successfully signed in!', 'success');
+                const accountModal = document.getElementById('accountModal');
+                if (accountModal) accountModal.classList.remove('active');
+                const accountModalOverlay = document.getElementById('accountModalOverlay');
+                if (accountModalOverlay) accountModalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                showNotification('Social sign-in failed. Please try again.', 'error');
+            }
+        });
+}
 
 // ============================================================================
 // GLOBAL ERROR HANDLING
@@ -166,11 +202,16 @@ window.toggleReviewForm = ui.toggleReviewForm;
 window.confirmDeleteAccount = ui.confirmDeleteAccount;
 window.placeOrder = ui.placeOrder;
 
+// Social auth callback
+window.handleSocialAuthCallback = handleSocialAuthCallback;
+
 // Utility functions
 window.showNotification = showNotification;
 window.renderOrders = renderOrders;
 window.renderWishlist = renderWishlist;
 window.loadAndRenderReviews = loadAndRenderReviews;
+window.handleStockAlert = handleStockAlert;
+window.ProductComparisonManager = ProductComparisonManager;
 window.openDirections = function(address) {
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
 };
@@ -233,6 +274,9 @@ class AppInitializer {
             // Load products
             await this.loadProducts();
 
+            // Render compare bar after products are loaded
+            ProductComparisonManager.renderCompareBar();
+
             // Validate wishlist items against loaded products
             WishlistManager.cleanup();
 
@@ -241,6 +285,9 @@ class AppInitializer {
 
             // Handle URL parameters
             this.handleURLParameters();
+
+            // Handle social auth callback from URL hash
+            handleSocialAuthCallback();
 
             // Setup filter buttons
             this.setupFilterButtons();
@@ -274,7 +321,8 @@ class AppInitializer {
             { name: 'Wishlist', fn: () => WishlistManager.init() },
             { name: 'Cart', fn: () => CartManager.init() },
             { name: 'Orders', fn: () => OrderManager.init() },
-            { name: 'Addresses', fn: () => AddressManager.init() }
+            { name: 'Addresses', fn: () => AddressManager.init() },
+            { name: 'Comparison', fn: () => Promise.resolve(ProductComparisonManager) }
         ];
 
         for (const manager of managers) {
@@ -650,9 +698,9 @@ class AppInitializer {
                 e.preventDefault();
 
                 const data = {
-                    firstName: document.getElementById('profileFirstName')?.value,
-                    lastName: document.getElementById('profileLastName')?.value,
-                    phone: document.getElementById('profilePhone')?.value
+                    first_name: document.getElementById('profileFirstName')?.value,
+                    last_name: document.getElementById('profileLastName')?.value,
+                    phone_number: document.getElementById('profilePhone')?.value
                 };
 
                 const result = await AuthManager.updateProfile(data);
@@ -944,7 +992,7 @@ class AppInitializer {
         }
     }
 
-    handleURLParameters() {
+    async handleURLParameters() {
         const urlParams = new URLSearchParams(window.location.search);
 
         // Handle payment success redirect
@@ -952,29 +1000,23 @@ class AppInitializer {
             const status = urlParams.get('redirect_status');
 
             if (status === 'succeeded') {
-                showNotification('Payment successful! Thank you for your order.', 'success');
-                
-                // Create order from stored order data
                 const pendingOrderData = sessionStorage.getItem('pendingStripeOrder');
                 if (pendingOrderData) {
                     try {
                         const orderData = JSON.parse(pendingOrderData);
-                        OrderManager.createOrder(orderData).then(() => {
-                            // Refresh orders display
-                            renderOrders();
-                            // Success notification already shown above
-                        }).catch((error) => {
-                            logger.error('Error creating order from Stripe payment:', error);
-                            showNotification('Payment succeeded but order creation failed. Please contact support.', 'error');
-                        });
                         sessionStorage.removeItem('pendingStripeOrder');
+                        await OrderManager.createOrder(orderData);
+                        renderOrders();
+                        showNotification('Payment successful! Thank you for your order.', 'success');
+                        CartManager.clear();
                     } catch (error) {
-                        logger.error('Error parsing order data from Stripe payment:', error);
+                        logger.error('Error creating order from Stripe payment:', error);
                         showNotification('Payment succeeded but order creation failed. Please contact support.', 'error');
                     }
+                } else {
+                    showNotification('Payment successful! Thank you for your order.', 'success');
+                    CartManager.clear();
                 }
-                
-                CartManager.clear();
 
                 // Clear URL parameters
                 window.history.replaceState({}, document.title, window.location.pathname);

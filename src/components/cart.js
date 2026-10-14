@@ -126,8 +126,8 @@ export const CartManager = {
                     body: JSON.stringify({ items }),
                 });
             } catch (e) {
-                // Silently fail — cart is still saved locally
                 logger.warn('Cart sync to server failed:', e);
+                showNotification('Could not sync cart to server. It is saved locally.', 'info');
             }
         }, 2000);
     },

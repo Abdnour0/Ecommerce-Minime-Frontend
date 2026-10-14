@@ -210,7 +210,7 @@ export function renderOrders() {
                     <div style="display: flex; gap: 10px; align-items: center;">
                         ${canCancel ? `
                             <button class="btn-cancel-link-styled" data-cancel-order-id="${escapeHtml(orderId)}">
-                                CANCEL ORDER
+                                ${SettingsManager.getTranslation('cancelOrder') || 'CANCEL ORDER'}
                             </button>
                         ` : ''}
                         <div class="order-status-badge ${isCancelled ? 'status-cancelled' : ''}" style="${!isCancelled ? `background-color: ${statusColor}15; color: ${statusColor}; border: 1px solid ${statusColor}30;` : ''}">
@@ -229,7 +229,7 @@ export function renderOrders() {
                         </svg>
                     </div>
                     <div class="tracking-info">
-                        <span class="tracking-label">YOUR TRACKING NUMBER IS</span>
+                        <span class="tracking-label">${SettingsManager.getTranslation('trackingNumber') || 'YOUR TRACKING NUMBER IS'}</span>
                         <p class="tracking-number">${escapeHtml(order.trackingNumber)}</p>
                     </div>
                 </div>
@@ -243,7 +243,7 @@ export function renderOrders() {
                             </div>
                             <div class="item-info">
                                 <h4>${escapeHtml(item.name || 'Product')}</h4>
-                                <p class="item-meta">Quantity: ${item.quantity || 1}</p>
+                                <p class="item-meta">${SettingsManager.getTranslation('quantity') || 'Quantity'}: ${item.quantity || 1}</p>
                                 <p class="item-price">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
                             </div>
                         </div>
@@ -251,8 +251,8 @@ export function renderOrders() {
                 </div>
                 
                 <div class="order-footer-simple">
-                     <p>Total: <strong>$${(order.total || 0).toFixed(2)}</strong></p>
-                     <button class="btn btn-outline btn-sm" onclick="window.openOrderDetailModal('${escapeHtml(String(order._id || order.id))}')">View Details</button>
+                     <p>${SettingsManager.getTranslation('total') || 'Total'}: <strong>$${(order.total || 0).toFixed(2)}</strong></p>
+                     <button class="btn btn-outline btn-sm" onclick="window.openOrderDetailModal('${escapeHtml(String(order._id || order.id))}')">${SettingsManager.getTranslation('viewDetails') || 'View Details'}</button>
                 </div>
             </div>
         `;
@@ -271,23 +271,24 @@ document.addEventListener('click', async (e) => {
     try {
         const result = await OrderManager.cancelOrder(orderId);
         if (result && result.success) {
-            showNotification('Order cancelled successfully.', 'success');
+            showNotification(SettingsManager.getTranslation('orderCancelled') || 'Order cancelled successfully.', 'success');
             renderOrders();
         } else {
-            showNotification(result?.error || 'Failed to cancel order. Please try again.', 'error');
+            showNotification(result?.error || SettingsManager.getTranslation('failedCancelOrder') || 'Failed to cancel order. Please try again.', 'error');
         }
     } catch (error) {
         logger.error('Error cancelling order:', error);
-        showNotification('Failed to cancel order. Please try again.', 'error');
+        showNotification(SettingsManager.getTranslation('failedCancelOrder') || 'Failed to cancel order. Please try again.', 'error');
     }
 });
 
 export function renderOrderTimeline(order, container) {
+    const getT = (k) => SettingsManager.getTranslation(k) || k;
     const steps = [
-        { status: 'pending', label: 'Order Placed' },
-        { status: 'processing', label: 'Processing' },
-        { status: 'shipped', label: 'Shipped' },
-        { status: 'delivered', label: 'Delivered' }
+        { status: 'pending', label: getT('pending') },
+        { status: 'processing', label: getT('processing') },
+        { status: 'shipped', label: getT('shipped') },
+        { status: 'delivered', label: getT('delivered') }
     ];
     const status = (order.status || 'pending').toLowerCase();
     let currentIdx = steps.findIndex(s => s.status === status);
@@ -320,7 +321,7 @@ export function renderOrderTimeline(order, container) {
                 <div class="timeline-step">
                     <div class="timeline-dot" style="background:var(--error-color,#DC2626);color:#fff;">✕</div>
                     <div class="timeline-content">
-                        <div class="timeline-title" style="color:var(--error-color,#DC2626);">Cancelled</div>
+                        <div class="timeline-title" style="color:var(--error-color,#DC2626);">${getT('cancelled')}</div>
                         ${order.cancelled_at ? `<div class="timeline-date">${new Date(order.cancelled_at).toLocaleDateString(state.currentLanguage || 'en', { month: 'short', day: 'numeric', year: 'numeric' })}</div>` : ''}
                     </div>
                 </div>
@@ -334,7 +335,7 @@ let orderDetailModalOpen = false;
 export function openOrderDetailModal(orderId) {
     const order = OrderManager.getOrderById(orderId);
     if (!order) {
-        showNotification('Order not found.', 'error');
+        showNotification(SettingsManager.getTranslation('orderNotFound') || 'Order not found.', 'error');
         return;
     }
     orderDetailModalOpen = true;
@@ -349,7 +350,7 @@ export function openOrderDetailModal(orderId) {
     const orderDate = new Date(order.createdAt || order.date);
     const orderIdDisplay = String(order._id || order.id).slice(-8).toUpperCase();
 
-    let timelineHtml = '<div class="order-timeline-placeholder">Loading...</div>';
+    let timelineHtml = `<div class="order-timeline-placeholder">${SettingsManager.getTranslation('loadingTimeline') || 'Loading...'}</div>`;
 
     const closeModal = () => {
         if (!orderDetailModalOpen) return;
@@ -358,18 +359,20 @@ export function openOrderDetailModal(orderId) {
         modal.remove();
     };
 
+    const t = (k) => SettingsManager.getTranslation(k) || k;
+
     inner.innerHTML = `
         <div class="modal-header">
-            <h2>Order #${escapeHtml(orderIdDisplay)}</h2>
-            <button class="modal-close" aria-label="Close order detail">✕</button>
+            <h2>${t('order')} #${escapeHtml(orderIdDisplay)}</h2>
+            <button class="modal-close" aria-label="${t('closeDetail') || 'Close order detail'}">✕</button>
         </div>
         <div class="order-detail-body">
             <div class="order-detail-section">
-                <h3>Status</h3>
+                <h3>${t('status')}</h3>
                 <div class="timeline-wrap" id="orderTimelineWrap"></div>
             </div>
             <div class="order-detail-section">
-                <h3>Items</h3>
+                <h3>${t('items')}</h3>
                 <div class="order-items-list">
                     ${order.items && order.items.length > 0 ? order.items.map(item => `
                         <div class="order-item-detail">
@@ -378,22 +381,22 @@ export function openOrderDetailModal(orderId) {
                             </div>
                             <div class="item-info">
                                 <h4>${escapeHtml(item.name || 'Product')}</h4>
-                                <p class="item-meta">Qty: ${item.quantity || 1} ${item.selected_size ? `| Size: ${escapeHtml(item.selected_size)}` : ''}</p>
+                                <p class="item-meta">${t('qty')}: ${item.quantity || 1} ${item.selected_size ? `| ${t('size')}: ${escapeHtml(item.selected_size)}` : ''}</p>
                                 <p class="item-price">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
                             </div>
                         </div>
-                    `).join('') : '<p>No items</p>'}
+                    `).join('') : `<p>${t('noItems')}</p>`}
                 </div>
             </div>
             <div class="order-detail-section">
-                <h3>Summary</h3>
+                <h3>${t('summary')}</h3>
                 <div class="order-summary-rows">
-                    <div class="summary-row"><span>Subtotal</span><span>$${(order.subtotal || order.total || 0).toFixed(2)}</span></div>
-                    <div class="summary-row"><span>Shipping</span><span>${order.shipping_cost ? '$' + Number(order.shipping_cost).toFixed(2) : 'FREE'}</span></div>
-                    <div class="summary-row total"><span>Total</span><span>$${(order.total || 0).toFixed(2)}</span></div>
-                    ${order.payment_method ? `<div class="summary-row"><span>Payment</span><span>${escapeHtml(order.payment_method)}</span></div>` : ''}
-                    ${order.shipping_address ? `<div class="summary-row"><span>Shipping to</span><span>${escapeHtml(order.shipping_address)}</span></div>` : ''}
-                    ${order.tracking_number ? `<div class="summary-row"><span>Tracking</span><span><a href="https://${order.carrier ? `${order.carrier}.com/tracking/` : 'www.google.com/search?q='}${encodeURIComponent(order.tracking_number)}" target="_blank" rel="noopener">${escapeHtml(order.tracking_number)}${order.carrier ? ` (${escapeHtml(order.carrier)})` : ''}</a></span></div>` : ''}
+                    <div class="summary-row"><span>${t('subtotal')}</span><span>$${(order.subtotal || order.total || 0).toFixed(2)}</span></div>
+                    <div class="summary-row"><span>${t('shipping')}</span><span>${order.shipping_cost ? '$' + Number(order.shipping_cost).toFixed(2) : t('free')}</span></div>
+                    <div class="summary-row total"><span>${t('total')}</span><span>$${(order.total || 0).toFixed(2)}</span></div>
+                    ${order.payment_method ? `<div class="summary-row"><span>${t('payment')}</span><span>${escapeHtml(order.payment_method)}</span></div>` : ''}
+                    ${order.shipping_address ? `<div class="summary-row"><span>${t('shippingTo')}</span><span>${escapeHtml(order.shipping_address)}</span></div>` : ''}
+                    ${order.tracking_number ? `<div class="summary-row"><span>${t('tracking')}</span><span><a href="https://${order.carrier ? `${order.carrier}.com/tracking/` : 'www.google.com/search?q='}${encodeURIComponent(order.tracking_number)}" target="_blank" rel="noopener">${escapeHtml(order.tracking_number)}${order.carrier ? ` (${escapeHtml(order.carrier)})` : ''}</a></span></div>` : ''}
                 </div>
             </div>
         </div>

@@ -8,6 +8,8 @@ import { loadAndRenderReviews } from './reviews.js';
 import { API_CONFIG, apiFetch } from './api-config.js';
 import { fallbackProducts } from './fallback-products.js';
 import { RecentlyViewedManager } from './recently-viewed.js';
+import { renderStockAlertButton } from './stock-alert.js';
+import { ProductComparisonManager } from './product-comparison.js';
 import { storeLastFocus, restoreLastFocus, hideBackgroundContent, showBackgroundContent } from './ui-handlers.js';
 
 // Fetch products from Django Backend
@@ -45,9 +47,11 @@ export function renderProducts(container, filter = 'all') {
 
     if (!state.products || state.products.length === 0) {
         logger.warn('renderProducts: No products available');
-        container.innerHTML = '<div class="no-products"><p>No products available at the moment.</p></div>';
+        container.innerHTML = `<div class="no-products"><p>${SettingsManager.getTranslation('noProductsAvailable') || 'No products available at the moment.'}</p></div>`;
         return;
     }
+
+    container.innerHTML = `<div class="product-grid-loading" style="text-align:center;padding:2rem;color:var(--text-secondary);">${SettingsManager.getTranslation('loading') || 'Loading...'}</div>`;
 
     let filteredProducts = state.products;
 
@@ -75,7 +79,7 @@ export function renderProducts(container, filter = 'all') {
     }
 
     if (filteredProducts.length === 0) {
-        container.innerHTML = '<div class="no-products"><p>No products match this filter.</p></div>';
+        container.innerHTML = `<div class="no-products"><p>${SettingsManager.getTranslation('noProductsMatch') || 'No products match this filter.'}</p></div>`;
         return;
     }
 
@@ -84,14 +88,14 @@ export function renderProducts(container, filter = 'all') {
     container.innerHTML = filteredProducts.map(product => {
         let badgeText = product.badge;
         if (badgeText === 'Bestseller') {
-            badgeText = state.currentLanguage === 'fr' ? 'Meilleure Vente' :
-                state.currentLanguage === 'ar' ? 'الكثر مبيعاً' : 'Bestseller';
+            badgeText = SettingsManager.getTranslation('bestseller') || SettingsManager.getTranslation('bestsellers') || 'Bestseller';
         } else if (badgeText === 'New') {
-            badgeText = state.currentLanguage === 'fr' ? 'Nouveau' :
-                state.currentLanguage === 'ar' ? 'جديد' : 'New';
+            badgeText = SettingsManager.getTranslation('new') || SettingsManager.getTranslation('newArrival') || 'New';
         }
 
         const isWishlisted = WishlistManager.isInWishlist(product.id);
+        const isInCompare = ProductComparisonManager.isInCompare(product.id);
+        const stockQty = Number(product.stock_quantity) || 0;
 
         const colorDots = product.colors && product.colors.length > 0
             ? `<div class="product-colors">${product.colors.slice(0, 5).map(c => `<span class="product-color-dot" style="background:${c.hex}" title="${escapeHtml(c.name)}"></span>`).join('')}${product.colors.length > 5 ? `<span class="product-color-dot" style="font-size:9px;display:flex;align-items:center;justify-content:center;background:var(--background-light);border-color:var(--border-color);color:var(--text-secondary)">+${product.colors.length - 5}</span>` : ''}</div>`
@@ -101,7 +105,7 @@ export function renderProducts(container, filter = 'all') {
         <div class="product-card" role="listitem" data-product-id="${product.id}" tabindex="0">
             <div class="product-image">
                 ${product.badge ? `<div class="product-badge">${escapeHtml(badgeText)}</div>` : ''}
-                ${responsiveImageHtml(product.image, product.name, '', true)}
+                <img src="${product.image}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x600?text=No+Image'" style="width:100%;height:100%;object-fit:cover;">
                 <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" data-product-id="${product.id}" aria-label="Toggle Wishlist">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'var(--accent-color)' : 'none'}" stroke="currentColor" stroke-width="2">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -113,8 +117,16 @@ export function renderProducts(container, filter = 'all') {
                 ${colorDots}
                 <p class="product-description">${escapeHtml(product.description)}</p>
                 <div class="product-footer">
-                    <span class="product-price">${product.onSale && product.originalPrice ? `<span class="original-price">$${product.originalPrice}</span> ` : ''}$${product.price}</span>
-                    <button class="add-to-cart" data-product-id="${product.id}" aria-label="${addToCartText} ${escapeHtml(product.name)}">${addToCartText}</button>
+                    <span class="product-price">${product.onSale && product.originalPrice ? `<span class="original-price">$${Number(product.originalPrice).toLocaleString(state.currentLanguage === 'ar' ? 'ar' : state.currentLanguage === 'fr' ? 'fr-FR' : 'en-US', { minimumFractionDigits: 2 })}</span> ` : ''}$${Number(product.price).toLocaleString(state.currentLanguage === 'ar' ? 'ar' : state.currentLanguage === 'fr' ? 'fr-FR' : 'en-US', { minimumFractionDigits: 2 })}</span>
+                    ${stockQty > 0
+                        ? `<button class="add-to-cart" data-product-id="${product.id}" aria-label="${addToCartText} ${escapeHtml(product.name)}">${addToCartText}</button>`
+                        : `<button class="stock-alert-btn" data-product-id="${product.id}" aria-label="Notify me when back in stock">Notify me</button>`}
+                </div>
+                <div class="product-compare-row">
+                    <label class="compare-checkbox-label">
+                        <input type="checkbox" class="compare-checkbox" data-product-id="${product.id}" ${isInCompare ? 'checked' : ''}>
+                        <span>${SettingsManager.getTranslation('compare') || 'Compare'}</span>
+                    </label>
                 </div>
             </div>
         </div>
@@ -144,6 +156,30 @@ export function renderProducts(container, filter = 'all') {
             if (e.key === 'Enter' && !e.target.closest('.add-to-cart')) {
                 const productId = card.dataset.productId;
                 openProductModal(productId);
+            }
+        });
+    });
+
+    container.querySelectorAll('.stock-alert-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            const productId = btn.dataset.productId;
+            if (!productId) return;
+            import('./stock-alert.js').then(m => m.handleStockAlert(productId));
+        });
+    });
+
+    container.querySelectorAll('.compare-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            e.stopPropagation();
+            const productId = cb.dataset.productId;
+            if (!productId) return;
+            if (cb.checked) {
+                const result = ProductComparisonManager.add(productId);
+                if (!result.success) cb.checked = false;
+            } else {
+                ProductComparisonManager.remove(productId);
             }
         });
     });
@@ -208,6 +244,7 @@ export function openProductModal(productId) {
     // Populate modal with product data
     if (modalImage) {
         modalImage.src = product.image;
+        modalImage.onerror = function() { this.src = 'https://via.placeholder.com/600x600?text=No+Image'; };
         if (product.image && product.image.includes('unsplash.com')) {
             const base = product.image.split('?')[0];
             const params = new URLSearchParams(product.image.split('?')[1] || '');
@@ -350,6 +387,43 @@ export function openProductModal(productId) {
             wishlistToggleModal.classList.toggle('active', active);
             const icon = wishlistToggleModal.querySelector('svg');
             if (icon) icon.setAttribute('fill', active ? 'var(--accent-color)' : 'none');
+        };
+    }
+
+    // Handle stock alert button in modal
+    const modalStockAlertBtn = document.getElementById('modalStockAlert');
+    const modalAddToCartBtn = document.getElementById('modalAddToCart');
+    const stockQty = Number(product.stock_quantity) || 0;
+    if (modalAddToCartBtn && modalStockAlertBtn) {
+        if (stockQty > 0) {
+            modalAddToCartBtn.style.display = '';
+            modalStockAlertBtn.style.display = 'none';
+        } else {
+            modalAddToCartBtn.style.display = 'none';
+            modalStockAlertBtn.style.display = '';
+            modalStockAlertBtn.onclick = null;
+            modalStockAlertBtn.onclick = (e) => {
+                e.stopPropagation();
+                import('./stock-alert.js').then(m => m.handleStockAlert(productId));
+            };
+        }
+    }
+    if (modalPriceBtn && modalAddToCartBtn) {
+        modalPriceBtn.textContent = `$${product.price}`;
+    }
+
+    // Handle compare checkbox in modal
+    const modalCompareCb = document.getElementById('modalCompareCheckbox');
+    if (modalCompareCb) {
+        modalCompareCb.checked = ProductComparisonManager.isInCompare(productId);
+        modalCompareCb.onchange = null;
+        modalCompareCb.onchange = () => {
+            if (modalCompareCb.checked) {
+                const result = ProductComparisonManager.add(productId);
+                if (!result.success) modalCompareCb.checked = false;
+            } else {
+                ProductComparisonManager.remove(productId);
+            }
         };
     }
 

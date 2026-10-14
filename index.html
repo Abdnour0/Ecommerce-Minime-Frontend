@@ -17,15 +17,15 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="MINIME - Naturally Comfortable Footwear">
     <meta property="og:description" content="Sustainable, comfortable footwear and apparel made with natural materials.">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&h=630&fit=crop">
-    <meta property="og:url" content="https://minime.store">
+    <meta property="og:image" content="/shoe.svg">
+    <meta property="og:url" content="/">
     <meta property="og:site_name" content="MINIME">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="MINIME - Naturally Comfortable Footwear">
     <meta name="twitter:description" content="Sustainable, comfortable footwear and apparel made with natural materials.">
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&h=630&fit=crop">
+    <meta name="twitter:image" content="/shoe.svg">
 
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
@@ -34,7 +34,7 @@
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https: blob:;
-        connect-src 'self' http://localhost:8000;
+        connect-src 'self' http://localhost:8000 https://api.stripe.com;
         frame-src 'none';
     ">
 
@@ -242,7 +242,7 @@
     <div class="side-menu-overlay" id="sideMenuOverlay"></div>
     <aside class="side-menu" id="sideMenu" role="navigation" aria-label="Side navigation">
         <div class="side-menu-header">
-            <h2>Menu</h2>
+            <h2 data-translate="menu">Menu</h2>
             <button class="side-menu-close" id="sideMenuClose" aria-label="Close menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -425,7 +425,7 @@
                 </div>
 
                 <div class="social-login">
-                    <button class="social-btn" id="google-signin-btn" type="button">
+                    <button class="social-btn" id="google-signin-btn" type="button" onclick="AuthManager.startSocialLogin('google')">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path
                                 d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
@@ -438,7 +438,7 @@
                         </svg>
                         <span data-translate="continueWithGoogle">Continue with Google</span>
                     </button>
-                    <button class="social-btn" id="facebook-signin-btn" type="button">
+                    <button class="social-btn" id="facebook-signin-btn" type="button" onclick="AuthManager.startSocialLogin('facebook')">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path
                                 d="M20 10.06c0-5.52-4.48-10-10-10S0 4.54 0 10.06c0 4.99 3.66 9.13 8.44 9.88v-6.99H5.9v-2.89h2.54V7.84c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.89h-2.34v6.99C16.34 19.19 20 15.05 20 10.06z" />
@@ -535,7 +535,7 @@
                 </div>
 
                 <div class="social-login">
-                    <button class="social-btn" id="google-signup-btn" type="button">
+                    <button class="social-btn" id="google-signup-btn" type="button" onclick="AuthManager.startSocialLogin('google')">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path
                                 d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
@@ -548,7 +548,7 @@
                         </svg>
                         <span data-translate="continueWithGoogle">Continue with Google</span>
                     </button>
-                    <button class="social-btn" id="facebook-signup-btn" type="button">
+                    <button class="social-btn" id="facebook-signup-btn" type="button" onclick="AuthManager.startSocialLogin('facebook')">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path
                                 d="M20 10.06c0-5.52-4.48-10-10-10S0 4.54 0 10.06c0 4.99 3.66 9.13 8.44 9.88v-6.99H5.9v-2.89h2.54V7.84c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.89h-2.34v6.99C16.34 19.19 20 15.05 20 10.06z" />
@@ -1950,12 +1950,12 @@
                             <line x1="12" y1="16" x2="12.01" y2="16"></line>
                         </svg>
                     </div>
-                    <h1>Access Denied</h1>
-                    <p class="access-denied-message">You do not have permission to access this page.</p>
-                    <p class="access-denied-submessage">This dashboard is restricted to authorized users only.</p>
+                    <h1 data-translate="accessDeniedTitle">Access Denied</h1>
+                    <p class="access-denied-message" data-translate="accessDeniedMessage">You do not have permission to access this page.</p>
+                    <p class="access-denied-submessage" data-translate="accessDeniedSubmessage">This dashboard is restricted to authorized users only.</p>
                     <div class="access-denied-actions">
-                        <button class="btn btn-primary" onclick="window.showHomePage()">Go to Home</button>
-                        <button class="btn btn-secondary" onclick="window.openAccountModal()">Sign In</button>
+                        <button class="btn btn-primary" onclick="window.showHomePage()" data-translate="goToHome">Go to Home</button>
+                        <button class="btn btn-secondary" onclick="window.openAccountModal()" data-translate="signIn">Sign In</button>
                     </div>
                 </div>
             </div>
@@ -2321,6 +2321,7 @@
                 <div class="modal-actions-group">
                     <button class="modal-add-to-cart" id="modalAddToCart"><span data-translate="addToCart">Add to
                             Cart</span> — <span id="modalPriceBtn"></span></button>
+                    <button class="modal-stock-alert-btn" id="modalStockAlert" style="display:none;"><span data-translate="notifyWhenBack">Notify me when back in stock</span></button>
                     <button class="modal-wishlist-toggle" id="modalWishlistToggle" aria-label="Toggle Wishlist">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -2330,6 +2331,10 @@
                         </svg>
                     </button>
                 </div>
+                <label class="modal-compare-label">
+                    <input type="checkbox" id="modalCompareCheckbox">
+                    <span data-translate="compare">Compare</span>
+                </label>
 
                 <div class="modal-features">
                     <div class="feature-item">

@@ -6,6 +6,7 @@ const translations = {
         sale: "SALE",
         sustainability: "SUSTAINABILITY",
         stores: "STORES",
+        menu: "Menu",
 
         // Settings
         language: "Language",
@@ -22,6 +23,7 @@ const translations = {
 
         // Info Banner
         freeShipping: "Free Shipping & Returns",
+        freeShippingShort: "Free",
         thirtyDayTrial: "30-Day Trial",
         carbonNeutral: "Carbon Neutral Shipping",
 
@@ -338,6 +340,8 @@ const translations = {
         cardNumber: "Card Number",
         expiry: "Expiry",
         cvv: "CVV",
+        enterPaymentDetails: "Enter Payment Details",
+        usingSecureProcessing: "Using secure local processing.",
         orderSummary: "Order Summary",
         shipping: "Shipping",
         tax: "Tax",
@@ -386,6 +390,10 @@ const translations = {
         deleteAccount: "Delete Account",
         deleteAccountDesc: "Permanently delete your account and data",
         phone: "Phone",
+        accessDeniedTitle: "Access Denied",
+        accessDeniedMessage: "You do not have permission to access this page.",
+        accessDeniedSubmessage: "This dashboard is restricted to authorized users only.",
+        goToHome: "Go to Home",
 
         // Orders
         noOrdersYet: "No orders yet",
@@ -513,6 +521,22 @@ const translations = {
         validFrom: "Valid From",
         validPeriod: "Valid Period",
         validTo: "Valid To",
+
+        // Stock Alert
+        notifyWhenBack: "Notify me when back in stock",
+        stockAlertSuccess: "You will be notified when this item is back in stock!",
+        stockAlertExists: "You are already subscribed for this product.",
+        stockAlertPrompt: "Enter your email to be notified:",
+
+        // Product Comparison
+        compare: "Compare",
+        productComparison: "Product Comparison",
+        compareMaxReached: "Maximum 4 products can be compared",
+        compareAdded: "Product added to comparison",
+        compareRemoved: "Product removed from comparison",
+        compareCleared: "Comparison list cleared",
+        compareMinRequired: "Add at least 2 products to compare",
+        compareUnavailable: "Some products are no longer available",
     },
 
     fr: {
@@ -522,6 +546,7 @@ const translations = {
         sale: "SOLDES",
         sustainability: "DURABILITÉ",
         stores: "BOUTIQUES",
+        menu: "Menu",
 
         // Settings
         language: "Langue",
@@ -538,6 +563,7 @@ const translations = {
 
         // Info Banner
         freeShipping: "Livraison et Retours Gratuits",
+        freeShippingShort: "Gratuit",
         thirtyDayTrial: "Essai de 30 Jours",
         carbonNeutral: "Livraison Neutre en Carbone",
 
@@ -858,6 +884,8 @@ const translations = {
         cardNumber: "Numéro de Carte",
         expiry: "Expiration",
         cvv: "CVV",
+        enterPaymentDetails: "Saisir les Coordonnées de Paiement",
+        usingSecureProcessing: "Traitement local sécurisé.",
         orderSummary: "Résumé de la Commande",
         shipping: "Livraison",
         tax: "Taxe",
@@ -902,6 +930,10 @@ const translations = {
         deleteAccount: "Supprimer le Compte",
         deleteAccountDesc: "Supprimer définitivement votre compte et vos données",
         phone: "Téléphone",
+        accessDeniedTitle: "Accès Refusé",
+        accessDeniedMessage: "Vous n'avez pas la permission d'accéder à cette page.",
+        accessDeniedSubmessage: "Ce tableau de bord est réservé aux utilisateurs autorisés.",
+        goToHome: "Aller à l'Accueil",
 
         // Orders
         noOrdersYet: "Pas encore de commandes",
@@ -1031,6 +1063,22 @@ const translations = {
         validFrom: "Valide du",
         validPeriod: "Période de validité",
         validTo: "Valide au",
+
+        // Stock Alert
+        notifyWhenBack: "Prévenez-moi quand le produit est disponible",
+        stockAlertSuccess: "Vous serez averti(e) lorsque cet article sera de retour en stock !",
+        stockAlertExists: "Vous êtes déjà abonné(e) pour ce produit.",
+        stockAlertPrompt: "Entrez votre email pour être averti(e) :",
+
+        // Product Comparison
+        compare: "Comparer",
+        productComparison: "Comparaison de produits",
+        compareMaxReached: "Maximum 4 produits peuvent être comparés",
+        compareAdded: "Produit ajouté à la comparaison",
+        compareRemoved: "Produit retiré de la comparaison",
+        compareCleared: "Liste de comparaison effacée",
+        compareMinRequired: "Ajoutez au moins 2 produits pour comparer",
+        compareUnavailable: "Certains produits ne sont plus disponibles",
     },
 
     ar: {
@@ -1040,6 +1088,7 @@ const translations = {
         sale: "تخفيضات",
         sustainability: "الاستدامة",
         stores: "المتاجر",
+        menu: "القائمة",
 
         // Settings
         language: "اللغة",
@@ -1056,6 +1105,7 @@ const translations = {
 
         // Info Banner
         freeShipping: "شحن وإرجاع مجاني",
+        freeShippingShort: "مجاني",
         thirtyDayTrial: "تجربة 30 يوم",
         carbonNeutral: "شحن محايد للكربون",
 
@@ -1372,6 +1422,8 @@ const translations = {
         cardNumber: "رقم البطاقة",
         expiry: "تاريخ الانتهاء",
         cvv: "CVV",
+        enterPaymentDetails: "إدخال بيانات الدفع",
+        usingSecureProcessing: "معالجة محلية آمنة.",
         orderSummary: "ملخص الطلب",
         shipping: "الشحن",
         tax: "الضريبة",
@@ -1416,6 +1468,10 @@ const translations = {
         deleteAccount: "حذف الحساب",
         deleteAccountDesc: "حذف حسابك وبياناتك نهائياً",
         phone: "الهاتف",
+        accessDeniedTitle: "تم رفض الوصول",
+        accessDeniedMessage: "ليس لديك الإذن للوصول إلى هذه الصفحة.",
+        accessDeniedSubmessage: "لوحة التحكم هذه مقصورة على المستخدمين المصرح لهم فقط.",
+        goToHome: "العودة إلى الرئيسية",
 
         // Orders
         noOrdersYet: "لا توجد طلبات بعد",
@@ -1549,6 +1605,22 @@ const translations = {
         validFrom: "صالح من",
         validPeriod: "فترة الصلاحية",
         validTo: "صالح إلى",
+
+        // Stock Alert
+        notifyWhenBack: "أشعرني عندما يتوفر المنتج",
+        stockAlertSuccess: "سيتم إعلامك عندما يصبح هذا المنتج متاحاً!",
+        stockAlertExists: "أنت مشترك بالفعل في هذا المنتج.",
+        stockAlertPrompt: "أدخل بريدك الإلكتروني ليتم إعلامك:",
+
+        // Product Comparison
+        compare: "مقارنة",
+        productComparison: "مقارنة المنتجات",
+        compareMaxReached: "يمكن مقارنة 4 منتجات كحد أقصى",
+        compareAdded: "تمت إضافة المنتج للمقارنة",
+        compareRemoved: "تمت إزالة المنتج من المقارنة",
+        compareCleared: "تم مسح قائمة المقارنة",
+        compareMinRequired: "أضف منتجين على الأقل للمقارنة",
+        compareUnavailable: "بعض المنتجات غير متوفرة حالياً",
     }
 };
 

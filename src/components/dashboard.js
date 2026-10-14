@@ -38,14 +38,21 @@ export const DashboardManager = {
     isInitialized: false,
 
     init() {
-        if (this.isInitialized) return;
         if (typeof Chart === 'undefined') {
             logger.warn('Chart.js not loaded');
             return;
         }
+        this.destroyCharts();
         this.initCharts();
         this.updateDashboard();
         this.isInitialized = true;
+    },
+
+    destroyCharts() {
+        Object.values(this.charts).forEach(chart => {
+            if (chart instanceof Chart) chart.destroy();
+        });
+        this.charts = {};
     },
 
     initCharts() {
@@ -143,13 +150,13 @@ export const DashboardManager = {
 
         } catch (err) {
             logger.error('Dashboard API error:', err);
-            this.animateValue('kpiRevenue', 0, '$');
-            this.animateValue('kpiOrders', 0, '');
-            this.animateValue('kpiCustomers', 0, '');
-            this.animateValue('kpiProducts', 0, '');
-            this.animateValue('kpiPending', 0, '');
-            this.animateValue('kpiAvgValue', 0, '$');
+            const kpiIds = ['kpiRevenue', 'kpiOrders', 'kpiCustomers', 'kpiProducts', 'kpiPending', 'kpiAvgValue'];
+            kpiIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '<span style="color:var(--error-color);font-size:14px;">Error</span>';
+            });
             this.renderRecentOrders([]);
+            showNotification('Failed to load dashboard data. Please try again.', 'error');
         }
     },
 

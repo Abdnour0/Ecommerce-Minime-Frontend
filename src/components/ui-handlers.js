@@ -73,11 +73,14 @@ export function closeAccountModal() {
     const modal = document.getElementById('accountModal');
     const overlay = document.getElementById('accountModalOverlay');
 
-    if (modal)     modal.classList.remove('active');
-    if (overlay) overlay.classList.remove('active');
-    document.body.style.overflow = '';
-    showBackgroundContent();
-    restoreLastFocus();
+    try {
+        if (modal)     modal.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+    } finally {
+        document.body.style.overflow = '';
+        showBackgroundContent();
+        restoreLastFocus();
+    }
     logger.log('closeAccountModal: Modal closed');
 }
 
@@ -122,7 +125,7 @@ export function showLoggedInView() {
     if (state.currentUser) {
         const userNameEl = document.getElementById('userName');
         const userEmailEl = document.getElementById('userEmail');
-        if (userNameEl) userNameEl.textContent = `Welcome, ${state.currentUser.firstName}!`;
+        if (userNameEl) userNameEl.textContent = `${SettingsManager.getTranslation('welcomeUser') || 'Welcome'}, ${state.currentUser.firstName}!`;
         if (userEmailEl) userEmailEl.textContent = state.currentUser.email;
     }
     const viewEl = document.getElementById('loggedInView');
@@ -130,15 +133,11 @@ export function showLoggedInView() {
 }
 
 export function handleGoogleLogin() {
-    AuthManager.loginWithOAuth('google').then((res) => {
-        if (!res.success) showNotification(res.error || 'Google login failed', 'error');
-    });
+    AuthManager.startSocialLogin('google');
 }
 
 export function handleFacebookLogin() {
-    AuthManager.loginWithOAuth('facebook').then((res) => {
-        if (!res.success) showNotification(res.error || 'Facebook login failed', 'error');
-    });
+    AuthManager.startSocialLogin('facebook');
 }
 
 export async function handleLogin(e) {
@@ -157,7 +156,7 @@ export async function handleLogin(e) {
     }
     const res = await AuthManager.login(email, pass);
     if (res.success) {
-        showNotification(`Welcome back, ${res.user?.firstName || 'User'}!`, 'success');
+        showNotification(`${SettingsManager.getTranslation('welcomeBack') || 'Welcome back'}, ${res.user?.firstName || 'User'}!`, 'success');
         showLoggedInView();
         closeAccountModal();
     } else {
@@ -208,7 +207,7 @@ export async function handleSignup(e) {
     const res = await AuthManager.signup({ firstName, lastName, email, password });
     if (res.success) {
         if (res.user) {
-            showNotification(`Welcome, ${firstName}!`, 'success');
+            showNotification(`${SettingsManager.getTranslation('welcomeUser') || 'Welcome'}, ${firstName}!`, 'success');
             showLoggedInView();
             closeAccountModal();
         } else {
@@ -434,18 +433,20 @@ export function performSearch() {
                 <div class="search-result-price">${p.onSale && p.originalPrice ? `<span class="original-price">$${p.originalPrice}</span> ` : ''}$${p.price}</div>
             </div>
         </div>
-    `).join('') : '<div class="search-no-results">No results found</div>';
+    `).join('') : `<div class="search-no-results">${SettingsManager.getTranslation('noResultsFound') || 'No results found'}</div>`;
 }
 
 export function showResetPasswordModal() {
-    // Close account modal if open
-    closeAccountModal();
-    
-    // Show reset password modal
     const overlay = document.getElementById('resetPasswordModalOverlay');
     const modal = document.getElementById('resetPasswordModal');
     
     if (overlay && modal) {
+        // Close account modal without scroll flicker: just remove classes, keep body hidden
+        const accountModal = document.getElementById('accountModal');
+        const accountOverlay = document.getElementById('accountModalOverlay');
+        if (accountModal) accountModal.classList.remove('active');
+        if (accountOverlay) accountOverlay.classList.remove('active');
+        
         storeLastFocus();
         hideBackgroundContent();
         overlay.classList.add('active');
@@ -496,7 +497,7 @@ export function openAddressModal(id = null) {
     addressIdInput.value = id || '';
 
     if (id && title) {
-        title.textContent = 'Edit Address';
+        title.textContent = SettingsManager.getTranslation('editAddress') || 'Edit Address';
         const existingAddress = AddressManager.addresses.find(x => x._id === id);
         if (existingAddress) {
             const fieldMap = {
@@ -524,7 +525,7 @@ export function openAddressModal(id = null) {
             }
         }
     } else if (title) {
-        title.textContent = 'Add New Address';
+        title.textContent = SettingsManager.getTranslation('addNewAddress') || 'Add New Address';
     }
 
     modal.classList.add('active');
@@ -742,31 +743,31 @@ export async function initializePayment() {
     paymentElement.innerHTML = `
         <div class="mock-card-form">
             <div class="mock-form-header">
-                <h3>Enter Payment Details</h3>
-                <p>Using secure local processing.</p>
+                <h3>${SettingsManager.getTranslation('enterPaymentDetails') || 'Enter Payment Details'}</h3>
+                <p>${SettingsManager.getTranslation('usingSecureProcessing') || 'Using secure local processing.'}</p>
             </div>
-            
+
             <div class="mock-form-group">
-                <label>Card Number</label>
+                <label>${SettingsManager.getTranslation('cardNumber') || 'Card Number'}</label>
                 <div class="mock-input-wrapper">
-                    <input type="text" id="mockCardNumber" placeholder="0000 0000 0000 0000" maxlength="19" 
+                    <input type="text" id="mockCardNumber" placeholder="0000 0000 0000 0000" maxlength="19"
                         class="mock-input"
                         oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(.{4})/g, '$1 ').trim()">
                     <svg class="mock-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/><path d="M2 10h20" stroke-width="2"/></svg>
                 </div>
             </div>
-            
+
             <div class="mock-form-row">
                 <div class="mock-form-group" style="flex: 1;">
-                    <label>Expiry</label>
+                    <label>${SettingsManager.getTranslation('expiry') || 'Expiry'}</label>
                     <div class="mock-input-wrapper">
                         <input type="text" id="mockCardExpiry" placeholder="MM/YY" maxlength="5"
                             class="mock-input"
-                            oninput="this.value = this.value.replace(/\\D/g, '').replace(/^(\\d{2})(\\d)/, '$1/$2').slice(0, 5)">
+                            oninput="this.value = this.value.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '$1/$2').slice(0, 5)">
                     </div>
                 </div>
                 <div class="mock-form-group" style="flex: 1;">
-                    <label>CVC</label>
+                    <label>${SettingsManager.getTranslation('cvv') || 'CVC'}</label>
                     <div class="mock-input-wrapper">
                         <input type="text" id="mockCardCvc" placeholder="123" maxlength="3"
                             class="mock-input"
@@ -852,12 +853,25 @@ export async function handlePaymentSubmission() {
     if (spinner) spinner.classList.remove('hidden');
 
     try {
-        // Validate form fields directly
         const requiredFields = ['email', 'phone', 'firstName', 'lastName', 'address', 'city', 'zip', 'country'];
-        const missingFields = requiredFields.filter(id => !document.getElementById(id)?.value?.trim());
+        const missingFields = [];
+        const fieldLabels = { email: 'Email', phone: 'Phone', firstName: 'First Name', lastName: 'Last Name', address: 'Address', city: 'City', zip: 'ZIP Code', country: 'Country' };
+
+        requiredFields.forEach(id => {
+            const el = document.getElementById(id);
+            const errorEl = document.getElementById(id + 'Error');
+            if (!el?.value?.trim()) {
+                missingFields.push(fieldLabels[id] || id);
+                if (errorEl) errorEl.textContent = `${fieldLabels[id] || id} is required`;
+                if (el) el.classList.add('input-error');
+            } else {
+                if (errorEl) errorEl.textContent = '';
+                if (el) el.classList.remove('input-error');
+            }
+        });
 
         if (missingFields.length > 0) {
-            throw new Error(`Please fill in all required fields: ${missingFields.join(', ')} `);
+            throw new Error(`Please fill in all required fields`);
         }
 
         if (isMockPayment) {

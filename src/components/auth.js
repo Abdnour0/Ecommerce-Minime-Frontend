@@ -1,4 +1,4 @@
-import { API_CONFIG, apiFetch } from './api-config.js';
+import { API_CONFIG, apiFetch, getUrl } from './api-config.js';
 
 export const AuthManager = {
     async init() {
@@ -89,8 +89,59 @@ export const AuthManager = {
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     },
 
-    loginWithOAuth(provider) {
-        window.location.href = `${API_CONFIG.BASE_URL}/auth/${provider}/`;
-        return Promise.resolve({ success: true });
+    async updateProfile(data) {
+        try {
+            const user = await apiFetch(API_CONFIG.ENDPOINTS.AUTH.ME, {
+                method: 'PATCH',
+                body: JSON.stringify(data)
+            });
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            return { success: true, user };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async changePassword(currentPassword, newPassword) {
+        try {
+            await apiFetch(API_CONFIG.ENDPOINTS.AUTH.PASSWORD_CHANGE, {
+                method: 'POST',
+                body: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                })
+            });
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async resetPassword(email, password) {
+        try {
+            await apiFetch(API_CONFIG.ENDPOINTS.AUTH.PASSWORD_RESET_CONFIRM, {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async forgotPassword(email) {
+        try {
+            await apiFetch(API_CONFIG.ENDPOINTS.AUTH.PASSWORD_RESET, {
+                method: 'POST',
+                body: JSON.stringify({ email })
+            });
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    startSocialLogin(provider) {
+        window.location.href = getUrl(API_CONFIG.ENDPOINTS.AUTH.SOCIAL.replace('{provider}', provider));
     }
 };
