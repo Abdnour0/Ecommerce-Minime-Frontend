@@ -22,3 +22,19 @@ export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KE
  * Add additional emails separated by commas.
  */
 export const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').filter(Boolean);
+
+/**
+ * Simulated (mock) card checkout.
+ *
+ * When enabled, selecting "Credit Card" shows a fake card form and creates an
+ * order without contacting a payment provider. Orders created this way are
+ * stored with `payment_status = "unpaid"`, but the customer is shown a success
+ * screen — so this must NEVER be on in production.
+ *
+ * Disabled in production builds by default. Enable it explicitly for local
+ * development with `VITE_ENABLE_MOCK_PAYMENT=true` (development defaults to on
+ * so the storefront is testable without Stripe keys).
+ */
+export const ENABLE_MOCK_PAYMENT =
+    import.meta.env.VITE_ENABLE_MOCK_PAYMENT === 'true' ||
+    (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_PAYMENT !== 'false');

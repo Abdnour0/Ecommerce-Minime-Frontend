@@ -35,7 +35,10 @@ export function prepareOrderData(paymentMethod, email) {
         total_amount: total,
         payment_method: paymentMethod,
         shipping_address: shippingAddressString,
-        payment_id: 'mock_pay_' + Date.now(), // Simulation
+        // Card orders placed through the simulated checkout get a local mock id;
+        // real Stripe payments have their id set by the webhook. Cash on Delivery
+        // orders have no payment id at all.
+        payment_id: paymentMethod === 'card' ? 'mock_pay_' + Date.now() : undefined,
         coupon_code: state.currentCoupon?.couponId ? state.currentCoupon.code : undefined,
     };
 }

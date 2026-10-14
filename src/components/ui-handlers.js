@@ -10,6 +10,7 @@ import { showPage } from './pages.js';
 import { STRIPE_PUBLISHABLE_KEY } from '../config.js';
 import { renderAddresses, updateCheckoutSummary } from './checkout-ui.js';
 import { API_URL } from '../config.js';
+import { resolveCardPaymentMode } from './payment.js';
 
 let lastFocusedElement = null;
 
@@ -728,6 +729,32 @@ export async function initializePayment() {
         return;
     }
 
+    const stripeReady = Boolean(state.stripe && state.elements);
+    const cardMode = resolveCardPaymentMode({ stripeReady });
+
+    if (cardMode === 'unavailable') {
+        // No real Stripe instance and the simulated checkout is disabled
+        // (i.e. a production build). Card payments cannot be taken — steer the
+        // customer to Cash on Delivery instead of showing a fake card form.
+        paymentElement.innerHTML = `
+            <div class="payment-unavailable">
+                <p>${SettingsManager.getTranslation('cardUnavailable') || 'Card payments are currently unavailable. Please choose Cash on Delivery.'}</p>
+            </div>
+        `;
+
+        const cardRadio = document.querySelector('input[name="paymentMethod"][value="card"]');
+        const cashRadio = document.querySelector('input[name="paymentMethod"][value="cash"]');
+        if (cardRadio) {
+            cardRadio.disabled = true;
+            cardRadio.checked = false;
+        }
+        if (cashRadio) {
+            cashRadio.checked = true;
+            if (typeof window.togglePaymentMethod === 'function') window.togglePaymentMethod('cash');
+        }
+        return;
+    }
+
     const subtotal = CartManager.getTotal();
     const shipping = subtotal > 75 ? 0 : 10;
     let discount = 0;
@@ -836,12 +863,24 @@ function populateSuccessPage(email, orderId, total) {
 export async function handlePaymentSubmission() {
     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'card';
 
-    // Check if we are using Stripe or Mock form
-    const isMockPayment = paymentMethod === 'card' && (!state.stripe || !state.elements);
+    // Determine how a card payment should be handled. The simulated (mock)
+    // checkout is disabled in production builds, so an unconfigured card
+    // payment is refused rather than silently "succeeding" without payment.
+    const stripeReady = Boolean(state.stripe && state.elements);
+    const cardMode = resolveCardPaymentMode({ stripeReady });
+    const isMockPayment = paymentMethod === 'card' && cardMode === 'mock';
 
     const btn = document.getElementById('submitPaymentBtn');
     if (!btn) {
         logger.error('Submit payment button not found');
+        return;
+    }
+
+    if (paymentMethod === 'card' && cardMode === 'unavailable') {
+        showNotification(
+            'Card payments are currently unavailable. Please choose Cash on Delivery.',
+            'error'
+        );
         return;
     }
 
