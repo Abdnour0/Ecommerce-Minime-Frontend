@@ -30,12 +30,12 @@
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https: blob:;
         connect-src 'self' http://localhost:8000 https://api.stripe.com;
-        frame-src 'none';
+        frame-src https://js.stripe.com https://hooks.stripe.com;
     ">
 
     <title>MINIME - Naturally Comfortable Footwear</title>
