@@ -995,41 +995,27 @@ class AppInitializer {
     async handleURLParameters() {
         const urlParams = new URLSearchParams(window.location.search);
 
-        // Handle payment success redirect
-        if (urlParams.get('payment_intent')) {
-            const status = urlParams.get('redirect_status');
+        // Stripe Checkout redirect. The order already exists server-side and the
+        // webhook marks it paid, so we just confirm, clear the cart and refresh.
+        const checkoutStatus = urlParams.get('checkout');
+        if (checkoutStatus) {
+            window.history.replaceState({}, document.title, window.location.pathname);
 
-            if (status === 'succeeded') {
-                const pendingOrderData = sessionStorage.getItem('pendingStripeOrder');
-                if (pendingOrderData) {
-                    try {
-                        const orderData = JSON.parse(pendingOrderData);
-                        sessionStorage.removeItem('pendingStripeOrder');
-                        await OrderManager.createOrder(orderData);
-                        renderOrders();
-                        showNotification('Payment successful! Thank you for your order.', 'success');
-                        CartManager.clear();
-                    } catch (error) {
-                        logger.error('Error creating order from Stripe payment:', error);
-                        showNotification('Payment succeeded but order creation failed. Please contact support.', 'error');
-                    }
-                } else {
-                    showNotification('Payment successful! Thank you for your order.', 'success');
-                    CartManager.clear();
-                }
+            if (checkoutStatus === 'success') {
+                CartManager.clear();
+                showNotification('Payment successful! Thank you for your order.', 'success');
 
-                // Clear URL parameters
-                window.history.replaceState({}, document.title, window.location.pathname);
-
-                // Show orders page
-                setTimeout(() => {
+                // The webhook may land a moment after the redirect, so refresh
+                // shortly after to show the order's paid status.
+                setTimeout(async () => {
+                    await OrderManager.init();
+                    renderOrders();
                     pages.showOrdersPage();
-                }, 1000);
+                }, 1500);
             } else {
-                // Clear pending order data on failure
-                sessionStorage.removeItem('pendingStripeOrder');
-                showNotification('Payment was not completed. Please try again.', 'error');
+                showNotification('Your payment was not completed. Please try again.', 'info');
             }
+            return;
         }
 
         // Handle other URL parameters (e.g., OAuth callbacks)

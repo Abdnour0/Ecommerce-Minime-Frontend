@@ -6,7 +6,7 @@ import { SettingsManager } from './settings.js';
 import { escapeHtml } from './ui-utils.js';
 import { API_CONFIG, apiFetch } from './api-config.js';
 
-export function prepareOrderData(paymentMethod, email) {
+export function prepareOrderData(paymentMethod, email, { mock = false } = {}) {
     // Get cart items - ensure they have all required fields for the API
     const cartItems = state.cart.map(item => ({
         product_id: item.id || item._id,
@@ -15,10 +15,19 @@ export function prepareOrderData(paymentMethod, email) {
         selected_color: item.selectedColor || (item.colors && item.colors[0]?.name) || ''
     }));
 
+    // Mirror the backend's pricing (orders/views.py): shipping is free above
+    // $75, otherwise a flat $10, less any coupon discount.
     const subtotal = CartManager.getTotal();
-    const shipping = 0;
-    const tax = Math.round(subtotal * 0.1 * 100) / 100;
-    const total = subtotal + shipping + tax;
+    const shipping = subtotal > 75 ? 0 : 10;
+    let discount = 0;
+    if (state.currentCoupon) {
+        if (state.currentCoupon.discountType === 'percentage') {
+            discount = subtotal * (state.currentCoupon.discountValue / 100);
+        } else {
+            discount = state.currentCoupon.discountValue;
+        }
+    }
+    const total = Math.max(0, subtotal + shipping - discount);
 
     // Construct the address string for the simple backend field
     const addr = {
@@ -35,10 +44,10 @@ export function prepareOrderData(paymentMethod, email) {
         total_amount: total,
         payment_method: paymentMethod,
         shipping_address: shippingAddressString,
-        // Card orders placed through the simulated checkout get a local mock id;
-        // real Stripe payments have their id set by the webhook. Cash on Delivery
-        // orders have no payment id at all.
-        payment_id: paymentMethod === 'card' ? 'mock_pay_' + Date.now() : undefined,
+        // Orders placed through the simulated (development) checkout get a local
+        // mock id. Real Stripe payments have their payment id set by the webhook,
+        // and Cash on Delivery orders have no payment id at all.
+        payment_id: mock ? 'mock_pay_' + Date.now() : undefined,
         coupon_code: state.currentCoupon?.couponId ? state.currentCoupon.code : undefined,
     };
 }

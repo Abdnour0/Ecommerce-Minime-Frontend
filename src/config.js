@@ -18,6 +18,19 @@ export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/ap
 export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_REPLACE_WITH_YOUR_KEY';
 
 /**
+ * Whether real card payments should be offered.
+ *
+ * The storefront redirects customers to Stripe's hosted checkout page, so all
+ * it needs client-side is a configured publishable key (the secret key stays on
+ * the backend). This is used only to decide whether to show the "Credit Card"
+ * option; the backend independently refuses card payments if its secret key is
+ * missing.
+ */
+export const STRIPE_ENABLED = Boolean(
+    STRIPE_PUBLISHABLE_KEY && !STRIPE_PUBLISHABLE_KEY.includes('REPLACE_WITH')
+);
+
+/**
  * Admin email addresses that are granted dashboard access.
  * Add additional emails separated by commas.
  */

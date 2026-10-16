@@ -7,10 +7,11 @@ import { SettingsManager } from './settings.js';
 import { AddressManager } from './addresses.js';
 import { showNotification, escapeHtml, showConfirmDialog, trapFocus } from './ui-utils.js';
 import { showPage } from './pages.js';
-import { STRIPE_PUBLISHABLE_KEY } from '../config.js';
+import { STRIPE_ENABLED } from '../config.js';
 import { renderAddresses, updateCheckoutSummary } from './checkout-ui.js';
 import { API_URL } from '../config.js';
 import { resolveCardPaymentMode } from './payment.js';
+import { apiFetch } from './api-config.js';
 
 let lastFocusedElement = null;
 
@@ -729,8 +730,7 @@ export async function initializePayment() {
         return;
     }
 
-    const stripeReady = Boolean(state.stripe && state.elements);
-    const cardMode = resolveCardPaymentMode({ stripeReady });
+    const cardMode = resolveCardPaymentMode({ stripeReady: STRIPE_ENABLED });
 
     if (cardMode === 'unavailable') {
         // No real Stripe instance and the simulated checkout is disabled
@@ -752,6 +752,19 @@ export async function initializePayment() {
             cashRadio.checked = true;
             if (typeof window.togglePaymentMethod === 'function') window.togglePaymentMethod('cash');
         }
+        return;
+    }
+
+    if (cardMode === 'stripe') {
+        // Real Stripe: customers pay on Stripe's hosted checkout page, so no
+        // card details are collected here (PCI-safer). The backend webhook
+        // marks the order paid once Stripe confirms the payment.
+        paymentElement.innerHTML = `
+            <div class="payment-stripe-redirect">
+                <h3>${SettingsManager.getTranslation('enterPaymentDetails') || 'Pay with card'}</h3>
+                <p>${SettingsManager.getTranslation('stripeRedirectNotice') || 'You will be redirected to Stripe to complete your payment securely.'}</p>
+            </div>
+        `;
         return;
     }
 
@@ -866,8 +879,7 @@ export async function handlePaymentSubmission() {
     // Determine how a card payment should be handled. The simulated (mock)
     // checkout is disabled in production builds, so an unconfigured card
     // payment is refused rather than silently "succeeding" without payment.
-    const stripeReady = Boolean(state.stripe && state.elements);
-    const cardMode = resolveCardPaymentMode({ stripeReady });
+    const cardMode = resolveCardPaymentMode({ stripeReady: STRIPE_ENABLED });
     const isMockPayment = paymentMethod === 'card' && cardMode === 'mock';
 
     const btn = document.getElementById('submitPaymentBtn');
@@ -928,7 +940,7 @@ export async function handlePaymentSubmission() {
 
             // Prepare and create order
             const email = document.getElementById('email')?.value || 'customer@example.com';
-            const orderData = prepareOrderData('card', email);
+            const orderData = prepareOrderData('card', email, { mock: true });
             
             try {
                 const createdOrder = await OrderManager.createOrder(orderData);
@@ -985,43 +997,22 @@ export async function handlePaymentSubmission() {
             }
 
         } else {
-            // Stripe Card Logic
-            // Prepare order data before redirect (to create order after successful payment)
+            // Real card payment: create the order first (unpaid), then redirect
+            // the customer to Stripe's hosted checkout page. Stripe confirms the
+            // payment and our backend webhook marks the order paid; Stripe then
+            // redirects the customer back to the success URL.
             const email = document.getElementById('email')?.value || state.currentUser?.email || '';
             const orderData = prepareOrderData('card', email);
-            
-            // Store order data in sessionStorage to create order after redirect
-            sessionStorage.setItem('pendingStripeOrder', JSON.stringify(orderData));
-            
-            const { error } = await state.stripe.confirmPayment({
-                elements: state.elements,
-                confirmParams: {
-                    return_url: window.location.origin + '/',
-                    receipt_email: email,
-                    shipping: {
-                        name: `${document.getElementById('firstName')?.value || ''} ${document.getElementById('lastName')?.value || ''} `.trim(),
-                        phone: document.getElementById('phone')?.value || '',
-                        address: {
-                            line1: document.getElementById('address')?.value || '',
-                            city: document.getElementById('city')?.value || '',
-                            state: document.getElementById('state')?.value || '',
-                            postal_code: document.getElementById('zip')?.value || '',
-                            country: document.getElementById('country')?.value || 'US'
-                        }
-                    }
-                }
-            });
+            const createdOrder = await OrderManager.createOrder(orderData);
 
-            if (error) {
-                // Clear pending order data if payment fails
-                sessionStorage.removeItem('pendingStripeOrder');
-                if (error.type === "card_error" || error.type === "validation_error") {
-                    showNotification(error.message, 'error');
-                } else {
-                    showNotification("An unexpected error occurred.", 'error');
-                }
+            const session = await apiFetch(`/orders/${createdOrder.id}/checkout/`, { method: 'POST' });
+            if (!session?.url) {
+                throw new Error('Payment could not be started. Please try again.');
             }
-            // Note: If payment succeeds, Stripe will redirect, and order will be created in handleURLParameters
+
+            // Leave the site for Stripe's payment page.
+            window.location.href = session.url;
+            return;
         }
         btn.disabled = false;
         if (btnText) btnText.textContent = 'Pay Now';
