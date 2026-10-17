@@ -337,7 +337,7 @@ export function updateCart() {
             cartItemsEl.innerHTML = state.cart.map((item) => `
                 <div class="cart-item">
                     <div class="cart-item-image">
-                        <img src="${item.image || 'https://via.placeholder.com/96x96?text=No+Image'}" alt="${escapeHtml(item.name)}" onerror="this.src='https://via.placeholder.com/96x96?text=No+Image'">
+                        <img src="${item.image || '/placeholder.svg'}" alt="${escapeHtml(item.name)}" onerror="this.src='/placeholder.svg'">
                     </div>
                     <div class="cart-item-info">
                         <div class="cart-item-name">${escapeHtml(item.name)}</div>

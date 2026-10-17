@@ -79,7 +79,7 @@ const OrderManager = {
                 items: order.items.map(item => ({
                     ...item,
                     name: item.product_name,
-                    image: 'https://via.placeholder.com/400x300' // Real app would have product image link
+                    image: '/placeholder.svg' // Real app would have product image link
                 }))
             }));
             this.save();
@@ -251,7 +251,7 @@ export function renderOrders() {
                     ${order.items && order.items.length > 0 ? order.items.map(item => `
                         <div class="order-item-detail">
                             <div class="item-thumbnail">
-                                <img src="${item.image || 'https://via.placeholder.com/400x300'}" alt="${escapeHtml(item.name || 'Product')}">
+                                <img src="${item.image || '/placeholder.svg'}" alt="${escapeHtml(item.name || 'Product')}">
                             </div>
                             <div class="item-info">
                                 <h4>${escapeHtml(item.name || 'Product')}</h4>
@@ -389,7 +389,7 @@ export function openOrderDetailModal(orderId) {
                     ${order.items && order.items.length > 0 ? order.items.map(item => `
                         <div class="order-item-detail">
                             <div class="item-thumbnail">
-                                <img src="${item.image || 'https://via.placeholder.com/400x300'}" alt="${escapeHtml(item.name || 'Product')}">
+                                <img src="${item.image || '/placeholder.svg'}" alt="${escapeHtml(item.name || 'Product')}">
                             </div>
                             <div class="item-info">
                                 <h4>${escapeHtml(item.name || 'Product')}</h4>

@@ -115,7 +115,7 @@ export function renderWishlist() {
     container.innerHTML = wishlistProducts.map(product => `
         <div class="product-card" data-product-id="${product.id}">
             <div class="product-image">
-                <img src="${product.image}" alt="${escapeHtml(product.name)}" onerror="this.src='https://via.placeholder.com/600x600?text=No+Image'">
+                <img src="${product.image}" alt="${escapeHtml(product.name)}" onerror="this.src='/placeholder.svg'">
                 <button class="wishlist-toggle-btn active" onclick="event.stopPropagation(); window.WishlistManager.toggle('${product.id}')" aria-label="Remove from Wishlist">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent-color)" stroke="currentColor" stroke-width="2">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>

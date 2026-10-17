@@ -78,10 +78,10 @@ export function updateCheckoutSummary() {
         } else {
             items.innerHTML = state.cart.map(i => `
         <div class="checkout-item">
-            <img src="${i.image || 'https://via.placeholder.com/60x60?text=No+Image'}"
+            <img src="${i.image || '/placeholder.svg'}"
                 alt="${escapeHtml(i.name)}"
                 class="checkout-item-img"
-                onerror="this.src='https://via.placeholder.com/60x60?text=No+Image'">
+                onerror="this.src='/placeholder.svg'">
                 <div class="checkout-item-info">
                     <div class="checkout-item-title">${escapeHtml(i.name)}</div>
                     <div class="checkout-item-meta">${SettingsManager.getTranslation('quantity') || 'Quantity'}: ${i.quantity || 1}</div>

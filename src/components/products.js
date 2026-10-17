@@ -21,7 +21,7 @@ export async function fetchProducts() {
         state.products = products.map(p => ({
             ...p,
             category: (p.category_name || '').toLowerCase(), // Map category_name (Men/Women) to category (men/women)
-            image: p.images.find(img => img.is_primary)?.image_url || p.images[0]?.image_url || 'https://via.placeholder.com/600x600?text=No+Image',
+            image: p.images.find(img => img.is_primary)?.image_url || p.images[0]?.image_url || '/placeholder.svg',
             gallery: p.images.filter(img => !img.is_primary).map(img => img.image_url),
             colors: p.colors.map(c => ({ name: c.name, hex: c.hex_code })),
             sizes: p.sizes.map(s => s.name)
@@ -105,7 +105,7 @@ export function renderProducts(container, filter = 'all') {
         <div class="product-card" role="listitem" data-product-id="${product.id}" tabindex="0">
             <div class="product-image">
                 ${product.badge ? `<div class="product-badge">${escapeHtml(badgeText)}</div>` : ''}
-                <img src="${product.image}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x600?text=No+Image'" style="width:100%;height:100%;object-fit:cover;">
+                <img src="${product.image}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='/placeholder.svg'" style="width:100%;height:100%;object-fit:cover;">
                 <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" data-product-id="${product.id}" aria-label="Toggle Wishlist">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'var(--accent-color)' : 'none'}" stroke="currentColor" stroke-width="2">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -244,7 +244,7 @@ export function openProductModal(productId) {
     // Populate modal with product data
     if (modalImage) {
         modalImage.src = product.image;
-        modalImage.onerror = function() { this.src = 'https://via.placeholder.com/600x600?text=No+Image'; };
+        modalImage.onerror = function() { this.src = '/placeholder.svg'; };
         if (product.image && product.image.includes('unsplash.com')) {
             const base = product.image.split('?')[0];
             const params = new URLSearchParams(product.image.split('?')[1] || '');
