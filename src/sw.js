@@ -1,4 +1,4 @@
-const CACHE_NAME = 'minime-cache-v2';
+const CACHE_NAME = 'minime-cache-v3';
 const DEV_HOSTS = new Set(['localhost', '127.0.0.1']);
 
 const log = (...args) => {
@@ -11,7 +11,8 @@ const CORE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/shoe.svg'
+  '/shoe.svg',
+  '/placeholder.svg'
 ];
 
 self.addEventListener('install', (event) => {
